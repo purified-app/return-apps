@@ -2,7 +2,9 @@
 
 Angular workspace for **returnUrl** helper apps — small client-side tools that capture something (signature, scan, location, …) and return the result to a calling app.
 
-**Contract v1:** always `value` + `format` (and `error` on cancel). Optional `allowedOrigins` and `delivery=query|hash` (pin/sign default to hash). See [docs/contract-v1.md](docs/contract-v1.md), [`apps.json`](https://return.purified.app/apps.json), SDK [`/sdk/return-apps.mjs`](https://return.purified.app/sdk/return-apps.mjs).
+**Contract v1:** always `value` + `format` (and `error` on cancel). Optional `allowedOrigins` and `delivery=query|hash` (pin/sign default to hash).
+
+**Start here:** [docs/integration.md](docs/integration.md) (developers + AI agents) · [contract-v1.md](docs/contract-v1.md) · live [`apps.json`](https://return.purified.app/apps.json) · [`llms.txt`](https://return.purified.app/llms.txt) · SDK [`/sdk/return-apps.mjs`](https://return.purified.app/sdk/return-apps.mjs).
 
 ## Live site
 

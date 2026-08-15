@@ -1,32 +1,34 @@
 # SignBack
 
-> Lives in the `return-apps` monorepo under `projects/sign-back`.
+Signature pad → SVG. Contract **v1**: `value` + `format=sign.svg`. Default delivery: **hash**.
 
-Mobile-first signature pad. Returns SVG via contract **v1** (`value` + `format=sign.svg`). Default delivery: **hash**.
+See **[integration.md](./integration.md)** (canonical) and [contract-v1.md](./contract-v1.md).
 
-See [contract-v1.md](./contract-v1.md) for shared open/return rules.
-
-## Getting started
+## Quick start
 
 ```bash
-bun install
-bun run start:sign-back
+bun run start:sign-back   # http://localhost:4200/
 ```
 
-Open `http://localhost:4200/`.
+Live: https://return.purified.app/sign/ · docs `/sign/home` · demo `/sign/demo-caller`
 
-| Route | Description |
-|-------|-------------|
-| `/` | Signature pad |
-| `/home` | Landing + integration notes |
-| `/demo-caller` | Minimal caller for manual E2E |
-
-## App-specific
+## Open / return
 
 ```text
-https://return.purified.app/sign?returnUrl=…&allowedOrigins=…&delivery=hash&state=…
+https://return.purified.app/sign?returnUrl=URL&allowedOrigins=ORIGIN&state=S
 ```
 
-Success (hash): `#value=<svg-data-url>&format=sign.svg&state=…`
+Success (hash): `#value=<svg-data-url>&format=sign.svg&state=S`  
+Cancel: `#error=cancelled&state=S` (or query if `delivery=query`)
 
-Signatures that are too large for URL delivery stay in-app with an error (simplify strokes).
+```js
+import { openReturnApp, parseReturnResult } from 'https://return.purified.app/sdk/return-apps.mjs';
+location.href = openReturnApp('sign', {
+  returnUrl: location.href,
+  allowedOrigins: [location.origin],
+});
+const { value, format, error } = parseReturnResult(location);
+// value is data:image/svg+xml;…
+```
+
+Oversized signatures stay in-app (no redirect) — simplify strokes.

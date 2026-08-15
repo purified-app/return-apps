@@ -1,32 +1,33 @@
 # Integration contract v1
 
-Shared by all return-apps. Catalog: [`site/apps.json`](../site/apps.json). SDK: [`site/sdk/return-apps.mjs`](../site/sdk/return-apps.mjs).
+Full guide (humans + AI agents): **[integration.md](./integration.md)**  
+Catalog: [`../site/apps.json`](../site/apps.json) · Agent index: [`../site/llms.txt`](../site/llms.txt) · SDK: [`../site/sdk/return-apps.mjs`](../site/sdk/return-apps.mjs)
 
 ## Open
 
 ```text
-https://return.purified.app/<app>?returnUrl=<url>&state=<optional>&allowedOrigins=<origins>&delivery=<query|hash>
+https://return.purified.app/<app>?returnUrl=<url>&allowedOrigins=<origins>&state=<optional>&delivery=<query|hash>
 ```
 
-| Param | Description |
-|-------|-------------|
-| `returnUrl` | Absolute `https:` callback (`http://localhost` / `127.0.0.1` / `::1` ok) |
-| `state` | Echoed on return |
-| `allowedOrigins` | Comma-separated origins; when set, `returnUrl` must match |
-| `delivery` | `query` (default) or `hash` (default for **pin** / **sign**) |
+| Param | Required | Description |
+|-------|----------|-------------|
+| `returnUrl` | for return mode | Absolute `https:` (or `http://localhost` / `127.0.0.1` / `::1`) |
+| `allowedOrigins` | recommended | Comma-separated origins; when set, `returnUrl` must match |
+| `state` | no | Echoed on return |
+| `delivery` | no | `query` (default) or `hash` (**default for pin + sign**) |
 
 ## Return
 
 | Param | Description |
 |-------|-------------|
-| `value` | Primary payload |
-| `format` | `sign.svg`, `pin.digits`, `geo.point`, `map.point`, `color.hex`, `scan.*`, `nfc.*` |
-| `error` | e.g. `cancelled` |
+| `value` | Primary payload — **always use this** |
+| `format` | `sign.svg` · `pin.digits` · `geo.point` · `map.point` · `color.hex` · `scan.*` · `nfc.*` |
+| `error` | `cancelled` on cancel |
 | `state` | Echo |
 
-Extras (`lat`, `rgb`, …) may accompany `value`. Hash delivery puts params in the fragment.
+Hash delivery puts params in the URL fragment. **Pin/sign → parse hash** (or use the SDK).
 
-## SDK
+## SDK (recommended)
 
 ```js
 import { openReturnApp, parseReturnResult } from 'https://return.purified.app/sdk/return-apps.mjs';
@@ -39,3 +40,10 @@ location.href = openReturnApp('pin', {
 
 const { value, format, error } = parseReturnResult(location);
 ```
+
+## Anti-patterns
+
+- Reading only `location.search` after pin/sign (misses hash results)
+- Using legacy keys (`pin`, `signature`, `scanValue`, …) instead of `value`
+- Omitting `allowedOrigins` on real origins
+- Expecting `postMessage` (not supported)

@@ -1,7 +1,13 @@
 /**
- * Lightweight return-apps caller SDK (contract v1).
+ * return-apps caller SDK (contract v1).
+ *
+ * Docs: https://github.com/purified-app/return-apps/blob/main/docs/integration.md
+ * Catalog: https://return.purified.app/apps.json
+ * Agent index: https://return.purified.app/llms.txt
  *
  *   import { openReturnApp, parseReturnResult } from './return-apps.mjs';
+ *
+ * Pin/sign default to delivery=hash — always use parseReturnResult (not search alone).
  */
 export const CONTRACT_VERSION = 1;
 export const DEFAULT_BASE_URL = 'https://return.purified.app';

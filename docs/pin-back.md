@@ -1,25 +1,38 @@
 # PinBack
 
-> Lives in the `return-apps` monorepo under `projects/pin-back`.
+Numeric PIN pad. Contract **v1**: `value` + `format=pin.digits`. Default delivery: **hash**.
 
-Numeric PIN keypad. Returns digits via contract **v1** (`value` + `format=pin.digits`). Default delivery: **hash**.
+See **[integration.md](./integration.md)**.
 
-See [contract-v1.md](./contract-v1.md).
-
-## Getting started
+## Quick start
 
 ```bash
-bun install
-bun run start:pin-back
+bun run start:pin-back   # http://localhost:4204/
 ```
 
-Open `http://localhost:4204/`.
+Live: https://return.purified.app/pin/ · `/pin/home` · `/pin/demo-caller`
 
-## App-specific open params
+## Open params
 
 | Param | Description |
 |-------|-------------|
-| `length` | PIN length 3–12 (default `4`) |
+| `length` | 3–12 (default `4`) |
 | `mask` | `false` / `0` to show digits |
 
-Success (hash): `#value=<digits>&format=pin.digits&state=…`
+## Open / return
+
+```text
+https://return.purified.app/pin?returnUrl=URL&allowedOrigins=ORIGIN&state=S&length=4
+```
+
+Success (hash): `#value=1234&format=pin.digits&state=S`
+
+```js
+import { openReturnApp, parseReturnResult } from 'https://return.purified.app/sdk/return-apps.mjs';
+location.href = openReturnApp('pin', {
+  returnUrl: location.href,
+  allowedOrigins: [location.origin],
+  params: { length: 4 },
+});
+const { value, error } = parseReturnResult(location);
+```

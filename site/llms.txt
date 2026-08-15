@@ -1,0 +1,38 @@
+# return.purified.app
+
+> Helper mini-apps: open with returnUrl, user captures one thing, redirect back with value+format.
+
+Canonical human docs: https://github.com/purified-app/return-apps/blob/main/docs/integration.md
+Contract: https://github.com/purified-app/return-apps/blob/main/docs/contract-v1.md
+Catalog JSON: https://return.purified.app/apps.json
+SDK: https://return.purified.app/sdk/return-apps.mjs
+
+## Critical rules for agents
+
+1. Success params are always `value` and `format` (plus optional `state`). Cancel: `error=cancelled`.
+2. Apps `pin` and `sign` default to delivery=hash — parse `location.hash` (or use SDK `parseReturnResult`).
+3. Always pass `allowedOrigins=<caller-origin>` with `returnUrl`.
+4. Base: `https://return.purified.app/<id>/` with query string open params.
+5. Prefer SDK:
+
+```js
+import { openReturnApp, parseReturnResult } from 'https://return.purified.app/sdk/return-apps.mjs';
+location.href = openReturnApp('pin', { returnUrl: location.href, allowedOrigins: [location.origin], state: 'x' });
+const { value, format, error } = parseReturnResult(location);
+```
+
+## Apps
+
+- sign — /sign/ — hash — format=sign.svg — value=SVG data URL
+- scan — /scan/ — query — format=scan.* — value=payload — open: formats?
+- geo — /geo/ — query — format=geo.point — value=lat,lng — extras: lat,lng,accuracy,timestamp,… — open: highAccuracy?
+- map — /map/ — query — format=map.point — value=lat,lng — extras: lat,lng,zoom — open: lat,lng,zoom?
+- pin — /pin/ — hash — format=pin.digits — value=digits — open: length?,mask?
+- nfc — /nfc/ — query — format=nfc.* — value=payload — extras: recordType — Chrome/Android HTTPS
+- color — /color/ — query — format=color.hex — value=#rrggbb — extras: rgb
+
+## Do not
+
+- Do not use legacy keys pin/signature/scanValue/nfcValue/hex as primary return fields
+- Do not assume postMessage delivery
+- Do not skip hash parsing for pin/sign

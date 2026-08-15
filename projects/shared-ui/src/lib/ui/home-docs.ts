@@ -54,7 +54,7 @@ export class RbHomeDocs {
   /** Extra return params for the demo return example (lat, rgb, …). */
   readonly returnExtras = input<Record<string, string>>({});
   readonly footnote = input(
-    'Pass allowedOrigins to restrict returnUrl. Pin/sign default to delivery=hash.',
+    'Pass allowedOrigins to restrict returnUrl. Pin/sign default to delivery=hash — parse the fragment or use the SDK. Full guide: docs/integration.md',
   );
 
   readonly contractVersion = RETURN_CONTRACT_VERSION;

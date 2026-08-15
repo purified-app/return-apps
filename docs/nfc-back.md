@@ -1,9 +1,34 @@
 # NfcBack
 
-Web NFC reader (Chrome/Android). Contract **v1**: `value` + `format=nfc.<recordType>` plus `recordType`.
+Web NFC reader. Contract **v1**: `value` + `format=nfc.<recordType>` + `recordType`. Default delivery: **query**.
 
-See [contract-v1.md](./contract-v1.md).
+See **[integration.md](./integration.md)**.
+
+## Quick start
 
 ```bash
-bun run start:nfc-back   # :4205
+bun run start:nfc-back   # http://localhost:4205/
+```
+
+Live: https://return.purified.app/nfc/ · `/nfc/home` · `/nfc/demo-caller`
+
+## Requirements
+
+Chrome on **Android**, **HTTPS**.
+
+## Open / return
+
+```text
+https://return.purified.app/nfc?returnUrl=URL&allowedOrigins=ORIGIN&state=S
+```
+
+Success: `?value=<payload>&format=nfc.url&recordType=url&state=S`
+
+```js
+import { openReturnApp, parseReturnResult } from 'https://return.purified.app/sdk/return-apps.mjs';
+location.href = openReturnApp('nfc', {
+  returnUrl: location.href,
+  allowedOrigins: [location.origin],
+});
+const { value, extras, error } = parseReturnResult(location);
 ```

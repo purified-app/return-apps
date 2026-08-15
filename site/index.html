@@ -120,7 +120,8 @@
       <p class="meta">
         <a href="./apps.json">apps.json</a> ·
         <a href="./sdk/return-apps.mjs">SDK</a> ·
-        <a href="https://github.com/purified-app/return-apps/blob/main/docs/contract-v1.md">docs</a>
+        <a href="./llms.txt">llms.txt</a> ·
+        <a href="https://github.com/purified-app/return-apps/blob/main/docs/integration.md">integration guide</a>
       </p>
       <ul>
         <li>
@@ -168,9 +169,10 @@
       </ul>
       <section class="contract">
         <p>
-          Open with <code>returnUrl</code>, optional <code>allowedOrigins</code> and
-          <code>delivery</code> (<code>query</code>|<code>hash</code>). Cancel →
-          <code>error=cancelled</code>.
+          Always pass <code>returnUrl</code> + <code>allowedOrigins</code>. Success →
+          <code>value</code> + <code>format</code>. Pin/sign use <code>delivery=hash</code>
+          (parse the fragment, or use the SDK). Full guide:
+          <a href="https://github.com/purified-app/return-apps/blob/main/docs/integration.md">integration.md</a>.
         </p>
         <pre>import { openReturnApp, parseReturnResult } from './sdk/return-apps.mjs';
 
