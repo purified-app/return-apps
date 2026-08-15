@@ -115,11 +115,10 @@
       <h1>Helper apps that capture something and return via URL</h1>
       <p class="lead">
         Open with <code>returnUrl</code>. Result comes back as <code>value</code> +
-        <code>format</code> (contract v1). Pin/sign use <code>delivery=hash</code> by default.
+        <code>format</code>. Pin/sign default to <code>delivery=hash</code>.
       </p>
       <p class="meta">
-        <a href="./apps.json">apps.json</a> · <a href="./sdk/return-apps.mjs">SDK</a> ·
-        <a href="./sign/home">docs</a>
+        <a href="https://github.com/purified-app/return-apps/blob/main/docs/contract-v1.md">contract v1</a>
       </p>
       <ul>
         <li>
@@ -168,16 +167,25 @@
       <section class="contract">
         <p>
           Open with <code>returnUrl</code>, optional <code>allowedOrigins</code> and
-          <code>delivery</code> (<code>query</code>|<code>hash</code>). Cancel →
-          <code>error=cancelled</code>.
+          <code>delivery</code> (<code>query</code>|<code>hash</code>). Success →
+          <code>value</code> + <code>format</code>. Cancel → <code>error=cancelled</code>.
         </p>
-        <pre>import { openReturnApp, parseReturnResult } from './sdk/return-apps.mjs';
+        <pre>const returnUrl = location.href;
+const origin = location.origin;
+location.href =
+  'https://return.purified.app/pin' +
+  `?returnUrl=${encodeURIComponent(returnUrl)}` +
+  `&allowedOrigins=${encodeURIComponent(origin)}` +
+  '&state=order-42';
 
-location.href = openReturnApp('pin', {
-  returnUrl: location.href,
-  allowedOrigins: [location.origin],
-});
-const { value, format, error } = parseReturnResult(location);</pre>
+// On return (check location.hash for pin/sign):
+const params = new URLSearchParams(
+  location.hash.startsWith('#') && !location.hash.startsWith('#/')
+    ? location.hash.slice(1)
+    : location.search,
+);
+const value = params.get('value');
+const format = params.get('format');</pre>
       </section>
     </main>
   </body>

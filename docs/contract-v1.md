@@ -1,11 +1,11 @@
 # Integration contract v1
 
-Shared by all return-apps. Catalog: [`site/apps.json`](../site/apps.json). SDK: [`site/sdk/return-apps.mjs`](../site/sdk/return-apps.mjs).
+Shared by all return-apps. No SDK — call with plain URLs.
 
 ## Open
 
 ```text
-https://return.purified.app/<app>?returnUrl=<url>&state=<optional>&allowedOrigins=<origins>&delivery=<query|hash>&v=1
+https://return.purified.app/<app>?returnUrl=<url>&state=<optional>&allowedOrigins=<origins>&delivery=<query|hash>
 ```
 
 | Param | Description |
@@ -26,14 +26,23 @@ https://return.purified.app/<app>?returnUrl=<url>&state=<optional>&allowedOrigin
 
 Extras (`lat`, `rgb`, …) may accompany `value`. Hash delivery puts params in the fragment.
 
-## SDK
+## Caller example
 
 ```js
-import { openReturnApp, parseReturnResult } from 'https://return.purified.app/sdk/return-apps.mjs';
+const returnUrl = location.href;
+location.href =
+  'https://return.purified.app/pin' +
+  `?returnUrl=${encodeURIComponent(returnUrl)}` +
+  `&allowedOrigins=${encodeURIComponent(location.origin)}` +
+  '&state=order-42';
 
-location.href = openReturnApp('pin', {
-  returnUrl: location.href,
-  allowedOrigins: [location.origin],
-});
-const { value, format, error } = parseReturnResult(location);
+// After redirect back:
+const raw =
+  location.hash.startsWith('#') && !location.hash.startsWith('#/')
+    ? location.hash.slice(1)
+    : location.search.slice(1);
+const params = new URLSearchParams(raw);
+const value = params.get('value');
+const format = params.get('format');
+const error = params.get('error');
 ```

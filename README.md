@@ -2,7 +2,7 @@
 
 Angular workspace for **returnUrl** helper apps — small client-side tools that capture something (signature, scan, location, …) and return the result to a calling app.
 
-**Contract v1:** always `value` + `format` (and `error` on cancel). See [docs/contract-v1.md](docs/contract-v1.md), live catalog [`apps.json`](https://return.purified.app/apps.json), SDK [`/sdk/return-apps.mjs`](https://return.purified.app/sdk/return-apps.mjs).
+**Contract v1:** always `value` + `format` (and `error` on cancel). Optional `allowedOrigins` and `delivery=query|hash` (pin/sign default to hash). See [docs/contract-v1.md](docs/contract-v1.md).
 
 ## Live site
 
@@ -21,8 +21,6 @@ Angular workspace for **returnUrl** helper apps — small client-side tools that
 
 Caller entry is the app root, e.g. `https://return.purified.app/sign?returnUrl=…&allowedOrigins=…`. Docs UI lives at `/home` inside each app.
 
-Local serve still uses root paths on separate ports (`/`, `/home`, `/demo-caller`).
-
 ## Apps
 
 | App | Path | Local |
@@ -35,8 +33,7 @@ Local serve still uses root paths on separate ports (`/`, `/home`, `/demo-caller
 | **NfcBack** | `projects/nfc-back` | `bun run start:nfc-back` → :4205 |
 | **ColorBack** | `projects/color-back` | `bun run start:color-back` → :4206 |
 
-Shared library: **`shared-ui`** — styles, return helpers, `RbHomeDocs`, `RbDemoCaller`.  
-SDK: **`site/sdk/return-apps.mjs`**.
+Shared library: **`shared-ui`** — styles, `ReturnUrlValidator`, `RbPanel`, `RbMetaList`.
 
 Per-app docs: [docs/](docs/).
 
@@ -70,7 +67,7 @@ return-apps/
     shared-ui/
     sign-back/ scan-back/ geo-back/ map-pick-back/
     pin-back/ nfc-back/ color-back/
-  site/                 # hub + apps.json + sdk + CNAME
+  site/                 # hub + CNAME
   scripts/build-site.sh
   docs/
 ```
@@ -83,14 +80,6 @@ One workflow: [`.github/workflows/deploy-pages.yml`](.github/workflows/deploy-pa
 2. DNS for `return.purified.app` must point at GitHub Pages
 3. Push to `main` (or run the workflow manually)
 4. Site: `https://return.purified.app/`
-
-`site/CNAME` is published with the site. Builds use an empty `PAGES_BASE` so each app is at `/sign/`, `/scan/`, etc.
-
-Without the custom domain (project Pages only):
-
-```bash
-PAGES_BASE=/return-apps bun run build:site
-```
 
 ## Stack
 
