@@ -3,8 +3,9 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "type": "npm",
-      "script": "start:sign-back",
+      "label": "bun: start:sign-back",
+      "type": "shell",
+      "command": "bun run start:sign-back",
       "isBackground": true,
       "problemMatcher": {
         "owner": "typescript",
@@ -21,8 +22,9 @@
       }
     },
     {
-      "type": "npm",
-      "script": "start:scan-back",
+      "label": "bun: start:scan-back",
+      "type": "shell",
+      "command": "bun run start:scan-back",
       "isBackground": true,
       "problemMatcher": {
         "owner": "typescript",
@@ -39,8 +41,9 @@
       }
     },
     {
-      "type": "npm",
-      "script": "test:sign-back",
+      "label": "bun: test:sign-back",
+      "type": "shell",
+      "command": "bun run test:sign-back",
       "isBackground": true,
       "problemMatcher": {
         "owner": "typescript",
@@ -57,8 +60,9 @@
       }
     },
     {
-      "type": "npm",
-      "script": "test:scan-back",
+      "label": "bun: test:scan-back",
+      "type": "shell",
+      "command": "bun run test:scan-back",
       "isBackground": true,
       "problemMatcher": {
         "owner": "typescript",

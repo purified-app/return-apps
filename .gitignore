@@ -7,13 +7,17 @@
 /bazel-out
 *.tsbuildinfo
 
-# Node
+# Node / Bun
 /node_modules
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
+bun-debug.log*
 lerna-debug.log*
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
 
 # IDEs and editors
 .idea/

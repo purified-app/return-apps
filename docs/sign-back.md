@@ -15,8 +15,8 @@ Mobile-first Angular web app that captures a **handwritten signature** and can r
 From the workspace root:
 
 ```bash
-npm install
-npm run start:sign-back
+bun install
+bun run start:sign-back
 ```
 
 Open `http://localhost:4200/`.
