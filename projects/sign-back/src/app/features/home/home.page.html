@@ -1,0 +1,32 @@
+<main class="home">
+  <header>
+    <p class="brand">SignBack</p>
+    <h1>Capture a signature and return it to the app you came from</h1>
+    <p class="lead">
+      Mobile-first signature pad that other web apps can open. After Done, the signature is
+      redirected back via URL as SVG.
+    </p>
+    <div class="cta">
+      <a routerLink="/sign" class="btn">Start signing</a>
+      <a routerLink="/demo-caller" class="btn btn-ghost">Try demo caller</a>
+    </div>
+  </header>
+
+  <section class="docs">
+    <h2>Integration</h2>
+    <p>Open the pad:</p>
+    <pre><code>/sign?returnUrl=&lt;urlencoded-https-url&gt;&amp;state=&lt;optional&gt;</code></pre>
+    <p>After Done, redirect to:</p>
+    <pre><code>&lt;returnUrl&gt;?signature=&lt;svg-data-url&gt;&amp;format=image/svg+xml&amp;state=&lt;state&gt;</code></pre>
+
+    <h3>Demo URL example</h3>
+    <p>Open SignBack and return to the built-in demo caller:</p>
+    <pre><code>{{ demoOpenUrl }}</code></pre>
+    <p>Example return shape:</p>
+    <pre><code>{{ demoReturnUrl }}</code></pre>
+    <p>
+      Without <code>returnUrl</code>, the signature is shown in the app (standalone mode).
+      <code>returnUrl</code> must be <code>https:</code> (or <code>http://localhost</code>).
+    </p>
+  </section>
+</main>

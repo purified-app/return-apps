@@ -1,0 +1,44 @@
+<div class="sign">
+  @if (status() === 'invalid-return-url') {
+    <rb-panel title="Invalid returnUrl">
+      <p>{{ errorDetail() }}</p>
+      <a routerLink="/" class="btn">Back to home</a>
+    </rb-panel>
+  } @else if (status() === 'done') {
+    <rb-panel title="Signature captured">
+      @if (previewUrl(); as url) {
+        <img [src]="url" alt="Captured signature preview" class="preview" />
+      }
+      <div class="actions">
+        <button type="button" class="btn btn-ghost" (click)="onClear(); status.set('ready')">
+          Sign again
+        </button>
+        <a routerLink="/" class="btn">Back to home</a>
+      </div>
+    </rb-panel>
+  } @else {
+    <section class="pad-shell">
+      <header class="top">
+        <h1>Sign here</h1>
+        <p>Draw your signature, then tap Done.</p>
+      </header>
+
+      <div class="canvas-wrap">
+        <canvas #pad aria-label="Signature pad"></canvas>
+      </div>
+
+      @if (status() === 'empty' || status() === 'too-large') {
+        <p class="error" role="alert">{{ errorDetail() }}</p>
+      }
+      @if (status() === 'redirecting') {
+        <p class="status" role="status">Returning…</p>
+      }
+
+      <div class="toolbar">
+        <button type="button" class="btn btn-ghost" (click)="onCancel()">Cancel</button>
+        <button type="button" class="btn btn-ghost" (click)="onClear()">Clear</button>
+        <button type="button" class="btn" (click)="onDone()">Done</button>
+      </div>
+    </section>
+  }
+</div>

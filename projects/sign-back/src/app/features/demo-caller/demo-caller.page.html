@@ -1,0 +1,29 @@
+<main class="demo">
+  <header>
+    <p class="brand">Demo caller</p>
+    <h1>Simulate another app that opens SignBack</h1>
+    <p class="lead">
+      Tap “Sign” to open the pad. After Done, the signature is returned here.
+    </p>
+  </header>
+
+  <label class="field">
+    <span>Note (optional)</span>
+    <input
+      type="text"
+      [ngModel]="note()"
+      (ngModelChange)="note.set($event)"
+      placeholder="Local field unrelated to signature"
+    />
+  </label>
+
+  <button type="button" class="btn" (click)="startSign()">Sign</button>
+
+  @if (signature(); as url) {
+    <figure class="preview-wrap">
+      <img [src]="url" alt="Returned signature" class="preview" />
+    </figure>
+  }
+
+  <rb-meta-list [format]="lastFormat()" [state]="lastState()" [error]="lastError()" />
+</main>

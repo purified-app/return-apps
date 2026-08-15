@@ -1,0 +1,31 @@
+/* Shared design tokens for all return-apps. */
+:root {
+  --rb-bg: #10151a;
+  --rb-bg-elevated: #12161b;
+  --rb-fg: #eef2f5;
+  --rb-muted: #b7c2cc;
+  --rb-muted-2: #8f9aa6;
+  --rb-btn: #e8edf2;
+  --rb-btn-fg: #10151a;
+  --rb-btn-ghost: rgb(255 255 255 / 12%);
+  --rb-surface: rgb(0 0 0 / 35%);
+  --rb-surface-input: rgb(0 0 0 / 28%);
+  --rb-border: rgb(255 255 255 / 8%);
+  --rb-border-strong: rgb(255 255 255 / 14%);
+  --rb-error: #ffb4b4;
+  --rb-preview-bg: #fff;
+  --rb-glow-a: #2a3540;
+  --rb-glow-b: #1c3038;
+  --rb-radius: 12px;
+  --rb-radius-lg: 16px;
+  --rb-radius-pill: 999px;
+  --rb-font:
+    'Segoe UI',
+    'Helvetica Neue',
+    Helvetica,
+    Arial,
+    sans-serif;
+  --rb-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --rb-content: 40rem;
+  --rb-panel: 28rem;
+}
