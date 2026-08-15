@@ -58,10 +58,19 @@ export class SignPage implements OnDestroy {
   onClear(): void {
     this.pad.clear();
     this.previewUrl.set(null);
-    if (this.status() === 'empty' || this.status() === 'too-large' || this.status() === 'done') {
+    if (this.status() === 'empty' || this.status() === 'too-large') {
       this.status.set('ready');
       this.errorDetail.set(null);
     }
+  }
+
+  signAgain(): void {
+    this.pad.clear();
+    this.previewUrl.set(null);
+    this.errorDetail.set(null);
+    this.status.set('ready');
+    // Canvas is destroyed while status === 'done'; re-bind after it mounts again.
+    requestAnimationFrame(() => this.attachPad());
   }
 
   onCancel(): void {
@@ -107,6 +116,8 @@ export class SignPage implements OnDestroy {
     }
 
     this.previewUrl.set(signature);
+    // Pad canvas leaves the DOM with the done panel — detach listeners now.
+    this.pad.detach();
     this.status.set('done');
   }
 
