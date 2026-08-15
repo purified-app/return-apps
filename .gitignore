@@ -5,11 +5,15 @@
 /tmp
 /out-tsc
 /bazel-out
+*.tsbuildinfo
 
 # Node
 /node_modules
-npm-debug.log
-yarn-error.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
 
 # IDEs and editors
 .idea/
@@ -29,8 +33,17 @@ yarn-error.log
 !.vscode/mcp.json
 .history/*
 
-# Miscellaneous
-/.angular/cache
+# Cursor (local / machine-specific)
+.cursor/*
+!.cursor/rules/
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# Angular / build cache
+/.angular
 .sass-cache/
 /connect.lock
 /coverage
@@ -38,6 +51,11 @@ yarn-error.log
 testem.log
 /typings
 __screenshots__/
+
+# Test / profiler artifacts
+/html
+chrome-profiler-events*.json
+speed-measure-plugin*.json
 
 # System files
 .DS_Store
