@@ -2,7 +2,7 @@
 
 Angular workspace for **returnUrl** helper apps — small client-side tools that capture something (signature, scan, location, …) and return the result to a calling app.
 
-**Contract v1:** always `value` + `format` (and `error` on cancel). Optional `allowedOrigins` and `delivery=query|hash` (pin/sign default to hash). See [docs/contract-v1.md](docs/contract-v1.md).
+**Contract v1:** always `value` + `format` (and `error` on cancel). Optional `allowedOrigins` and `delivery=query|hash` (pin/sign default to hash). See [docs/contract-v1.md](docs/contract-v1.md), [`apps.json`](https://return.purified.app/apps.json), SDK [`/sdk/return-apps.mjs`](https://return.purified.app/sdk/return-apps.mjs).
 
 ## Live site
 
@@ -33,7 +33,8 @@ Caller entry is the app root, e.g. `https://return.purified.app/sign?returnUrl=�
 | **NfcBack** | `projects/nfc-back` | `bun run start:nfc-back` → :4205 |
 | **ColorBack** | `projects/color-back` | `bun run start:color-back` → :4206 |
 
-Shared library: **`shared-ui`** — styles, `ReturnUrlValidator`, `RbPanel`, `RbMetaList`.
+Shared library: **`shared-ui`** — styles, `ReturnUrlValidator`, `RbHomeDocs`, `RbDemoCaller`, `RbPanel`.  
+SDK: **`site/sdk/return-apps.mjs`**. Catalog: **`site/apps.json`**.
 
 Per-app docs: [docs/](docs/).
 
@@ -67,7 +68,7 @@ return-apps/
     shared-ui/
     sign-back/ scan-back/ geo-back/ map-pick-back/
     pin-back/ nfc-back/ color-back/
-  site/                 # hub + CNAME
+  site/                 # hub + apps.json + sdk + CNAME
   scripts/build-site.sh
   docs/
 ```

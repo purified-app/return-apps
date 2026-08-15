@@ -30,6 +30,9 @@ rm -rf "$SITE_DIR"
 mkdir -p "$SITE_DIR"
 cp site/index.html "$SITE_DIR/index.html"
 cp site/404.html "$SITE_DIR/404.html"
+cp site/apps.json "$SITE_DIR/apps.json"
+mkdir -p "$SITE_DIR/sdk"
+cp site/sdk/return-apps.mjs "$SITE_DIR/sdk/return-apps.mjs"
 if [[ -f site/CNAME ]]; then
   cp site/CNAME "$SITE_DIR/CNAME"
 fi

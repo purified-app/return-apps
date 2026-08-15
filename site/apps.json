@@ -1,0 +1,14 @@
+{
+  "contractVersion": 1,
+  "baseUrl": "https://return.purified.app",
+  "sdk": "./sdk/return-apps.mjs",
+  "apps": [
+    { "id": "sign", "name": "SignBack", "path": "/sign/", "format": "sign.svg", "delivery": "hash", "blurb": "Signature → SVG" },
+    { "id": "scan", "name": "ScanBack", "path": "/scan/", "format": "scan.*", "delivery": "query", "blurb": "QR / barcode" },
+    { "id": "geo", "name": "GeoBack", "path": "/geo/", "format": "geo.point", "delivery": "query", "blurb": "GPS coordinates" },
+    { "id": "map", "name": "MapPickBack", "path": "/map/", "format": "map.point", "delivery": "query", "blurb": "Map pin" },
+    { "id": "pin", "name": "PinBack", "path": "/pin/", "format": "pin.digits", "delivery": "hash", "blurb": "Numeric PIN" },
+    { "id": "nfc", "name": "NfcBack", "path": "/nfc/", "format": "nfc.*", "delivery": "query", "blurb": "Web NFC" },
+    { "id": "color", "name": "ColorBack", "path": "/color/", "format": "color.hex", "delivery": "query", "blurb": "Color eyedropper" }
+  ]
+}
