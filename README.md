@@ -16,7 +16,7 @@ Angular workspace for **returnUrl** helper apps — small client-side tools that
 | GeoBack | https://return.purified.app/geo/ | query |
 | MapPickBack | https://return.purified.app/map/ | query |
 | PinBack | https://return.purified.app/pin/ | hash |
-| NfcBack | https://return.purified.app/nfc/ | postMessage |
+| NfcBack | https://return.purified.app/nfc/ | query |
 | ColorBack | https://return.purified.app/color/ | query |
 
 Caller entry is the app root, e.g. `https://return.purified.app/sign?returnUrl=…&allowedOrigins=…`. Docs UI lives at `/home` inside each app.
@@ -35,8 +35,8 @@ Local serve still uses root paths on separate ports (`/`, `/home`, `/demo-caller
 | **NfcBack** | `projects/nfc-back` | `bun run start:nfc-back` → :4205 |
 | **ColorBack** | `projects/color-back` | `bun run start:color-back` → :4206 |
 
-Shared library: **`shared-ui`** — styles, return contract helpers, `RbHomeDocs`, `RbDemoCaller`, `ReturnSession`.  
-SDK: **`packages/return-sdk/return-apps.mjs`** (published to `/sdk/`).
+Shared library: **`shared-ui`** — styles, return helpers, `RbHomeDocs`, `RbDemoCaller`.  
+SDK: **`site/sdk/return-apps.mjs`**.
 
 Per-app docs: [docs/](docs/).
 
@@ -66,12 +66,11 @@ bun run start:geo-back   # or any start:* script above
 
 ```text
 return-apps/
-  packages/return-sdk/  # ESM caller SDK
   projects/
     shared-ui/
     sign-back/ scan-back/ geo-back/ map-pick-back/
     pin-back/ nfc-back/ color-back/
-  site/                 # Pages hub (index + apps.json + sdk + CNAME)
+  site/                 # hub + apps.json + sdk + CNAME
   scripts/build-site.sh
   docs/
 ```

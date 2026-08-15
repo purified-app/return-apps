@@ -14,7 +14,7 @@ import {
   template: `
     <rb-demo-caller
       title="Simulate another app that opens NfcBack"
-      lead="Tap “Scan NFC” to open the reader. Demo uses hash delivery so results show here without an opener."
+      lead="Tap “Scan NFC” to open the reader. After a successful read, the value returns here."
       startLabel="Scan NFC"
       [result]="result()"
       (start)="startNfc()"
@@ -52,7 +52,6 @@ export class DemoCallerPage implements OnInit {
   }
 
   startNfc(): void {
-    // Demo caller is same-tab navigation, so use hash instead of postMessage.
-    location.href = buildDemoOpenUrl(appBaseUrl(), { delivery: 'hash' });
+    location.href = buildDemoOpenUrl(appBaseUrl());
   }
 }

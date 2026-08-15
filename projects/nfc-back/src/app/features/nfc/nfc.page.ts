@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { ReturnSession, ReturnUrlValidator, RbPanel, nfcFormat } from 'shared-ui';
+import { ReturnSession, ReturnUrlValidator, RbPanel, taggedFormat } from 'shared-ui';
 
 type NfcStatus =
   | 'idle'
@@ -62,7 +62,7 @@ export class NfcPage implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     const init = ReturnSession.open(this.returnUrlValidator, this.route.snapshot.queryParamMap, {
-      delivery: 'postMessage',
+      delivery: 'query',
     });
     this.session = init.session;
     if (!init.ok) {
@@ -139,7 +139,7 @@ export class NfcPage implements OnInit, OnDestroy {
     this.stopScan();
 
     if (
-      this.session.succeed(reading.nfcValue, nfcFormat(reading.recordType), {
+      this.session.succeed(reading.nfcValue, taggedFormat('nfc', reading.recordType), {
         recordType: reading.recordType,
       })
     ) {

@@ -1,6 +1,6 @@
 import { Component, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { RETURN_CONTRACT_VERSION } from '../core/return-contract';
+import { RETURN_CONTRACT_VERSION } from '../core/return';
 
 /** Shared home/docs shell used by every return helper app. */
 @Component({
@@ -19,16 +19,13 @@ import { RETURN_CONTRACT_VERSION } from '../core/return-contract';
       </header>
 
       <section class="docs">
-        <h2>Integration</h2>
-        <p>Contract v{{ contractVersion }} — open the app:</p>
+        <h2>Integration (v{{ contractVersion }})</h2>
+        <p>Open:</p>
         <pre><code>{{ openExample() }}</code></pre>
-        <p>After success, return:</p>
+        <p>Return:</p>
         <pre><code>{{ returnExample() }}</code></pre>
-
-        <h3>Demo URL example</h3>
-        <p>Open {{ brand() }} and return to the built-in demo caller:</p>
+        <h3>Demo</h3>
         <pre><code>{{ demoOpenUrl() }}</code></pre>
-        <p>Example return shape:</p>
         <pre><code>{{ demoReturnUrl() }}</code></pre>
         <p>{{ footnote() }}</p>
       </section>
@@ -45,7 +42,7 @@ export class RbHomeDocs {
   readonly demoOpenUrl = input.required<string>();
   readonly demoReturnUrl = input.required<string>();
   readonly footnote = input(
-    'Without returnUrl, the result stays in the app (standalone mode). Pass allowedOrigins to restrict returnUrl. Sensitive apps default to delivery=hash.',
+    'Pass allowedOrigins to restrict returnUrl. Pin/sign default to delivery=hash.',
   );
 
   readonly contractVersion = RETURN_CONTRACT_VERSION;

@@ -1,15 +1,12 @@
 import { Service } from '@angular/core';
-import {
-  RETURN_CONTRACT_VERSION,
-  type ReturnAppsMessage,
-  type ReturnDelivery,
-} from './return-contract';
+
+export type ReturnDelivery = 'query' | 'hash';
 
 export type ReturnUrlValidation =
   | { ok: true; url: URL }
   | { ok: false; reason: string };
 
-/** Query/hash params appended when redirecting back to the caller. */
+/** Params appended when redirecting back to the caller. */
 export type ReturnRedirectParams = {
   value?: string;
   error?: string;
@@ -47,7 +44,6 @@ export class ReturnUrlValidator {
         url.hostname === '[::1]' ||
         url.hostname === '::1');
 
-    // Reject javascript:, data:, and other non-http(s) schemes.
     if (url.protocol !== 'https:' && !isLocalHttp) {
       return {
         ok: false,
@@ -77,10 +73,6 @@ export class ReturnUrlValidator {
     return { ok: true, url };
   }
 
-  /**
-   * Parse `allowedOrigins` query value (comma-separated absolute origins).
-   * Returns null when the param is absent/empty (no allowlist enforced).
-   */
   parseAllowedOrigins(raw: string | null | undefined): string[] | null {
     if (!raw?.trim()) {
       return null;
@@ -97,18 +89,11 @@ export class ReturnUrlValidator {
         }
       })
       .filter((origin): origin is string => origin != null);
-
     return origins.length > 0 ? origins : null;
   }
 
-  parseDelivery(
-    raw: string | null | undefined,
-    fallback: ReturnDelivery = 'query',
-  ): ReturnDelivery {
-    if (raw === 'query' || raw === 'hash' || raw === 'postMessage') {
-      return raw;
-    }
-    return fallback;
+  parseDelivery(raw: string | null | undefined, fallback: ReturnDelivery = 'query'): ReturnDelivery {
+    return raw === 'hash' || raw === 'query' ? raw : fallback;
   }
 
   buildRedirectUrl(
@@ -116,55 +101,27 @@ export class ReturnUrlValidator {
     params: ReturnRedirectParams,
     delivery: ReturnDelivery = 'query',
   ): string {
-    if (delivery === 'hash') {
-      return this.buildHashDeliveryUrl(returnUrl, params);
-    }
-    return this.buildQueryDeliveryUrl(returnUrl, params);
-  }
-
-  /**
-   * Deliver success/error back to the caller via query, hash, or postMessage.
-   * Falls back to hash redirect when postMessage has no opener/parent.
-   */
-  complete(
-    returnUrl: URL,
-    params: ReturnRedirectParams,
-    delivery: ReturnDelivery = 'query',
-  ): void {
-    if (delivery === 'postMessage') {
-      const message: ReturnAppsMessage = {
-        source: 'return-apps',
-        version: RETURN_CONTRACT_VERSION,
-        ...params,
-      };
-      const targetOrigin = returnUrl.origin;
-      try {
-        if (typeof window !== 'undefined' && window.opener && !window.opener.closed) {
-          window.opener.postMessage(message, targetOrigin);
-          window.close();
-          // If the browser blocks close, still navigate as fallback.
-          location.href = this.buildRedirectUrl(returnUrl, params, 'hash');
-          return;
-        }
-        if (typeof window !== 'undefined' && window.parent && window.parent !== window) {
-          window.parent.postMessage(message, targetOrigin);
-          return;
-        }
-      } catch {
-        // fall through to hash redirect
-      }
-      location.href = this.buildRedirectUrl(returnUrl, params, 'hash');
-      return;
+    if (delivery === 'hash' && !returnUrl.hash.startsWith('#/')) {
+      const search = new URLSearchParams();
+      this.applyParams(search, params);
+      const target = new URL(returnUrl.href);
+      target.hash = search.toString();
+      return target.toString();
     }
 
-    location.href = this.buildRedirectUrl(returnUrl, params, delivery);
-  }
-
-  private buildQueryDeliveryUrl(returnUrl: URL, params: ReturnRedirectParams): string {
-    // Hash-based return URLs (e.g. https://host/app/#/demo-caller) must carry
-    // query params in the hash, or Angular Router will not see them.
+    // Query delivery, or hash-router return URLs (`#/path`) — put params in the hash query.
     if (returnUrl.hash.startsWith('#/')) {
-      return this.mergeHashRouterParams(returnUrl, params);
+      const hashWithoutSharp = returnUrl.hash.slice(1);
+      const qIndex = hashWithoutSharp.indexOf('?');
+      const hashPath =
+        qIndex >= 0 ? hashWithoutSharp.slice(0, qIndex) : hashWithoutSharp;
+      const existingQuery = qIndex >= 0 ? hashWithoutSharp.slice(qIndex + 1) : '';
+      const search = new URLSearchParams(existingQuery);
+      this.applyParams(search, params);
+      const qs = search.toString();
+      return `${returnUrl.origin}${returnUrl.pathname}${returnUrl.search}#${hashPath}${
+        qs ? `?${qs}` : ''
+      }`;
     }
 
     const target = new URL(returnUrl.href);
@@ -172,33 +129,12 @@ export class ReturnUrlValidator {
     return target.toString();
   }
 
-  private buildHashDeliveryUrl(returnUrl: URL, params: ReturnRedirectParams): string {
-    // Hash-router callers already store route state in the hash — merge there.
-    if (returnUrl.hash.startsWith('#/')) {
-      return this.mergeHashRouterParams(returnUrl, params);
-    }
-
-    const search = new URLSearchParams();
-    this.applyParams(search, params);
-    const target = new URL(returnUrl.href);
-    const qs = search.toString();
-    target.hash = qs;
-    return target.toString();
-  }
-
-  private mergeHashRouterParams(returnUrl: URL, params: ReturnRedirectParams): string {
-    const hashWithoutSharp = returnUrl.hash.slice(1);
-    const qIndex = hashWithoutSharp.indexOf('?');
-    const hashPath =
-      qIndex >= 0 ? hashWithoutSharp.slice(0, qIndex) : hashWithoutSharp;
-    const existingQuery = qIndex >= 0 ? hashWithoutSharp.slice(qIndex + 1) : '';
-    const search = new URLSearchParams(existingQuery);
-    this.applyParams(search, params);
-
-    const qs = search.toString();
-    return `${returnUrl.origin}${returnUrl.pathname}${returnUrl.search}#${hashPath}${
-      qs ? `?${qs}` : ''
-    }`;
+  complete(
+    returnUrl: URL,
+    params: ReturnRedirectParams,
+    delivery: ReturnDelivery = 'query',
+  ): void {
+    location.href = this.buildRedirectUrl(returnUrl, params, delivery);
   }
 
   private applyParams(search: URLSearchParams, params: ReturnRedirectParams): void {

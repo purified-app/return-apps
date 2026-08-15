@@ -1,98 +1,13 @@
 {
-  "version": 1,
   "contractVersion": 1,
   "baseUrl": "https://return.purified.app",
-  "sdk": "./sdk/return-apps.mjs",
-  "docs": "https://github.com/purified-app/return-apps",
-  "commonOpenParams": [
-    { "name": "returnUrl", "required": true, "description": "Absolute https callback URL (http localhost allowed)." },
-    { "name": "state", "required": false, "description": "Opaque string echoed on return." },
-    { "name": "allowedOrigins", "required": false, "description": "Comma-separated origins; when set, returnUrl must match." },
-    { "name": "delivery", "required": false, "description": "query | hash | postMessage. Sensitive apps default to hash." },
-    { "name": "v", "required": false, "description": "Contract version (currently 1)." }
-  ],
-  "commonReturnParams": [
-    { "name": "value", "description": "Primary result payload." },
-    { "name": "format", "description": "Canonical format tag (sign.svg, pin.digits, …)." },
-    { "name": "error", "description": "cancelled | denied | unsupported | timeout | too_large | failed." },
-    { "name": "state", "description": "Echo of open state." }
-  ],
   "apps": [
-    {
-      "id": "sign",
-      "name": "SignBack",
-      "path": "/sign/",
-      "home": "/sign/home",
-      "format": "sign.svg",
-      "defaultDelivery": "hash",
-      "sensitive": true,
-      "description": "Handwritten signature → SVG data URL"
-    },
-    {
-      "id": "scan",
-      "name": "ScanBack",
-      "path": "/scan/",
-      "home": "/scan/home",
-      "format": "scan.*",
-      "defaultDelivery": "query",
-      "sensitive": false,
-      "description": "QR / barcode scanner"
-    },
-    {
-      "id": "geo",
-      "name": "GeoBack",
-      "path": "/geo/",
-      "home": "/geo/home",
-      "format": "geo.point",
-      "defaultDelivery": "query",
-      "sensitive": false,
-      "description": "GPS coordinates",
-      "valueShape": "lat,lng",
-      "extraReturnParams": ["accuracy", "timestamp", "altitude", "altitudeAccuracy", "heading", "speed"]
-    },
-    {
-      "id": "map",
-      "name": "MapPickBack",
-      "path": "/map/",
-      "home": "/map/home",
-      "format": "map.point",
-      "defaultDelivery": "query",
-      "sensitive": false,
-      "description": "Leaflet map pin",
-      "valueShape": "lat,lng",
-      "extraReturnParams": ["zoom"]
-    },
-    {
-      "id": "pin",
-      "name": "PinBack",
-      "path": "/pin/",
-      "home": "/pin/home",
-      "format": "pin.digits",
-      "defaultDelivery": "hash",
-      "sensitive": true,
-      "description": "Numeric PIN pad"
-    },
-    {
-      "id": "nfc",
-      "name": "NfcBack",
-      "path": "/nfc/",
-      "home": "/nfc/home",
-      "format": "nfc.*",
-      "defaultDelivery": "postMessage",
-      "sensitive": false,
-      "description": "Web NFC tag reader",
-      "extraReturnParams": ["recordType"]
-    },
-    {
-      "id": "color",
-      "name": "ColorBack",
-      "path": "/color/",
-      "home": "/color/home",
-      "format": "color.hex",
-      "defaultDelivery": "query",
-      "sensitive": false,
-      "description": "Camera color eyedropper",
-      "extraReturnParams": ["rgb"]
-    }
+    { "id": "sign", "name": "SignBack", "path": "/sign/", "format": "sign.svg", "delivery": "hash", "blurb": "Signature → SVG" },
+    { "id": "scan", "name": "ScanBack", "path": "/scan/", "format": "scan.*", "delivery": "query", "blurb": "QR / barcode" },
+    { "id": "geo", "name": "GeoBack", "path": "/geo/", "format": "geo.point", "delivery": "query", "blurb": "GPS coordinates" },
+    { "id": "map", "name": "MapPickBack", "path": "/map/", "format": "map.point", "delivery": "query", "blurb": "Map pin" },
+    { "id": "pin", "name": "PinBack", "path": "/pin/", "format": "pin.digits", "delivery": "hash", "blurb": "Numeric PIN" },
+    { "id": "nfc", "name": "NfcBack", "path": "/nfc/", "format": "nfc.*", "delivery": "query", "blurb": "Web NFC" },
+    { "id": "color", "name": "ColorBack", "path": "/color/", "format": "color.hex", "delivery": "query", "blurb": "Color eyedropper" }
   ]
 }

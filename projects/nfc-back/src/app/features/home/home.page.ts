@@ -8,28 +8,28 @@ import { RbHomeDocs, appBaseUrl, buildDemoOpenUrl } from 'shared-ui';
     <rb-home-docs
       brand="NfcBack"
       title="Read an NFC tag and return it to the app you came from"
-      lead="Web NFC reader (Chrome/Android). Defaults to delivery=postMessage; falls back to hash redirect."
+      lead="Web NFC reader (Chrome/Android). Returns value + format=nfc.* with recordType."
       ctaLabel="Start NFC scan"
       [openExample]="openExample"
       [returnExample]="returnExample"
       [demoOpenUrl]="demoOpenUrl"
       [demoReturnUrl]="demoReturnUrl"
-      footnote="Requires HTTPS and Web NFC (Chrome on Android). Without returnUrl, the reading stays in the app."
+      footnote="Requires HTTPS and Web NFC (Chrome on Android)."
     />
   `,
   host: { class: 'rb-page rb-page--home' },
 })
 export class HomePage {
   readonly openExample =
-    '?returnUrl=<urlencoded-https-url>&state=<optional>&allowedOrigins=<optional>&delivery=postMessage';
+    '?returnUrl=<urlencoded-https-url>&state=<optional>&allowedOrigins=<optional>';
   readonly returnExample =
-    'postMessage { value, format: nfc.*, recordType, state } — or hash fallback';
+    '<returnUrl>?value=<payload>&format=nfc.url&recordType=url&state=<state>';
   readonly demoOpenUrl: string;
   readonly demoReturnUrl: string;
 
   constructor() {
     const base = appBaseUrl();
-    this.demoOpenUrl = buildDemoOpenUrl(base, { delivery: 'hash' });
-    this.demoReturnUrl = `${base}/demo-caller#value=https://example.com&format=nfc.url&recordType=url&state=demo1`;
+    this.demoOpenUrl = buildDemoOpenUrl(base);
+    this.demoReturnUrl = `${base}/demo-caller?value=https://example.com&format=nfc.url&recordType=url&state=demo1`;
   }
 }

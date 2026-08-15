@@ -1,51 +1,30 @@
 # Integration contract v1
 
-All return-apps share one contract. Breaking changes bump `contractVersion` in [`site/apps.json`](../site/apps.json).
+Shared by all return-apps. Catalog: [`site/apps.json`](../site/apps.json). SDK: [`site/sdk/return-apps.mjs`](../site/sdk/return-apps.mjs).
 
 ## Open
 
 ```text
-https://return.purified.app/<app>?returnUrl=<url>&state=<optional>&allowedOrigins=<origins>&delivery=<mode>&v=1
+https://return.purified.app/<app>?returnUrl=<url>&state=<optional>&allowedOrigins=<origins>&delivery=<query|hash>&v=1
 ```
-
-| Param | Required | Description |
-|-------|----------|-------------|
-| `returnUrl` | for return mode | Absolute `https:` callback (or `http://localhost` / `127.0.0.1` / `::1`) |
-| `state` | no | Opaque string echoed on return |
-| `allowedOrigins` | recommended | Comma-separated origins; when set, `returnUrl` must match one of them |
-| `delivery` | no | `query` (default for most) · `hash` (default for **sign** / **pin**) · `postMessage` (default for **nfc**) |
-| `v` | no | Contract version (`1`) |
-
-App-specific open params (e.g. `length`, `formats`) are unchanged per app docs.
-
-## Success return
-
-Primary payload is always:
 
 | Param | Description |
 |-------|-------------|
-| `value` | Primary result |
-| `format` | Canonical tag (`sign.svg`, `pin.digits`, `geo.point`, `map.point`, `color.hex`, `scan.*`, `nfc.*`) |
+| `returnUrl` | Absolute `https:` callback (`http://localhost` / `127.0.0.1` / `::1` ok) |
+| `state` | Echoed on return |
+| `allowedOrigins` | Comma-separated origins; when set, `returnUrl` must match |
+| `delivery` | `query` (default) or `hash` (default for **pin** / **sign**) |
+
+## Return
+
+| Param | Description |
+|-------|-------------|
+| `value` | Primary payload |
+| `format` | `sign.svg`, `pin.digits`, `geo.point`, `map.point`, `color.hex`, `scan.*`, `nfc.*` |
+| `error` | e.g. `cancelled` |
 | `state` | Echo |
 
-Extras may accompany `value` (`lat`/`lng`, `rgb`, `recordType`, …). See [`apps.json`](../site/apps.json).
-
-### Delivery
-
-- **query** — params on `returnUrl` search (or inside `#/…?` for hash routers)
-- **hash** — params in the URL fragment (`#value=…`) so they are not sent as Referer/query logs
-- **postMessage** — `{ source: 'return-apps', version: 1, value, format, state, … }` to `opener`/`parent`; falls back to hash redirect
-
-## Errors
-
-| `error` | Meaning |
-|---------|---------|
-| `cancelled` | User cancelled |
-| `denied` | Permission denied (when redirected) |
-| `unsupported` | API unavailable |
-| `timeout` | Timed out |
-| `too_large` | Payload too large for URL delivery |
-| `failed` | Other failure |
+Extras (`lat`, `rgb`, …) may accompany `value`. Hash delivery puts params in the fragment.
 
 ## SDK
 
@@ -55,10 +34,6 @@ import { openReturnApp, parseReturnResult } from 'https://return.purified.app/sd
 location.href = openReturnApp('pin', {
   returnUrl: location.href,
   allowedOrigins: [location.origin],
-  state: 'order-42',
 });
-
-const result = parseReturnResult(location);
+const { value, format, error } = parseReturnResult(location);
 ```
-
-Catalog: `https://return.purified.app/apps.json`

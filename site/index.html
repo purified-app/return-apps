@@ -114,115 +114,71 @@
       <p class="brand">return.purified.app</p>
       <h1>Helper apps that capture something and return via URL</h1>
       <p class="lead">
-        Open an app from another web app with <code>returnUrl</code>. After Done, the result comes
-        back as <code>value</code> + <code>format</code> (contract v<span id="contract-version">1</span>).
+        Open with <code>returnUrl</code>. Result comes back as <code>value</code> +
+        <code>format</code> (contract v1). Pin/sign use <code>delivery=hash</code> by default.
       </p>
       <p class="meta">
-        <a href="./apps.json">apps.json</a>
-        ·
-        <a href="./sdk/return-apps.mjs">SDK</a>
+        <a href="./apps.json">apps.json</a> · <a href="./sdk/return-apps.mjs">SDK</a> ·
+        <a href="./sign/home">docs</a>
       </p>
-      <ul id="app-list">
-        <!-- Filled from apps.json; static fallback below for no-JS. -->
+      <ul>
         <li>
           <a class="app" href="./sign/">
             <strong>SignBack</strong>
-            <span>/sign — handwritten signature → SVG · docs at /sign/home</span>
+            <span>/sign — signature → SVG · hash</span>
           </a>
         </li>
         <li>
           <a class="app" href="./scan/">
             <strong>ScanBack</strong>
-            <span>/scan — QR / barcode scanner · docs at /scan/home</span>
+            <span>/scan — QR / barcode</span>
           </a>
         </li>
         <li>
           <a class="app" href="./geo/">
             <strong>GeoBack</strong>
-            <span>/geo — GPS coordinates · docs at /geo/home</span>
+            <span>/geo — GPS coordinates</span>
           </a>
         </li>
         <li>
           <a class="app" href="./map/">
             <strong>MapPickBack</strong>
-            <span>/map — Leaflet map pin · docs at /map/home</span>
+            <span>/map — map pin</span>
           </a>
         </li>
         <li>
           <a class="app" href="./pin/">
             <strong>PinBack</strong>
-            <span>/pin — numeric PIN pad · docs at /pin/home</span>
+            <span>/pin — numeric PIN · hash</span>
           </a>
         </li>
         <li>
           <a class="app" href="./nfc/">
             <strong>NfcBack</strong>
-            <span>/nfc — Web NFC tag reader · docs at /nfc/home</span>
+            <span>/nfc — Web NFC</span>
           </a>
         </li>
         <li>
           <a class="app" href="./color/">
             <strong>ColorBack</strong>
-            <span>/color — camera color eyedropper · docs at /color/home</span>
+            <span>/color — color eyedropper</span>
           </a>
         </li>
       </ul>
-
       <section class="contract">
         <p>
-          <strong style="color: var(--fg)">Contract v1</strong> —
-          open with <code>returnUrl</code>, <code>allowedOrigins</code>, <code>delivery</code>
-          (<code>query</code> | <code>hash</code> | <code>postMessage</code>). Success returns
-          <code>value</code> + <code>format</code>; cancel returns <code>error=cancelled</code>.
-          PIN and signature default to <code>delivery=hash</code>.
+          Open with <code>returnUrl</code>, optional <code>allowedOrigins</code> and
+          <code>delivery</code> (<code>query</code>|<code>hash</code>). Cancel →
+          <code>error=cancelled</code>.
         </p>
-        <pre id="sdk-example">import { openReturnApp, parseReturnResult } from './sdk/return-apps.mjs';
+        <pre>import { openReturnApp, parseReturnResult } from './sdk/return-apps.mjs';
 
 location.href = openReturnApp('pin', {
   returnUrl: location.href,
   allowedOrigins: [location.origin],
-  state: 'order-42',
 });
-
-// On return:
-const result = parseReturnResult(location);</pre>
+const { value, format, error } = parseReturnResult(location);</pre>
       </section>
     </main>
-    <script>
-      fetch('./apps.json')
-        .then((r) => (r.ok ? r.json() : null))
-        .then((data) => {
-          if (!data?.apps) return;
-          const version = document.getElementById('contract-version');
-          if (version) version.textContent = String(data.contractVersion ?? 1);
-          const list = document.getElementById('app-list');
-          if (!list) return;
-          list.innerHTML = data.apps
-            .map((app) => {
-              const path = app.path.replace(/^\//, './');
-              const home = (app.home || `${app.path}home`).replace(/^\//, './');
-              const delivery = app.defaultDelivery ? ` · ${app.defaultDelivery}` : '';
-              return `<li>
-                <a class="app" href="${path}">
-                  <strong>${app.name}</strong>
-                  <span>${app.path.replace(/\/$/, '')} — ${app.description}${delivery}
-                    · <span data-home="${home}">docs</span></span>
-                </a>
-              </li>`;
-            })
-            .join('');
-          // Make docs bit navigate to home without nested anchors
-          list.querySelectorAll('[data-home]').forEach((el) => {
-            el.style.textDecoration = 'underline';
-            el.style.cursor = 'pointer';
-            el.addEventListener('click', (e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              location.href = el.getAttribute('data-home');
-            });
-          });
-        })
-        .catch(() => {});
-    </script>
   </body>
 </html>

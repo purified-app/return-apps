@@ -1,5 +1,5 @@
 import { Component, input, output } from '@angular/core';
-import type { ReturnResult } from '../core/parse-return-result';
+import type { ReturnResult } from '../core/return';
 import { RbMetaList } from './meta-list';
 
 /**

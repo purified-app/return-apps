@@ -8,7 +8,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { ReturnSession, ReturnUrlValidator, RbPanel, scanFormat } from 'shared-ui';
+import { ReturnSession, ReturnUrlValidator, RbPanel, taggedFormat } from 'shared-ui';
 import { ScanPageStatus, ScanResult } from '../../core/scan-result.model';
 import { ScannerService } from './scanner';
 
@@ -218,7 +218,7 @@ export class ScanPage implements OnDestroy {
     this.handled = true;
     await this.scanner.stop();
 
-    if (this.session.succeed(scanResult.scanValue, scanFormat(scanResult.format))) {
+    if (this.session.succeed(scanResult.scanValue, taggedFormat('scan', scanResult.format))) {
       this.status.set('redirecting');
       this.statusMessage.set('Returning…');
       return;

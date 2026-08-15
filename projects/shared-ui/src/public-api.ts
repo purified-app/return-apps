@@ -3,24 +3,20 @@
  */
 
 export { appBaseUrl } from './lib/core/app-base-url';
-export { buildDemoOpenUrl, buildOpenUrl, type BuildOpenUrlOptions } from './lib/core/build-open-url';
-export { parseReturnResult, type ReturnResult } from './lib/core/parse-return-result';
 export { reloadOnChunkLoadError } from './lib/core/reload-on-chunk-error';
 export {
-  DEFAULT_DELIVERY_BY_APP,
   RETURN_CONTRACT_VERSION,
-  SENSITIVE_APPS,
-  nfcFormat,
-  scanFormat,
-  type ReturnAppId,
-  type ReturnAppsMessage,
-  type ReturnDelivery,
-  type ReturnErrorCode,
-  type ReturnFormat,
-} from './lib/core/return-contract';
-export { ReturnSession, type ReturnSessionInit } from './lib/core/return-session';
+  ReturnSession,
+  buildDemoOpenUrl,
+  buildOpenUrl,
+  parseReturnResult,
+  taggedFormat,
+  type ReturnResult,
+  type ReturnSessionInit,
+} from './lib/core/return';
 export {
   ReturnUrlValidator,
+  type ReturnDelivery,
   type ReturnRedirectParams,
   type ReturnUrlValidation,
   type ValidateReturnUrlOptions,
