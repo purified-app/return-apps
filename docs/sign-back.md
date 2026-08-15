@@ -74,7 +74,7 @@ Signatures that are too large for a URL redirect are blocked with an error (keep
 ## Build
 
 ```bash
-npm run build:sign-back
+bun run build:sign-back
 ```
 
 Production uses `baseHref` `/` (custom domain). Output: `dist/sign-back/browser`
