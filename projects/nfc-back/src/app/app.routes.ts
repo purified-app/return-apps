@@ -1,11 +1,8 @@
 import { Routes } from '@angular/router';
+import { NfcPage } from './features/nfc/nfc.page';
 
 export const routes: Routes = [
-  {
-    path: '',
-    loadComponent: () =>
-      import('./features/nfc/nfc.page').then((m) => m.NfcPage),
-  },
+  { path: '', component: NfcPage },
   {
     path: 'home',
     loadComponent: () =>

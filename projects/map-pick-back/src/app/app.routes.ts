@@ -1,11 +1,8 @@
 import { Routes } from '@angular/router';
+import { MapPage } from './features/map/map.page';
 
 export const routes: Routes = [
-  {
-    path: '',
-    loadComponent: () =>
-      import('./features/map/map.page').then((m) => m.MapPage),
-  },
+  { path: '', component: MapPage },
   {
     path: 'home',
     loadComponent: () =>
