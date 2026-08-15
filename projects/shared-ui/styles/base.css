@@ -24,7 +24,7 @@ input {
   -webkit-tap-highlight-color: transparent;
 }
 
-// Page shells — apply via host: { class: 'rb-page rb-page--home' }
+/* Page shells — apply via host: { class: 'rb-page rb-page--home' } */
 .rb-page {
   display: block;
   min-height: 100dvh;

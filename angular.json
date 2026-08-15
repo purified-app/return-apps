@@ -5,12 +5,20 @@
     "packageManager": "npm"
   },
   "newProjectRoot": "projects",
+  "schematics": {
+    "@schematics/angular:component": {
+      "style": "css"
+    },
+    "@schematics/angular:application": {
+      "style": "css"
+    }
+  },
   "projects": {
     "sign-back": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
-          "style": "scss"
+          "style": "css"
         }
       },
       "root": "projects/sign-back",
@@ -22,17 +30,14 @@
           "options": {
             "browser": "projects/sign-back/src/main.ts",
             "tsConfig": "projects/sign-back/tsconfig.app.json",
-            "inlineStyleLanguage": "scss",
+            "inlineStyleLanguage": "css",
             "assets": [
               {
                 "glob": "**/*",
                 "input": "projects/sign-back/public"
               }
             ],
-            "styles": ["projects/shared-ui/styles/main.scss"],
-            "stylePreprocessorOptions": {
-              "includePaths": ["projects/shared-ui/styles"]
-            }
+            "styles": ["projects/shared-ui/styles/main.css"]
           },
           "configurations": {
             "production": {
@@ -80,7 +85,7 @@
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
-          "style": "scss"
+          "style": "css"
         }
       },
       "root": "projects/scan-back",
@@ -92,17 +97,14 @@
           "options": {
             "browser": "projects/scan-back/src/main.ts",
             "tsConfig": "projects/scan-back/tsconfig.app.json",
-            "inlineStyleLanguage": "scss",
+            "inlineStyleLanguage": "css",
             "assets": [
               {
                 "glob": "**/*",
                 "input": "projects/scan-back/public"
               }
             ],
-            "styles": ["projects/shared-ui/styles/main.scss"],
-            "stylePreprocessorOptions": {
-              "includePaths": ["projects/shared-ui/styles"]
-            }
+            "styles": ["projects/shared-ui/styles/main.css"]
           },
           "configurations": {
             "production": {

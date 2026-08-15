@@ -25,7 +25,7 @@ const MAX_SIGNATURE_CHARS = 7000;
   selector: 'sb-sign-page',
   imports: [RouterLink, RbPanel],
   templateUrl: './sign.page.html',
-  styleUrl: './sign.page.scss',
+  styleUrl: './sign.page.css',
   host: { class: 'rb-page rb-page--plain' },
 })
 export class SignPage implements OnDestroy {

@@ -16,7 +16,7 @@ import { ScannerService } from './scanner';
   selector: 'sb-scan-page',
   imports: [RouterLink, RbPanel],
   templateUrl: './scan.page.html',
-  styleUrl: './scan.page.scss',
+  styleUrl: './scan.page.css',
   host: { class: 'rb-page rb-page--plain' },
 })
 export class ScanPage implements OnDestroy {
