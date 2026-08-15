@@ -45,6 +45,6 @@ export class DemoCallerPage implements OnInit {
   }
 
   startScan(): void {
-    location.href = buildDemoOpenUrl(appBaseUrl(), { delivery: 'query' });
+    location.href = buildDemoOpenUrl(appBaseUrl());
   }
 }

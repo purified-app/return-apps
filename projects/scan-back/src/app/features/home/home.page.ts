@@ -27,7 +27,7 @@ export class HomePage {
 
   constructor() {
     const base = appBaseUrl();
-    this.demoOpenUrl = buildDemoOpenUrl(base, { delivery: 'query' });
+    this.demoOpenUrl = buildDemoOpenUrl(base);
     this.demoReturnUrl = `${base}/demo-caller?value=ABC-123&format=scan.qr_code&state=demo1`;
   }
 }
