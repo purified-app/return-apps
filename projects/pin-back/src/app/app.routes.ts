@@ -1,11 +1,8 @@
 import { Routes } from '@angular/router';
+import { PinPage } from './features/pin/pin.page';
 
 export const routes: Routes = [
-  {
-    path: '',
-    loadComponent: () =>
-      import('./features/pin/pin.page').then((m) => m.PinPage),
-  },
+  { path: '', component: PinPage },
   {
     path: 'home',
     loadComponent: () =>

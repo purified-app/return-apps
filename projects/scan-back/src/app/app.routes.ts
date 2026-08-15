@@ -1,11 +1,8 @@
 import { Routes } from '@angular/router';
+import { ScanPage } from './features/scan/scan.page';
 
 export const routes: Routes = [
-  {
-    path: '',
-    loadComponent: () =>
-      import('./features/scan/scan.page').then((m) => m.ScanPage),
-  },
+  { path: '', component: ScanPage },
   {
     path: 'home',
     loadComponent: () =>

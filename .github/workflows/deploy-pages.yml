@@ -12,7 +12,8 @@ permissions:
 
 concurrency:
   group: pages
-  cancel-in-progress: true
+  # Finish the in-flight deploy instead of cancelling mid-publish (avoids brief 503s).
+  cancel-in-progress: false
 
 jobs:
   build:

@@ -1,11 +1,8 @@
 import { Routes } from '@angular/router';
+import { ColorPage } from './features/color/color.page';
 
 export const routes: Routes = [
-  {
-    path: '',
-    loadComponent: () =>
-      import('./features/color/color.page').then((m) => m.ColorPage),
-  },
+  { path: '', component: ColorPage },
   {
     path: 'home',
     loadComponent: () =>

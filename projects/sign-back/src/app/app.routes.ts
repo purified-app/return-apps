@@ -1,11 +1,8 @@
 import { Routes } from '@angular/router';
+import { SignPage } from './features/sign/sign.page';
 
 export const routes: Routes = [
-  {
-    path: '',
-    loadComponent: () =>
-      import('./features/sign/sign.page').then((m) => m.SignPage),
-  },
+  { path: '', component: SignPage },
   {
     path: 'home',
     loadComponent: () =>

@@ -1,11 +1,8 @@
 import { Routes } from '@angular/router';
+import { GeoPage } from './features/geo/geo.page';
 
 export const routes: Routes = [
-  {
-    path: '',
-    loadComponent: () =>
-      import('./features/geo/geo.page').then((m) => m.GeoPage),
-  },
+  { path: '', component: GeoPage },
   {
     path: 'home',
     loadComponent: () =>

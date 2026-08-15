@@ -3,6 +3,7 @@
  */
 
 export { appBaseUrl } from './lib/core/app-base-url';
+export { reloadOnChunkLoadError } from './lib/core/reload-on-chunk-error';
 export {
   ReturnUrlValidator,
   type ReturnRedirectParams,
