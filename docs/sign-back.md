@@ -34,7 +34,7 @@ Useful routes:
 ### Open the pad
 
 ```text
-https://sign-back.purified.app/sign?returnUrl=<urlencoded-absolute-url>&state=<optional>
+https://purified-app.github.io/return-apps/sign-back/sign?returnUrl=<urlencoded-absolute-url>&state=<optional>
 ```
 
 | Param | Required | Description |
@@ -57,7 +57,7 @@ Example:
 ```js
 const returnUrl = `${location.origin}/my-app/callback`;
 location.href =
-  `https://sign-back.purified.app/sign?returnUrl=${encodeURIComponent(returnUrl)}&state=field1`;
+  `https://purified-app.github.io/return-apps/sign-back/sign?returnUrl=${encodeURIComponent(returnUrl)}&state=field1`;
 ```
 
 ```js
@@ -81,17 +81,10 @@ Production uses `baseHref` `/` (custom domain). Output: `dist/sign-back/browser`
 
 ## Deploy: GitHub Pages + custom domain
 
-App URL: **https://sign-back.purified.app**
+App URL: **https://purified-app.github.io/return-apps/sign-back**
 
-Deploy is driven from this monorepo (`.github/workflows/deploy-sign-back.yml`) and publishes to `purified-app/sign-back` on the `gh-pages` branch. See the root [README](../README.md#deploy).
+Deployed with the rest of the apps from this monorepo via [`.github/workflows/deploy-pages.yml`](../.github/workflows/deploy-pages.yml) to GitHub Pages. See the root [README](../README.md#deploy).
 
-### DNS (`purified.app`)
-
-| Host | Type | Value |
-|------|------|--------|
-| `sign-back` | CNAME | `purified-app.github.io` |
-
-`public/CNAME` is included so the domain sticks across deploys. `404.html` provides SPA fallback for `/sign`.
 
 ## Stack
 

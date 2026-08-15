@@ -24,7 +24,7 @@ Open `http://localhost:4203/`.
 ### Open
 
 ```text
-https://map-pick-back.purified.app/map?returnUrl=<urlencoded-absolute-url>&state=<optional>&lat=<optional>&lng=<optional>&zoom=<optional>
+https://purified-app.github.io/return-apps/map-pick-back/map?returnUrl=<urlencoded-absolute-url>&state=<optional>&lat=<optional>&lng=<optional>&zoom=<optional>
 ```
 
 | Param | Required | Description |

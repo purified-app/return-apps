@@ -22,6 +22,11 @@ type MapPick = {
 const DEFAULT_CENTER: L.LatLngExpression = [59.9139, 10.7522];
 const DEFAULT_ZOOM = 12;
 
+function leafletAsset(file: string): string {
+  const base = document.querySelector('base')?.href ?? `${location.origin}/`;
+  return new URL(`assets/leaflet/${file}`, base).toString();
+}
+
 @Component({
   selector: 'mp-map-page',
   imports: [RouterLink, RbPanel],
@@ -172,9 +177,9 @@ export class MapPage implements OnDestroy {
     }
 
     const icon = L.icon({
-      iconUrl: 'assets/leaflet/marker-icon.png',
-      iconRetinaUrl: 'assets/leaflet/marker-icon-2x.png',
-      shadowUrl: 'assets/leaflet/marker-shadow.png',
+      iconUrl: leafletAsset('marker-icon.png'),
+      iconRetinaUrl: leafletAsset('marker-icon-2x.png'),
+      shadowUrl: leafletAsset('marker-shadow.png'),
       iconSize: [25, 41],
       iconAnchor: [12, 41],
       popupAnchor: [1, -34],
@@ -212,9 +217,9 @@ export class MapPage implements OnDestroy {
     const markerIcon =
       icon ??
       L.icon({
-        iconUrl: 'assets/leaflet/marker-icon.png',
-        iconRetinaUrl: 'assets/leaflet/marker-icon-2x.png',
-        shadowUrl: 'assets/leaflet/marker-shadow.png',
+        iconUrl: leafletAsset('marker-icon.png'),
+        iconRetinaUrl: leafletAsset('marker-icon-2x.png'),
+        shadowUrl: leafletAsset('marker-shadow.png'),
         iconSize: [25, 41],
         iconAnchor: [12, 41],
         popupAnchor: [1, -34],

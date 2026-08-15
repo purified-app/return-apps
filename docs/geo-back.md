@@ -24,7 +24,7 @@ Open `http://localhost:4202/`.
 ### Open
 
 ```text
-https://geo-back.purified.app/geo?returnUrl=<urlencoded-absolute-url>&state=<optional>&highAccuracy=<optional>
+https://purified-app.github.io/return-apps/geo-back/geo?returnUrl=<urlencoded-absolute-url>&state=<optional>&highAccuracy=<optional>
 ```
 
 | Param | Required | Description |

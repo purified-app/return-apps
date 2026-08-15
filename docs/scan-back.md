@@ -34,7 +34,7 @@ Useful routes:
 ### Open the scanner
 
 ```text
-https://scan-back.purified.app/scan?returnUrl=<urlencoded-absolute-url>&state=<optional>&formats=<optional>
+https://purified-app.github.io/return-apps/scan-back/scan?returnUrl=<urlencoded-absolute-url>&state=<optional>&formats=<optional>
 ```
 
 | Param | Required | Description |
@@ -58,7 +58,7 @@ Example:
 ```js
 const returnUrl = `${location.origin}/my-app/callback`;
 location.href =
-  `https://scan-back.purified.app/scan?returnUrl=${encodeURIComponent(returnUrl)}&state=field1`;
+  `https://purified-app.github.io/return-apps/scan-back/scan?returnUrl=${encodeURIComponent(returnUrl)}&state=field1`;
 ```
 
 ```js
@@ -82,23 +82,10 @@ Production build uses `baseHref` `/` (custom domain at site root). Output:
 
 ## Deploy: GitHub Pages + custom domain
 
-App URL: **https://scan-back.purified.app**
+App URL: **https://purified-app.github.io/return-apps/scan-back**
 
-Deploy is driven from this monorepo (`.github/workflows/deploy-scan-back.yml`) and publishes to `purified-app/scan-back` on the `gh-pages` branch. See the root [README](../README.md#deploy).
+Deployed with the rest of the apps from this monorepo via [`.github/workflows/deploy-pages.yml`](../.github/workflows/deploy-pages.yml) to GitHub Pages. See the root [README](../README.md#deploy).
 
-### DNS (`purified.app`)
-
-| Host / name | Type  | Value |
-|-------------|-------|--------|
-| `scan-back` | CNAME | `purified-app.github.io` |
-
-`public/CNAME` is included in the build so Pages keeps the domain on each deploy. Deep links like `/scan` work via the included `404.html` SPA fallback.
-
-### Caller apps
-
-```text
-https://scan-back.purified.app/scan?returnUrl=<urlencoded-https-url>&state=<optional>
-```
 
 ## Stack
 

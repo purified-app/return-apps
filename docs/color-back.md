@@ -29,7 +29,7 @@ Open `http://localhost:4206/`.
 ### Open
 
 ```text
-https://color-back.purified.app/color?returnUrl=<urlencoded-absolute-url>&state=<optional>
+https://purified-app.github.io/return-apps/color-back/color?returnUrl=<urlencoded-absolute-url>&state=<optional>
 ```
 
 ### Return after Use color

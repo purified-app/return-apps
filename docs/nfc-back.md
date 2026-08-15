@@ -29,7 +29,7 @@ Open `http://localhost:4205/` (NFC itself needs a supported mobile browser).
 ### Open
 
 ```text
-https://nfc-back.purified.app/nfc?returnUrl=<urlencoded-absolute-url>&state=<optional>
+https://purified-app.github.io/return-apps/nfc-back/nfc?returnUrl=<urlencoded-absolute-url>&state=<optional>
 ```
 
 ### Return after a successful read

@@ -24,7 +24,7 @@ Open `http://localhost:4204/`.
 ### Open
 
 ```text
-https://pin-back.purified.app/pin?returnUrl=<urlencoded-absolute-url>&state=<optional>&length=<optional>&mask=<optional>
+https://purified-app.github.io/return-apps/pin-back/pin?returnUrl=<urlencoded-absolute-url>&state=<optional>&length=<optional>&mask=<optional>
 ```
 
 | Param | Required | Description |
