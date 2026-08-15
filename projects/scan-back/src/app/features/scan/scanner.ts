@@ -54,8 +54,13 @@ const NATIVE_TO_FORMAT: Record<string, string> = {
 
 const DIGITAL_ZOOM_MIN = 1;
 const DIGITAL_ZOOM_MAX = 4;
-const SCAN_INTERVAL_MS = 45;
-const TARGET_DECODE_WIDTH = 960;
+/** Balance detect latency vs CPU / canvas pressure (esp. Safari). */
+const SCAN_INTERVAL_MS = 80;
+/** Decode canvas long-edge target — keep under browser canvas / GPU limits. */
+const TARGET_DECODE_WIDTH = 720;
+const MAX_DECODE_EDGE = 960;
+/** When native BarcodeDetector works, only run ZXing every Nth miss. */
+const ZXING_FALLBACK_EVERY = 4;
 
 export interface ZoomState {
   min: number;
@@ -93,6 +98,7 @@ export class ScannerService {
   private loopTimer: ReturnType<typeof setTimeout> | null = null;
   private enhanceCanvas: HTMLCanvasElement | null = null;
   private enhanceModeIndex = 0;
+  private zxingFallbackTick = 0;
   private zoomMode: 'native' | 'digital' = 'digital';
   private zoomMin = DIGITAL_ZOOM_MIN;
   private zoomMax = DIGITAL_ZOOM_MAX;
@@ -159,7 +165,9 @@ export class ScannerService {
 
     const hints = new Map<DecodeHintType, unknown>();
     hints.set(DecodeHintType.POSSIBLE_FORMATS, formats);
-    hints.set(DecodeHintType.TRY_HARDER, true);
+    // Avoid TRY_HARDER: it rotates via offscreen canvases and throws
+    // "Could not create a Canvas element" (logged as MultiFormatReader noise)
+    // on Safari / memory-constrained devices.
 
     this.reader = new BrowserMultiFormatReader(hints);
     this.nativeDetector = await this.createNativeDetector(formats);
@@ -218,6 +226,7 @@ export class ScannerService {
     this.nativeDetector = null;
     this.enhanceCanvas = null;
     this.enhanceModeIndex = 0;
+    this.zxingFallbackTick = 0;
     this.zoomMode = 'digital';
     this.zoomMin = DIGITAL_ZOOM_MIN;
     this.zoomMax = DIGITAL_ZOOM_MAX;
@@ -269,6 +278,13 @@ export class ScannerService {
       } catch {
         // Native detector can fail on some frames; continue with ZXing.
       }
+
+      // Native path is preferred — only occasionally fall back to ZXing to
+      // cover formats / frames the detector misses, and to cut canvas churn.
+      this.zxingFallbackTick += 1;
+      if (this.zxingFallbackTick % ZXING_FALLBACK_EVERY !== 0) {
+        return null;
+      }
     }
 
     if (!this.reader || !this.enhanceCanvas) {
@@ -279,7 +295,9 @@ export class ScannerService {
     const mode = modes[this.enhanceModeIndex % modes.length] ?? 'plain';
     this.enhanceModeIndex += 1;
 
-    this.drawEnhancedFrame(video, this.enhanceCanvas, mode);
+    if (!this.drawEnhancedFrame(video, this.enhanceCanvas, mode)) {
+      return null;
+    }
 
     try {
       const result = this.reader.decodeFromCanvas(this.enhanceCanvas);
@@ -288,23 +306,25 @@ export class ScannerService {
         format: BarcodeFormat[result.getBarcodeFormat()] ?? String(result.getBarcodeFormat()),
       };
     } catch {
+      // NotFoundException and canvas/rotate failures are expected mid-scan.
       return null;
     }
   }
 
   /**
-   * Crops the visible center (respecting digital zoom), upscales, and optionally
-   * boosts contrast / inverts — helps ZXing on blurry or low-contrast codes.
+   * Crops the visible center (respecting digital zoom), scales to a bounded
+   * decode size, and optionally boosts contrast / inverts — helps ZXing on
+   * blurry or low-contrast codes without blowing past canvas limits.
    */
   private drawEnhancedFrame(
     video: HTMLVideoElement,
     canvas: HTMLCanvasElement,
     mode: EnhanceMode,
-  ): void {
+  ): boolean {
     const sourceWidth = video.videoWidth;
     const sourceHeight = video.videoHeight;
     if (!sourceWidth || !sourceHeight) {
-      return;
+      return false;
     }
 
     // Match what the user sees: CSS digital zoom shows the center 1/zoom region.
@@ -321,16 +341,24 @@ export class ScannerService {
     const cropX = sx + (visibleWidth - cropWidth) / 2;
     const cropY = sy + (visibleHeight - cropHeight) / 2;
 
-    const scale = Math.max(1, TARGET_DECODE_WIDTH / cropWidth);
-    const destWidth = Math.round(cropWidth * scale);
-    const destHeight = Math.round(cropHeight * scale);
+    // Always target ~TARGET_DECODE_WIDTH (upscale small / downscale large).
+    const scale = TARGET_DECODE_WIDTH / Math.max(cropWidth, 1);
+    let destWidth = Math.max(1, Math.round(cropWidth * scale));
+    let destHeight = Math.max(1, Math.round(cropHeight * scale));
+
+    const longEdge = Math.max(destWidth, destHeight);
+    if (longEdge > MAX_DECODE_EDGE) {
+      const shrink = MAX_DECODE_EDGE / longEdge;
+      destWidth = Math.max(1, Math.round(destWidth * shrink));
+      destHeight = Math.max(1, Math.round(destHeight * shrink));
+    }
 
     canvas.width = destWidth;
     canvas.height = destHeight;
 
     const ctx = canvas.getContext('2d', { willReadFrequently: true });
     if (!ctx) {
-      return;
+      return false;
     }
 
     ctx.imageSmoothingEnabled = true;
@@ -356,6 +384,7 @@ export class ScannerService {
       destHeight,
     );
     ctx.filter = 'none';
+    return true;
   }
 
   private async createNativeDetector(
