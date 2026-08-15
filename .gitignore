@@ -44,7 +44,6 @@ lerna-debug.log*
 
 # Angular / build cache
 /.angular
-.sass-cache/
 /connect.lock
 /coverage
 /libpeerconnection.log
