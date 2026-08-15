@@ -3,10 +3,15 @@
 }
 
 .shell {
+  width: 100%;
   max-width: 24rem;
   margin: 0 auto;
   min-height: 100dvh;
-  padding: 1.25rem 1rem calc(1.25rem + env(safe-area-inset-bottom));
+  padding:
+    var(--rb-space-page-top)
+    max(1rem, env(safe-area-inset-right))
+    var(--rb-space-page-bottom)
+    max(1rem, env(safe-area-inset-left));
   display: grid;
   grid-template-rows: auto auto 1fr auto auto;
   gap: 1rem;
@@ -14,7 +19,7 @@
 
 .top h1 {
   margin: 0;
-  font-size: 1.45rem;
+  font-size: clamp(1.2rem, 4.5vw, 1.45rem);
   font-weight: 700;
   text-align: center;
 }
@@ -28,7 +33,7 @@
 .display {
   margin: 0;
   text-align: center;
-  font-size: 2rem;
+  font-size: clamp(1.6rem, 7vw, 2rem);
   letter-spacing: 0.45em;
   font-variant-numeric: tabular-nums;
 }
@@ -44,13 +49,19 @@
   appearance: none;
   border: 0;
   border-radius: 999px;
-  min-height: 3.5rem;
+  min-height: max(3.5rem, var(--rb-tap));
   background: rgb(255 255 255 / 10%);
   color: inherit;
   font: inherit;
   font-size: 1.35rem;
   font-weight: 650;
   cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.pad-key:active {
+  background: rgb(255 255 255 / 18%);
 }
 
 .pad-key:focus-visible {
@@ -59,18 +70,13 @@
 }
 
 .pad-spacer {
-  min-height: 3.5rem;
+  min-height: max(3.5rem, var(--rb-tap));
 }
 
-.toolbar,
 .actions {
   display: flex;
   flex-wrap: wrap;
   gap: 0.65rem;
-  justify-content: flex-end;
-}
-
-.actions {
   justify-content: flex-start;
 }
 

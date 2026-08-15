@@ -52,6 +52,7 @@ export class MapPage implements OnDestroy {
   private initialCenter: L.LatLngExpression = DEFAULT_CENTER;
   private initialZoom = DEFAULT_ZOOM;
   private ready = false;
+  private resizeObserver: ResizeObserver | null = null;
 
   constructor() {
     afterNextRender(() => {
@@ -206,8 +207,13 @@ export class MapPage implements OnDestroy {
       this.placePin(center.lat, center.lng, icon);
     }
 
-    // Leaflet needs a size pass after layout.
+    // Leaflet needs a size pass after layout, and whenever the shell resizes.
     requestAnimationFrame(() => this.map?.invalidateSize());
+    if (typeof ResizeObserver !== 'undefined') {
+      this.resizeObserver?.disconnect();
+      this.resizeObserver = new ResizeObserver(() => this.map?.invalidateSize());
+      this.resizeObserver.observe(el);
+    }
   }
 
   private placePin(lat: number, lng: number, icon?: L.Icon): void {
@@ -255,6 +261,8 @@ export class MapPage implements OnDestroy {
   }
 
   private teardownMap(): void {
+    this.resizeObserver?.disconnect();
+    this.resizeObserver = null;
     this.marker?.remove();
     this.marker = null;
     this.map?.remove();
