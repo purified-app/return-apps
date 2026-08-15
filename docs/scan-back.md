@@ -15,8 +15,8 @@ Mobile-first Angular web app that scans **QR codes and barcodes** and can redire
 From the workspace root:
 
 ```bash
-npm install
-npm run start:scan-back
+bun install
+bun run start:scan-back
 ```
 
 Open `http://localhost:4201/`.
@@ -73,7 +73,7 @@ const scanValue = params.get('scanValue');
 ## Build
 
 ```bash
-npm run build:scan-back
+bun run build:scan-back
 ```
 
 Production build uses `baseHref` `/` (custom domain at site root). Output:
