@@ -25,8 +25,8 @@ Useful routes:
 
 | Route | Description |
 |-------|-------------|
-| `/` | Landing + integration notes |
-| `/sign` | Signature pad (standalone without `returnUrl`) |
+| `/` | Signature pad (standalone without `returnUrl`) |
+| `/home` | Landing + integration notes |
 | `/demo-caller` | Minimal caller for manual E2E testing |
 
 ## Integration contract
@@ -34,7 +34,7 @@ Useful routes:
 ### Open the pad
 
 ```text
-https://purified-app.github.io/return-apps/sign-back/sign?returnUrl=<urlencoded-absolute-url>&state=<optional>
+https://return.purified.app/sign?returnUrl=<urlencoded-absolute-url>&state=<optional>
 ```
 
 | Param | Required | Description |
@@ -57,7 +57,7 @@ Example:
 ```js
 const returnUrl = `${location.origin}/my-app/callback`;
 location.href =
-  `https://purified-app.github.io/return-apps/sign-back/sign?returnUrl=${encodeURIComponent(returnUrl)}&state=field1`;
+  `https://return.purified.app/sign?returnUrl=${encodeURIComponent(returnUrl)}&state=field1`;
 ```
 
 ```js
@@ -77,14 +77,13 @@ Signatures that are too large for a URL redirect are blocked with an error (keep
 bun run build:sign-back
 ```
 
-Production uses `baseHref` `/` (custom domain). Output: `dist/sign-back/browser`
+Site build publishes to `/sign/` under the custom domain. Output: `dist/sign-back/browser`
 
-## Deploy: GitHub Pages + custom domain
+## Deploy
 
-App URL: **https://purified-app.github.io/return-apps/sign-back**
+App URL: **https://return.purified.app/sign/**
 
-Deployed with the rest of the apps from this monorepo via [`.github/workflows/deploy-pages.yml`](../.github/workflows/deploy-pages.yml) to GitHub Pages. See the root [README](../README.md#deploy).
-
+Deployed with the rest of the apps from this monorepo via [`.github/workflows/deploy-pages.yml`](../.github/workflows/deploy-pages.yml). See the root [README](../README.md#deploy).
 
 ## Stack
 

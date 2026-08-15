@@ -128,7 +128,7 @@ export class NfcPage implements OnInit, OnDestroy {
       history.back();
       return;
     }
-    void this.router.navigateByUrl('/');
+    void this.router.navigateByUrl('/home');
   }
 
   private onReading(event: NdefReadingEvent): void {

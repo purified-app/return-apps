@@ -25,9 +25,9 @@ jobs:
       - run: bun install --frozen-lockfile
       - name: Build site
         env:
-          # Project Pages URL: https://purified-app.github.io/return-apps/
-          # For a custom domain at site root, set PAGES_BASE to empty and add site/CNAME.
-          PAGES_BASE: /return-apps
+          # Custom domain root: https://return.purified.app/<app>/
+          # For project Pages without custom domain: PAGES_BASE=/return-apps
+          PAGES_BASE: ''
         run: bun run build:site
       - uses: actions/upload-pages-artifact@v3
         with:

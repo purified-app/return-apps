@@ -29,6 +29,6 @@ export class DemoCallerPage implements OnInit {
   startNfc(): void {
     const base = appBaseUrl();
     const returnUrl = `${base}/demo-caller`;
-    location.href = `${base}/nfc?returnUrl=${encodeURIComponent(returnUrl)}&state=demo1`;
+    location.href = `${base}?returnUrl=${encodeURIComponent(returnUrl)}&state=demo1`;
   }
 }

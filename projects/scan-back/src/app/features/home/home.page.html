@@ -7,7 +7,7 @@
       redirected back via URL.
     </p>
     <div class="cta">
-      <a routerLink="/scan" class="btn">Start scanning</a>
+      <a routerLink="/" class="btn">Start scanning</a>
       <a routerLink="/demo-caller" class="btn btn-ghost">Try demo caller</a>
     </div>
   </header>
@@ -15,7 +15,7 @@
   <section class="docs">
     <h2>Integration</h2>
     <p>Open the scanner:</p>
-    <pre><code>/scan?returnUrl=&lt;urlencoded-https-url&gt;&amp;state=&lt;optional&gt;&amp;formats=&lt;optional&gt;</code></pre>
+    <pre><code>?returnUrl=&lt;urlencoded-https-url&gt;&amp;state=&lt;optional&gt;&amp;formats=&lt;optional&gt;</code></pre>
     <p>After a successful scan, redirect to:</p>
     <pre><code>&lt;returnUrl&gt;?scanValue=&lt;value&gt;&amp;format=&lt;format&gt;&amp;state=&lt;state&gt;</code></pre>
 

@@ -25,8 +25,8 @@ Useful routes:
 
 | Route | Description |
 |-------|-------------|
-| `/` | Landing + short integration notes |
-| `/scan` | Scanner (standalone without `returnUrl`) |
+| `/` | Scanner (standalone without `returnUrl`) |
+| `/home` | Landing + short integration notes |
 | `/demo-caller` | Minimal caller for manual E2E testing |
 
 ## Integration contract
@@ -34,7 +34,7 @@ Useful routes:
 ### Open the scanner
 
 ```text
-https://purified-app.github.io/return-apps/scan-back/scan?returnUrl=<urlencoded-absolute-url>&state=<optional>&formats=<optional>
+https://return.purified.app/scan?returnUrl=<urlencoded-absolute-url>&state=<optional>&formats=<optional>
 ```
 
 | Param | Required | Description |
@@ -58,7 +58,7 @@ Example:
 ```js
 const returnUrl = `${location.origin}/my-app/callback`;
 location.href =
-  `https://purified-app.github.io/return-apps/scan-back/scan?returnUrl=${encodeURIComponent(returnUrl)}&state=field1`;
+  `https://return.purified.app/scan?returnUrl=${encodeURIComponent(returnUrl)}&state=field1`;
 ```
 
 ```js
@@ -76,19 +76,16 @@ const scanValue = params.get('scanValue');
 bun run build:scan-back
 ```
 
-Production build uses `baseHref` `/` (custom domain at site root). Output:
+Site build publishes to `/scan/` under the custom domain. Output: `dist/scan-back/browser`
 
-`dist/scan-back/browser`
+## Deploy
 
-## Deploy: GitHub Pages + custom domain
+App URL: **https://return.purified.app/scan/**
 
-App URL: **https://purified-app.github.io/return-apps/scan-back**
-
-Deployed with the rest of the apps from this monorepo via [`.github/workflows/deploy-pages.yml`](../.github/workflows/deploy-pages.yml) to GitHub Pages. See the root [README](../README.md#deploy).
-
+Deployed with the rest of the apps from this monorepo via [`.github/workflows/deploy-pages.yml`](../.github/workflows/deploy-pages.yml). See the root [README](../README.md#deploy).
 
 ## Stack
 
 - Angular 22 (standalone, signals)
-- ZXing (`@zxing/browser` + `@zxing/library`)
+- ZXing browser library
 - GitHub Pages + Actions

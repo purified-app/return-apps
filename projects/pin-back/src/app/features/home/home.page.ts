@@ -15,7 +15,7 @@ export class HomePage {
   constructor() {
     const base = appBaseUrl();
     const returnUrl = `${base}/demo-caller`;
-    this.demoOpenUrl = `${base}/pin?returnUrl=${encodeURIComponent(returnUrl)}&state=demo1&length=4`;
+    this.demoOpenUrl = `${base}?returnUrl=${encodeURIComponent(returnUrl)}&state=demo1&length=4`;
     this.demoReturnUrl = `${base}/demo-caller?pin=1234&format=pin&state=demo1`;
   }
 }

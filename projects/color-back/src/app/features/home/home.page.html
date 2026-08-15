@@ -7,7 +7,7 @@
       hex/RGB values redirect back via URL.
     </p>
     <div class="cta">
-      <a routerLink="/color" class="btn">Open eyedropper</a>
+      <a routerLink="/" class="btn">Open eyedropper</a>
       <a routerLink="/demo-caller" class="btn btn-ghost">Try demo caller</a>
     </div>
   </header>
@@ -15,7 +15,7 @@
   <section class="docs">
     <h2>Integration</h2>
     <p>Open the eyedropper:</p>
-    <pre><code>/color?returnUrl=&lt;urlencoded-https-url&gt;&amp;state=&lt;optional&gt;</code></pre>
+    <pre><code>?returnUrl=&lt;urlencoded-https-url&gt;&amp;state=&lt;optional&gt;</code></pre>
     <p>After Use color, redirect to:</p>
     <pre><code>&lt;returnUrl&gt;?hex=&lt;%23rrggbb&gt;&amp;rgb=&lt;r,g,b&gt;&amp;format=hex&amp;state=&lt;state&gt;</code></pre>
 

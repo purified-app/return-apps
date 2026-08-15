@@ -2,24 +2,24 @@
 
 Angular workspace for **returnUrl** helper apps — small client-side tools that capture something (signature, scan, location, …) and redirect the result back to a calling app.
 
-## Live site (one repo)
+## Live site
 
-All apps are published from this repository to GitHub Pages:
-
-**https://purified-app.github.io/return-apps/**
+**https://return.purified.app/**
 
 | App | URL |
 |-----|-----|
-| Hub | https://purified-app.github.io/return-apps/ |
-| SignBack | …/sign-back/ |
-| ScanBack | …/scan-back/ |
-| GeoBack | …/geo-back/ |
-| MapPickBack | …/map-pick-back/ |
-| PinBack | …/pin-back/ |
-| NfcBack | …/nfc-back/ |
-| ColorBack | …/color-back/ |
+| Hub | https://return.purified.app/ |
+| SignBack | https://return.purified.app/sign/ |
+| ScanBack | https://return.purified.app/scan/ |
+| GeoBack | https://return.purified.app/geo/ |
+| MapPickBack | https://return.purified.app/map/ |
+| PinBack | https://return.purified.app/pin/ |
+| NfcBack | https://return.purified.app/nfc/ |
+| ColorBack | https://return.purified.app/color/ |
 
-Local serve still uses root paths (`/sign`, `/geo`, …) on separate ports.
+Caller entry is the app root, e.g. `https://return.purified.app/sign?returnUrl=…`. Docs UI lives at `/home` inside each app.
+
+Local serve still uses root paths on separate ports (`/`, `/home`, `/demo-caller`).
 
 ## Apps
 
@@ -67,7 +67,7 @@ return-apps/
     shared-ui/
     sign-back/ scan-back/ geo-back/ map-pick-back/
     pin-back/ nfc-back/ color-back/
-  site/                 # Pages hub (index + root 404)
+  site/                 # Pages hub (index + CNAME + root 404)
   scripts/build-site.sh
   docs/
 ```
@@ -76,21 +76,18 @@ return-apps/
 
 One workflow: [`.github/workflows/deploy-pages.yml`](.github/workflows/deploy-pages.yml).
 
-1. In **Settings → Pages**: Source = **GitHub Actions**
-2. Push to `main` (or run the workflow manually)
-3. Site: `https://purified-app.github.io/return-apps/`
+1. In **Settings → Pages**: Source = **GitHub Actions**, custom domain = `return.purified.app`
+2. DNS for `return.purified.app` must point at GitHub Pages
+3. Push to `main` (or run the workflow manually)
+4. Site: `https://return.purified.app/`
 
-No separate app repos or `DEPLOY_GITHUB_TOKEN` needed.
+`site/CNAME` is published with the site. Builds use an empty `PAGES_BASE` so each app is at `/sign/`, `/scan/`, etc.
 
-### Optional custom domain
-
-Point e.g. `return.purified.app` at GitHub Pages, add `site/CNAME`, and build with an empty base:
+Without the custom domain (project Pages only):
 
 ```bash
-PAGES_BASE= bun run build:site
+PAGES_BASE=/return-apps bun run build:site
 ```
-
-Then URLs become `https://return.purified.app/sign-back/`, etc. Update `PAGES_BASE` in the deploy workflow to match.
 
 ## Stack
 
@@ -100,4 +97,4 @@ Then URLs become `https://return.purified.app/sign-back/`, etc. Update `PAGES_BA
 - ScanBack: ZXing
 - MapPickBack: Leaflet + OpenStreetMap
 - GeoBack / PinBack / NfcBack / ColorBack: Geolocation, keypad, Web NFC, `getUserMedia`
-- GitHub Pages (single site, path per app)
+- GitHub Pages (single site, short path per app)

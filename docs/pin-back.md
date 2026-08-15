@@ -15,8 +15,8 @@ Open `http://localhost:4204/`.
 
 | Route | Description |
 |-------|-------------|
-| `/` | Landing + integration notes |
-| `/pin` | Keypad (standalone without `returnUrl`) |
+| `/` | Keypad (standalone without `returnUrl`) |
+| `/home` | Landing + integration notes |
 | `/demo-caller` | Minimal caller for manual E2E testing |
 
 ## Integration contract
@@ -24,7 +24,7 @@ Open `http://localhost:4204/`.
 ### Open
 
 ```text
-https://purified-app.github.io/return-apps/pin-back/pin?returnUrl=<urlencoded-absolute-url>&state=<optional>&length=<optional>&mask=<optional>
+https://return.purified.app/pin?returnUrl=<urlencoded-absolute-url>&state=<optional>&length=<optional>&mask=<optional>
 ```
 
 | Param | Required | Description |
@@ -41,3 +41,7 @@ https://purified-app.github.io/return-apps/pin-back/pin?returnUrl=<urlencoded-ab
 ```
 
 On cancel: `error=cancelled` (+ `state` if set).
+
+## Deploy
+
+App URL: **https://return.purified.app/pin/**

@@ -4,17 +4,18 @@ export const routes: Routes = [
   {
     path: '',
     loadComponent: () =>
-      import('./features/home/home.page').then((m) => m.HomePage),
+      import('./features/scan/scan.page').then((m) => m.ScanPage),
   },
   {
-    path: 'scan',
+    path: 'home',
     loadComponent: () =>
-      import('./features/scan/scan.page').then((m) => m.ScanPage),
+      import('./features/home/home.page').then((m) => m.HomePage),
   },
   {
     path: 'demo-caller',
     loadComponent: () =>
       import('./features/demo-caller/demo-caller.page').then((m) => m.DemoCallerPage),
   },
+  { path: 'scan', redirectTo: '' },
   { path: '**', redirectTo: '' },
 ];

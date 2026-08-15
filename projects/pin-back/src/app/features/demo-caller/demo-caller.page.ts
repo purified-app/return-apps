@@ -27,6 +27,6 @@ export class DemoCallerPage implements OnInit {
   startPin(): void {
     const base = appBaseUrl();
     const returnUrl = `${base}/demo-caller`;
-    location.href = `${base}/pin?returnUrl=${encodeURIComponent(returnUrl)}&state=demo1&length=4`;
+    location.href = `${base}?returnUrl=${encodeURIComponent(returnUrl)}&state=demo1&length=4`;
   }
 }

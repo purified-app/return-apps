@@ -7,7 +7,7 @@
       redirected back via URL as SVG.
     </p>
     <div class="cta">
-      <a routerLink="/sign" class="btn">Start signing</a>
+      <a routerLink="/" class="btn">Start signing</a>
       <a routerLink="/demo-caller" class="btn btn-ghost">Try demo caller</a>
     </div>
   </header>
@@ -15,7 +15,7 @@
   <section class="docs">
     <h2>Integration</h2>
     <p>Open the pad:</p>
-    <pre><code>/sign?returnUrl=&lt;urlencoded-https-url&gt;&amp;state=&lt;optional&gt;</code></pre>
+    <pre><code>?returnUrl=&lt;urlencoded-https-url&gt;&amp;state=&lt;optional&gt;</code></pre>
     <p>After Done, redirect to:</p>
     <pre><code>&lt;returnUrl&gt;?signature=&lt;svg-data-url&gt;&amp;format=image/svg+xml&amp;state=&lt;state&gt;</code></pre>
 

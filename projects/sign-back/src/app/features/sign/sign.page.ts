@@ -77,7 +77,7 @@ export class SignPage implements OnDestroy {
       history.back();
       return;
     }
-    void this.router.navigateByUrl('/');
+    void this.router.navigateByUrl('/home');
   }
 
   onDone(): void {

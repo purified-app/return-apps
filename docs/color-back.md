@@ -20,8 +20,8 @@ Open `http://localhost:4206/`.
 
 | Route | Description |
 |-------|-------------|
-| `/` | Landing + integration notes |
-| `/color` | Eyedropper (standalone without `returnUrl`) |
+| `/` | Eyedropper (standalone without `returnUrl`) |
+| `/home` | Landing + integration notes |
 | `/demo-caller` | Minimal caller for manual E2E testing |
 
 ## Integration contract
@@ -29,7 +29,7 @@ Open `http://localhost:4206/`.
 ### Open
 
 ```text
-https://purified-app.github.io/return-apps/color-back/color?returnUrl=<urlencoded-absolute-url>&state=<optional>
+https://return.purified.app/color?returnUrl=<urlencoded-absolute-url>&state=<optional>
 ```
 
 ### Return after Use color
@@ -39,3 +39,7 @@ https://purified-app.github.io/return-apps/color-back/color?returnUrl=<urlencode
 ```
 
 On cancel: `error=cancelled` (+ `state` if set).
+
+## Deploy
+
+App URL: **https://return.purified.app/color/**

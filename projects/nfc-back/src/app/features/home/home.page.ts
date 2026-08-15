@@ -15,7 +15,7 @@ export class HomePage {
   constructor() {
     const base = appBaseUrl();
     const returnUrl = `${base}/demo-caller`;
-    this.demoOpenUrl = `${base}/nfc?returnUrl=${encodeURIComponent(returnUrl)}&state=demo1`;
+    this.demoOpenUrl = `${base}?returnUrl=${encodeURIComponent(returnUrl)}&state=demo1`;
     this.demoReturnUrl =
       `${base}/demo-caller?nfcValue=https%3A%2F%2Fexample.com&recordType=url&format=nfc&state=demo1`;
   }

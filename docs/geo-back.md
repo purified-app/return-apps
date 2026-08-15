@@ -15,8 +15,8 @@ Open `http://localhost:4202/`.
 
 | Route | Description |
 |-------|-------------|
-| `/` | Landing + integration notes |
-| `/geo` | Locator (standalone without `returnUrl`) |
+| `/` | Locator (standalone without `returnUrl`) |
+| `/home` | Landing + integration notes |
 | `/demo-caller` | Minimal caller for manual E2E testing |
 
 ## Integration contract
@@ -24,7 +24,7 @@ Open `http://localhost:4202/`.
 ### Open
 
 ```text
-https://purified-app.github.io/return-apps/geo-back/geo?returnUrl=<urlencoded-absolute-url>&state=<optional>&highAccuracy=<optional>
+https://return.purified.app/geo?returnUrl=<urlencoded-absolute-url>&state=<optional>&highAccuracy=<optional>
 ```
 
 | Param | Required | Description |
@@ -42,3 +42,7 @@ https://purified-app.github.io/return-apps/geo-back/geo?returnUrl=<urlencoded-ab
 Optional extras when available: `altitude`, `altitudeAccuracy`, `heading`, `speed`.
 
 On cancel: `error=cancelled` (+ `state` if set).
+
+## Deploy
+
+App URL: **https://return.purified.app/geo/**

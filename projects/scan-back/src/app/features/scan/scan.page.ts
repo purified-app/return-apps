@@ -73,7 +73,7 @@ export class ScanPage implements OnDestroy {
       history.back();
       return;
     }
-    void this.router.navigateByUrl('/');
+    void this.router.navigateByUrl('/home');
   }
 
   async onSwitchCamera(): Promise<void> {

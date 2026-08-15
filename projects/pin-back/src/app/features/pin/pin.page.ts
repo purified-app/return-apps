@@ -102,7 +102,7 @@ export class PinPage implements OnInit {
       history.back();
       return;
     }
-    void this.router.navigateByUrl('/');
+    void this.router.navigateByUrl('/home');
   }
 
   onDone(): void {
