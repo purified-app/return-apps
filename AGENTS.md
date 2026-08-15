@@ -70,6 +70,17 @@ You are an expert in TypeScript, Angular, and scalable web application developme
 - To exercise an app's core `returnUrl` flow in a browser, use its `/demo-caller` route (e.g. `http://localhost:4204/demo-caller` for `pin-back`), which simulates a calling app and shows the returned value.
 - Some apps need device APIs that a headless/remote browser can't provide: `scan-back`/`color-back` need camera, `geo-back` needs geolocation, `nfc-back` needs Web NFC (Chrome/Android only). `pin-back` and `sign-back` are the most deterministic to test in a browser.
 
+### Integrating / calling these apps (humans & AI agents)
+
+When writing code that **opens** a return-app from another web app, follow **`docs/integration.md`** (canonical). Short rules:
+
+- Success is always `value` + `format` (+ `state`). Cancel is `error=cancelled`.
+- Prefer SDK: `site/sdk/return-apps.mjs` → `openReturnApp` / `parseReturnResult`.
+- **pin** and **sign** default to `delivery=hash` — do not parse only `location.search`.
+- Always pass `allowedOrigins` with the caller origin.
+- Machine-readable: `site/apps.json`, `site/llms.txt`.
+- Do **not** use legacy return keys (`pin`, `signature`, `scanValue`, `nfcValue`, `hex` as primary).
+
 ### Lint / test / build
 
 - Tests: `bun run test` (all projects) or `bun run test:<app>` — Vitest + jsdom, runs headless. Build a single app with `bun run build:<app>`; full static site with `bun run build:site` (`scripts/build-site.sh`).
