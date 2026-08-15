@@ -87,5 +87,5 @@ Deployed with the rest of the apps from this monorepo via [`.github/workflows/de
 ## Stack
 
 - Angular 22 (standalone, signals)
-- ZXing browser library
+- Native Barcode Detection API when available; `barcode-detector` WASM ponyfill otherwise
 - GitHub Pages + Actions

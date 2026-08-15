@@ -1,46 +1,55 @@
 import { Service } from '@angular/core';
-import { BarcodeFormat, DecodeHintType } from '@zxing/library';
-import { BrowserMultiFormatReader } from '@zxing/browser';
 import { ScanResult } from '../../core/scan-result.model';
 
-const DEFAULT_FORMATS: BarcodeFormat[] = [
-  BarcodeFormat.QR_CODE,
-  BarcodeFormat.EAN_13,
-  BarcodeFormat.EAN_8,
-  BarcodeFormat.CODE_128,
-  BarcodeFormat.CODE_39,
-  BarcodeFormat.UPC_A,
-  BarcodeFormat.UPC_E,
-  BarcodeFormat.ITF,
-  BarcodeFormat.DATA_MATRIX,
+/** Barcode Detector API format names (also used by the WASM ponyfill). */
+export type DetectorFormat =
+  | 'qr_code'
+  | 'ean_13'
+  | 'ean_8'
+  | 'code_128'
+  | 'code_39'
+  | 'upc_a'
+  | 'upc_e'
+  | 'itf'
+  | 'data_matrix';
+
+const DEFAULT_FORMATS: DetectorFormat[] = [
+  'qr_code',
+  'ean_13',
+  'ean_8',
+  'code_128',
+  'code_39',
+  'upc_a',
+  'upc_e',
+  'itf',
+  'data_matrix',
 ];
 
-const FORMAT_ALIASES: Record<string, BarcodeFormat> = {
-  QR_CODE: BarcodeFormat.QR_CODE,
-  QR: BarcodeFormat.QR_CODE,
-  EAN_13: BarcodeFormat.EAN_13,
-  EAN_8: BarcodeFormat.EAN_8,
-  CODE_128: BarcodeFormat.CODE_128,
-  CODE_39: BarcodeFormat.CODE_39,
-  UPC_A: BarcodeFormat.UPC_A,
-  UPC_E: BarcodeFormat.UPC_E,
-  ITF: BarcodeFormat.ITF,
-  DATA_MATRIX: BarcodeFormat.DATA_MATRIX,
+/** Accept legacy ZXing-style names and Detector API names from `?formats=`. */
+const FORMAT_ALIASES: Record<string, DetectorFormat> = {
+  QR_CODE: 'qr_code',
+  QR: 'qr_code',
+  qr_code: 'qr_code',
+  EAN_13: 'ean_13',
+  ean_13: 'ean_13',
+  EAN_8: 'ean_8',
+  ean_8: 'ean_8',
+  CODE_128: 'code_128',
+  code_128: 'code_128',
+  CODE_39: 'code_39',
+  code_39: 'code_39',
+  UPC_A: 'upc_a',
+  upc_a: 'upc_a',
+  UPC_E: 'upc_e',
+  upc_e: 'upc_e',
+  ITF: 'itf',
+  itf: 'itf',
+  DATA_MATRIX: 'data_matrix',
+  data_matrix: 'data_matrix',
 };
 
-const ZXING_TO_NATIVE: Partial<Record<BarcodeFormat, string>> = {
-  [BarcodeFormat.QR_CODE]: 'qr_code',
-  [BarcodeFormat.EAN_13]: 'ean_13',
-  [BarcodeFormat.EAN_8]: 'ean_8',
-  [BarcodeFormat.CODE_128]: 'code_128',
-  [BarcodeFormat.CODE_39]: 'code_39',
-  [BarcodeFormat.UPC_A]: 'upc_a',
-  [BarcodeFormat.UPC_E]: 'upc_e',
-  [BarcodeFormat.ITF]: 'itf',
-  [BarcodeFormat.DATA_MATRIX]: 'data_matrix',
-};
-
-const NATIVE_TO_FORMAT: Record<string, string> = {
+/** Map Detector format → returnUrl `format` value (stable contract). */
+const RETURN_FORMAT: Record<string, string> = {
   qr_code: 'QR_CODE',
   ean_13: 'EAN_13',
   ean_8: 'EAN_8',
@@ -54,49 +63,8 @@ const NATIVE_TO_FORMAT: Record<string, string> = {
 
 const DIGITAL_ZOOM_MIN = 1;
 const DIGITAL_ZOOM_MAX = 4;
-/** Balance detect latency vs CPU / canvas pressure (esp. Safari). */
 const SCAN_INTERVAL_MS = 100;
-/** Decode canvas long-edge target — keep under browser canvas / GPU limits. */
-const TARGET_DECODE_WIDTH = 640;
-const MAX_DECODE_EDGE = 720;
-
-/**
- * ZXing MultiFormatReader logs console.warn for many expected mid-scan failures
- * (often due to instanceof ReaderException breaking across bundles). Mute those
- * for the duration of a decode attempt only.
- */
-function withMutedZxingConsole<T>(fn: () => T): T {
-  const originalWarn = console.warn;
-  const originalError = console.error;
-  const shouldMute = (args: unknown[]): boolean => {
-    const head = String(args[0] ?? '');
-    return (
-      head.includes('MultiFormatReader') ||
-      head.includes('BrowserCodeReader') ||
-      head.includes('Could not create a Canvas element')
-    );
-  };
-
-  console.warn = (...args: unknown[]) => {
-    if (shouldMute(args)) {
-      return;
-    }
-    originalWarn.apply(console, args as Parameters<typeof console.warn>);
-  };
-  console.error = (...args: unknown[]) => {
-    if (shouldMute(args)) {
-      return;
-    }
-    originalError.apply(console, args as Parameters<typeof console.error>);
-  };
-
-  try {
-    return fn();
-  } finally {
-    console.warn = originalWarn;
-    console.error = originalError;
-  }
-}
+const TARGET_DECODE_WIDTH = 720;
 
 export interface ZoomState {
   min: number;
@@ -112,28 +80,24 @@ type ZoomCapableTrack = MediaStreamTrack & {
   getSettings?: () => MediaTrackSettings & { zoom?: number };
 };
 
-interface NativeBarcodeDetector {
+interface BarcodeDetectorLike {
   detect(source: ImageBitmapSource): Promise<Array<{ rawValue: string; format: string }>>;
 }
 
-interface NativeBarcodeDetectorCtor {
-  new (options?: { formats?: string[] }): NativeBarcodeDetector;
+interface BarcodeDetectorCtor {
+  new (options?: { formats?: string[] }): BarcodeDetectorLike;
   getSupportedFormats?: () => Promise<string[]>;
 }
 
-type EnhanceMode = 'plain' | 'contrast';
-
 @Service()
 export class ScannerService {
-  private reader: BrowserMultiFormatReader | null = null;
-  private nativeDetector: NativeBarcodeDetector | null = null;
+  private detector: BarcodeDetectorLike | null = null;
   private videoElement: HTMLVideoElement | null = null;
   private videoTrack: ZoomCapableTrack | null = null;
   private stream: MediaStream | null = null;
   private running = false;
   private loopTimer: ReturnType<typeof setTimeout> | null = null;
-  private enhanceCanvas: HTMLCanvasElement | null = null;
-  private enhanceModeIndex = 0;
+  private sampleCanvas: HTMLCanvasElement | null = null;
   private zoomMode: 'native' | 'digital' = 'digital';
   private zoomMin = DIGITAL_ZOOM_MIN;
   private zoomMax = DIGITAL_ZOOM_MAX;
@@ -147,18 +111,18 @@ export class ScannerService {
     return devices.filter((d) => d.kind === 'videoinput');
   }
 
-  parseFormats(formatsParam: string | null): BarcodeFormat[] {
+  parseFormats(formatsParam: string | null): DetectorFormat[] {
     if (!formatsParam?.trim()) {
       return DEFAULT_FORMATS;
     }
 
     const parsed = formatsParam
       .split(',')
-      .map((f) => f.trim().toUpperCase())
-      .map((name) => FORMAT_ALIASES[name])
-      .filter((f): f is BarcodeFormat => f !== undefined);
+      .map((f) => f.trim())
+      .map((name) => FORMAT_ALIASES[name] ?? FORMAT_ALIASES[name.toUpperCase()])
+      .filter((f): f is DetectorFormat => f !== undefined);
 
-    return parsed.length > 0 ? parsed : DEFAULT_FORMATS;
+    return parsed.length > 0 ? [...new Set(parsed)] : DEFAULT_FORMATS;
   }
 
   getZoomState(): ZoomState {
@@ -192,21 +156,15 @@ export class ScannerService {
 
   async start(
     videoElement: HTMLVideoElement,
-    formats: BarcodeFormat[],
+    formats: DetectorFormat[],
     deviceId: string | undefined,
     onResult: (result: ScanResult) => void,
   ): Promise<void> {
     await this.stop();
 
-    const hints = new Map<DecodeHintType, unknown>();
-    hints.set(DecodeHintType.POSSIBLE_FORMATS, formats);
-
-    this.nativeDetector = await this.createNativeDetector(formats);
-    // Prefer native BarcodeDetector when available — avoids ZXing console spam
-    // and canvas rotate failures on Chromium / Safari.
-    this.reader = this.nativeDetector ? null : new BrowserMultiFormatReader(hints);
+    this.detector = await this.createDetector(formats);
     this.videoElement = videoElement;
-    this.enhanceCanvas = this.reader ? document.createElement('canvas') : null;
+    this.sampleCanvas = document.createElement('canvas');
 
     const constraints: MediaStreamConstraints = {
       audio: false,
@@ -256,10 +214,8 @@ export class ScannerService {
 
     this.videoElement = null;
     this.videoTrack = null;
-    this.reader = null;
-    this.nativeDetector = null;
-    this.enhanceCanvas = null;
-    this.enhanceModeIndex = 0;
+    this.detector = null;
+    this.sampleCanvas = null;
     this.zoomMode = 'digital';
     this.zoomMin = DIGITAL_ZOOM_MIN;
     this.zoomMax = DIGITAL_ZOOM_MAX;
@@ -294,94 +250,55 @@ export class ScannerService {
 
   private async scanOnce(): Promise<ScanResult | null> {
     const video = this.videoElement;
-    if (!video || video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA) {
+    const canvas = this.sampleCanvas;
+    const detector = this.detector;
+    if (!video || !canvas || !detector || video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA) {
       return null;
     }
 
-    if (this.nativeDetector) {
-      try {
-        const codes = await this.nativeDetector.detect(video);
-        const first = codes[0];
-        if (first?.rawValue) {
-          return {
-            scanValue: first.rawValue,
-            format: NATIVE_TO_FORMAT[first.format] ?? first.format.toUpperCase(),
-          };
-        }
-      } catch {
-        // Empty / failed frames are normal — keep looping.
-      }
-      // Native path only: do not fall through to ZXing (it warns on every miss).
+    if (!this.drawReticleFrame(video, canvas)) {
       return null;
     }
 
-    if (!this.reader || !this.enhanceCanvas) {
+    // BarcodeDetector returns [] on miss — no throw, no console spam.
+    const codes = await detector.detect(canvas);
+    const first = codes[0];
+    if (!first?.rawValue) {
       return null;
     }
 
-    const modes: EnhanceMode[] = ['plain', 'contrast'];
-    const mode = modes[this.enhanceModeIndex % modes.length] ?? 'plain';
-    this.enhanceModeIndex += 1;
-
-    if (!this.drawEnhancedFrame(video, this.enhanceCanvas, mode)) {
-      return null;
-    }
-
-    return withMutedZxingConsole(() => {
-      try {
-        const result = this.reader!.decodeFromCanvas(this.enhanceCanvas!);
-        return {
-          scanValue: result.getText(),
-          format: BarcodeFormat[result.getBarcodeFormat()] ?? String(result.getBarcodeFormat()),
-        };
-      } catch {
-        // NotFoundException and related failures are expected mid-scan.
-        return null;
-      }
-    });
+    return {
+      scanValue: first.rawValue,
+      format: RETURN_FORMAT[first.format] ?? first.format.toUpperCase(),
+    };
   }
 
   /**
-   * Crops the visible center (respecting digital zoom), scales to a bounded
-   * decode size, and optionally boosts contrast / inverts — helps ZXing on
-   * blurry or low-contrast codes without blowing past canvas limits.
+   * Sample the visible reticle region (respecting CSS digital zoom) into a
+   * bounded canvas so detection matches what the user is aiming at.
    */
-  private drawEnhancedFrame(
-    video: HTMLVideoElement,
-    canvas: HTMLCanvasElement,
-    mode: EnhanceMode,
-  ): boolean {
+  private drawReticleFrame(video: HTMLVideoElement, canvas: HTMLCanvasElement): boolean {
     const sourceWidth = video.videoWidth;
     const sourceHeight = video.videoHeight;
     if (!sourceWidth || !sourceHeight) {
       return false;
     }
 
-    // Match what the user sees: CSS digital zoom shows the center 1/zoom region.
     const zoom = this.zoomMode === 'digital' ? this.zoomValue : 1;
     const visibleWidth = sourceWidth / zoom;
     const visibleHeight = sourceHeight / zoom;
     const sx = (sourceWidth - visibleWidth) / 2;
     const sy = (sourceHeight - visibleHeight) / 2;
 
-    // Focus on the reticle area (~60% of the visible frame).
     const cropRatio = 0.6;
     const cropWidth = visibleWidth * cropRatio;
     const cropHeight = visibleHeight * cropRatio;
     const cropX = sx + (visibleWidth - cropWidth) / 2;
     const cropY = sy + (visibleHeight - cropHeight) / 2;
 
-    // Always target ~TARGET_DECODE_WIDTH (upscale small / downscale large).
     const scale = TARGET_DECODE_WIDTH / Math.max(cropWidth, 1);
-    let destWidth = Math.max(1, Math.round(cropWidth * scale));
-    let destHeight = Math.max(1, Math.round(cropHeight * scale));
-
-    const longEdge = Math.max(destWidth, destHeight);
-    if (longEdge > MAX_DECODE_EDGE) {
-      const shrink = MAX_DECODE_EDGE / longEdge;
-      destWidth = Math.max(1, Math.round(destWidth * shrink));
-      destHeight = Math.max(1, Math.round(destHeight * shrink));
-    }
+    const destWidth = Math.max(1, Math.round(cropWidth * scale));
+    const destHeight = Math.max(1, Math.round(cropHeight * scale));
 
     canvas.width = destWidth;
     canvas.height = destHeight;
@@ -393,13 +310,6 @@ export class ScannerService {
 
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = 'high';
-
-    if (mode === 'contrast') {
-      ctx.filter = 'contrast(185%) brightness(112%) saturate(0%)';
-    } else {
-      ctx.filter = 'contrast(125%) saturate(0%)';
-    }
-
     ctx.drawImage(
       video,
       cropX,
@@ -411,38 +321,39 @@ export class ScannerService {
       destWidth,
       destHeight,
     );
-    ctx.filter = 'none';
     return true;
   }
 
-  private async createNativeDetector(
-    formats: BarcodeFormat[],
-  ): Promise<NativeBarcodeDetector | null> {
-    const Detector = (globalThis as unknown as { BarcodeDetector?: NativeBarcodeDetectorCtor })
-      .BarcodeDetector;
-    if (!Detector) {
-      return null;
+  private async createDetector(formats: DetectorFormat[]): Promise<BarcodeDetectorLike> {
+    const Native = (globalThis as unknown as { BarcodeDetector?: BarcodeDetectorCtor }).BarcodeDetector;
+    if (Native) {
+      try {
+        let formatsToUse: string[] = formats;
+        if (typeof Native.getSupportedFormats === 'function') {
+          const supported = await Native.getSupportedFormats();
+          formatsToUse = formats.filter((name) => supported.includes(name));
+        }
+        if (formatsToUse.length > 0) {
+          return new Native({ formats: formatsToUse });
+        }
+      } catch {
+        // Fall through to WASM ponyfill.
+      }
     }
 
-    try {
-      const wanted = formats
-        .map((format) => ZXING_TO_NATIVE[format])
-        .filter((name): name is string => !!name);
-
-      let formatsToUse = wanted;
-      if (typeof Detector.getSupportedFormats === 'function') {
-        const supported = await Detector.getSupportedFormats();
-        formatsToUse = wanted.filter((name) => supported.includes(name));
-      }
-
-      if (formatsToUse.length === 0) {
-        return null;
-      }
-
-      return new Detector({ formats: formatsToUse });
-    } catch {
-      return null;
-    }
+    const { BarcodeDetector, prepareZXingModule } = await import('barcode-detector/ponyfill');
+    await prepareZXingModule({
+      overrides: {
+        locateFile: (path: string, prefix: string) => {
+          if (path.endsWith('.wasm')) {
+            const base = document.querySelector('base')?.href ?? `${location.origin}/`;
+            return new URL(`assets/zxing/${path}`, base).toString();
+          }
+          return `${prefix}${path}`;
+        },
+      },
+    });
+    return new BarcodeDetector({ formats });
   }
 
   private async boostTrackQuality(): Promise<void> {

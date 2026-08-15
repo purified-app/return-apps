@@ -104,6 +104,11 @@
               {
                 "glob": "**/*",
                 "input": "projects/scan-back/public"
+              },
+              {
+                "glob": "zxing_reader.wasm",
+                "input": "node_modules/zxing-wasm/dist/reader",
+                "output": "assets/zxing"
               }
             ],
             "styles": [
@@ -116,8 +121,8 @@
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "750kB",
-                  "maximumError": "1.5MB"
+                  "maximumWarning": "500kB",
+                  "maximumError": "1MB"
                 },
                 {
                   "type": "anyComponentStyle",
