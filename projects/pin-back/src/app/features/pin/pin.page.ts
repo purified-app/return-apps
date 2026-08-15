@@ -1,6 +1,6 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { ReturnUrlValidator, RbPanel } from 'shared-ui';
+import { ReturnSession, ReturnUrlValidator, RbPanel } from 'shared-ui';
 
 type PinStatus = 'ready' | 'invalid-return-url' | 'incomplete' | 'done' | 'redirecting';
 
@@ -33,12 +33,10 @@ export class PinPage implements OnInit {
     return '•'.repeat(value.length).padEnd(this.length(), '·');
   });
 
-  private returnUrl: URL | null = null;
-  private state: string | null = null;
+  private session!: ReturnSession;
 
   ngOnInit(): void {
     const params = this.route.snapshot.queryParamMap;
-    this.state = params.get('state');
 
     const lengthParam = Number(params.get('length'));
     if (Number.isFinite(lengthParam) && lengthParam >= 3 && lengthParam <= 12) {
@@ -50,15 +48,11 @@ export class PinPage implements OnInit {
       this.mask.set(false);
     }
 
-    const rawReturnUrl = params.get('returnUrl');
-    if (rawReturnUrl) {
-      const validation = this.returnUrlValidator.validate(rawReturnUrl);
-      if (!validation.ok) {
-        this.status.set('invalid-return-url');
-        this.errorDetail.set(validation.reason);
-        return;
-      }
-      this.returnUrl = validation.url;
+    const init = ReturnSession.open(this.returnUrlValidator, params, { delivery: 'hash' });
+    this.session = init.session;
+    if (!init.ok) {
+      this.status.set('invalid-return-url');
+      this.errorDetail.set(init.reason);
     }
   }
 
@@ -91,11 +85,7 @@ export class PinPage implements OnInit {
   }
 
   onCancel(): void {
-    if (this.returnUrl) {
-      location.href = this.returnUrlValidator.buildRedirectUrl(this.returnUrl, {
-        error: 'cancelled',
-        state: this.state,
-      });
+    if (this.session.cancel()) {
       return;
     }
     if (history.length > 1) {
@@ -113,13 +103,8 @@ export class PinPage implements OnInit {
       return;
     }
 
-    if (this.returnUrl) {
+    if (this.session.succeed(pin, 'pin.digits')) {
       this.status.set('redirecting');
-      location.href = this.returnUrlValidator.buildRedirectUrl(this.returnUrl, {
-        pin,
-        format: 'pin',
-        state: this.state,
-      });
       return;
     }
 

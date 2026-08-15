@@ -8,7 +8,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { ReturnUrlValidator, RbPanel } from 'shared-ui';
+import { ReturnSession, ReturnUrlValidator, RbPanel, scanFormat } from 'shared-ui';
 import { ScanPageStatus, ScanResult } from '../../core/scan-result.model';
 import { ScannerService } from './scanner';
 
@@ -38,8 +38,7 @@ export class ScanPage implements OnDestroy {
   readonly zoomMax = signal(4);
   readonly zoomLabel = signal('1.0×');
 
-  private returnUrl: URL | null = null;
-  private state: string | null = null;
+  private session!: ReturnSession;
   private devices: MediaDeviceInfo[] = [];
   private deviceIndex = 0;
   private handled = false;
@@ -61,11 +60,7 @@ export class ScanPage implements OnDestroy {
   async onCancel(): Promise<void> {
     await this.scanner.stop();
 
-    if (this.returnUrl) {
-      location.href = this.returnUrlValidator.buildRedirectUrl(this.returnUrl, {
-        error: 'cancelled',
-        state: this.state,
-      });
+    if (this.session.cancel()) {
       return;
     }
 
@@ -146,18 +141,14 @@ export class ScanPage implements OnDestroy {
   }
 
   private async bootstrap(): Promise<void> {
-    const params = this.route.snapshot.queryParamMap;
-    this.state = params.get('state');
-
-    const rawReturnUrl = params.get('returnUrl');
-    if (rawReturnUrl) {
-      const validation = this.returnUrlValidator.validate(rawReturnUrl);
-      if (!validation.ok) {
-        this.status.set('invalid-return-url');
-        this.errorDetail.set(validation.reason);
-        return;
-      }
-      this.returnUrl = validation.url;
+    const init = ReturnSession.open(this.returnUrlValidator, this.route.snapshot.queryParamMap, {
+      delivery: 'query',
+    });
+    this.session = init.session;
+    if (!init.ok) {
+      this.status.set('invalid-return-url');
+      this.errorDetail.set(init.reason);
+      return;
     }
 
     try {
@@ -227,14 +218,9 @@ export class ScanPage implements OnDestroy {
     this.handled = true;
     await this.scanner.stop();
 
-    if (this.returnUrl) {
+    if (this.session.succeed(scanResult.scanValue, scanFormat(scanResult.format))) {
       this.status.set('redirecting');
       this.statusMessage.set('Returning…');
-      location.href = this.returnUrlValidator.buildRedirectUrl(this.returnUrl, {
-        scanValue: scanResult.scanValue,
-        format: scanResult.format,
-        state: this.state,
-      });
       return;
     }
 

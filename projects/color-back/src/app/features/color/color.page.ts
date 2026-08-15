@@ -8,7 +8,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { ReturnUrlValidator, RbPanel } from 'shared-ui';
+import { ReturnSession, ReturnUrlValidator, RbPanel } from 'shared-ui';
 
 type ColorStatus =
   | 'starting'
@@ -46,8 +46,7 @@ export class ColorPage implements OnDestroy {
   readonly liveColor = signal<SampledColor | null>(null);
   readonly captured = signal<SampledColor | null>(null);
 
-  private returnUrl: URL | null = null;
-  private state: string | null = null;
+  private session!: ReturnSession;
   private stream: MediaStream | null = null;
   private raf = 0;
   private ready = false;
@@ -65,11 +64,7 @@ export class ColorPage implements OnDestroy {
 
   onCancel(): void {
     this.stopCamera();
-    if (this.returnUrl) {
-      location.href = this.returnUrlValidator.buildRedirectUrl(this.returnUrl, {
-        error: 'cancelled',
-        state: this.state,
-      });
+    if (this.session.cancel()) {
       return;
     }
     if (history.length > 1) {
@@ -86,15 +81,13 @@ export class ColorPage implements OnDestroy {
       return;
     }
 
-    if (this.returnUrl) {
+    if (
+      this.session.succeed(color.hex, 'color.hex', {
+        rgb: `${color.r},${color.g},${color.b}`,
+      })
+    ) {
       this.status.set('redirecting');
       this.stopCamera();
-      location.href = this.returnUrlValidator.buildRedirectUrl(this.returnUrl, {
-        hex: color.hex,
-        rgb: `${color.r},${color.g},${color.b}`,
-        format: 'hex',
-        state: this.state,
-      });
       return;
     }
 
@@ -110,18 +103,14 @@ export class ColorPage implements OnDestroy {
   }
 
   private bootstrap(): void {
-    const params = this.route.snapshot.queryParamMap;
-    this.state = params.get('state');
-
-    const rawReturnUrl = params.get('returnUrl');
-    if (rawReturnUrl) {
-      const validation = this.returnUrlValidator.validate(rawReturnUrl);
-      if (!validation.ok) {
-        this.status.set('invalid-return-url');
-        this.errorDetail.set(validation.reason);
-        return;
-      }
-      this.returnUrl = validation.url;
+    const init = ReturnSession.open(this.returnUrlValidator, this.route.snapshot.queryParamMap, {
+      delivery: 'query',
+    });
+    this.session = init.session;
+    if (!init.ok) {
+      this.status.set('invalid-return-url');
+      this.errorDetail.set(init.reason);
+      return;
     }
 
     void this.startCamera();

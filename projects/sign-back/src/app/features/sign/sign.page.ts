@@ -8,7 +8,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { ReturnUrlValidator, RbPanel } from 'shared-ui';
+import { ReturnSession, ReturnUrlValidator, RbPanel } from 'shared-ui';
 import { SignaturePadService } from './signature-pad';
 
 type SignStatus =
@@ -40,8 +40,7 @@ export class SignPage implements OnDestroy {
   readonly errorDetail = signal<string | null>(null);
   readonly previewUrl = signal<string | null>(null);
 
-  private returnUrl: URL | null = null;
-  private state: string | null = null;
+  private session!: ReturnSession;
   private ready = false;
 
   constructor() {
@@ -69,17 +68,12 @@ export class SignPage implements OnDestroy {
     this.previewUrl.set(null);
     this.errorDetail.set(null);
     this.status.set('ready');
-    // Canvas is destroyed while status === 'done'; re-bind after it mounts again.
     requestAnimationFrame(() => this.attachPad());
   }
 
   onCancel(): void {
     this.pad.detach();
-    if (this.returnUrl) {
-      location.href = this.returnUrlValidator.buildRedirectUrl(this.returnUrl, {
-        error: 'cancelled',
-        state: this.state,
-      });
+    if (this.session.cancel()) {
       return;
     }
     if (history.length > 1) {
@@ -105,35 +99,25 @@ export class SignPage implements OnDestroy {
       return;
     }
 
-    if (this.returnUrl) {
+    if (this.session.succeed(signature, 'sign.svg')) {
       this.status.set('redirecting');
-      location.href = this.returnUrlValidator.buildRedirectUrl(this.returnUrl, {
-        signature,
-        format: 'image/svg+xml',
-        state: this.state,
-      });
       return;
     }
 
     this.previewUrl.set(signature);
-    // Pad canvas leaves the DOM with the done panel — detach listeners now.
     this.pad.detach();
     this.status.set('done');
   }
 
   private bootstrap(): void {
-    const params = this.route.snapshot.queryParamMap;
-    this.state = params.get('state');
-
-    const rawReturnUrl = params.get('returnUrl');
-    if (rawReturnUrl) {
-      const validation = this.returnUrlValidator.validate(rawReturnUrl);
-      if (!validation.ok) {
-        this.status.set('invalid-return-url');
-        this.errorDetail.set(validation.reason);
-        return;
-      }
-      this.returnUrl = validation.url;
+    const init = ReturnSession.open(this.returnUrlValidator, this.route.snapshot.queryParamMap, {
+      delivery: 'hash',
+    });
+    this.session = init.session;
+    if (!init.ok) {
+      this.status.set('invalid-return-url');
+      this.errorDetail.set(init.reason);
+      return;
     }
 
     this.attachPad();

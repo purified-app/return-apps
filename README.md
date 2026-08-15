@@ -1,23 +1,25 @@
 # return-apps
 
-Angular workspace for **returnUrl** helper apps — small client-side tools that capture something (signature, scan, location, …) and redirect the result back to a calling app.
+Angular workspace for **returnUrl** helper apps — small client-side tools that capture something (signature, scan, location, …) and return the result to a calling app.
+
+**Contract v1:** always `value` + `format` (and `error` on cancel). See [docs/contract-v1.md](docs/contract-v1.md), live catalog [`apps.json`](https://return.purified.app/apps.json), SDK [`/sdk/return-apps.mjs`](https://return.purified.app/sdk/return-apps.mjs).
 
 ## Live site
 
 **https://return.purified.app/**
 
-| App | URL |
-|-----|-----|
-| Hub | https://return.purified.app/ |
-| SignBack | https://return.purified.app/sign/ |
-| ScanBack | https://return.purified.app/scan/ |
-| GeoBack | https://return.purified.app/geo/ |
-| MapPickBack | https://return.purified.app/map/ |
-| PinBack | https://return.purified.app/pin/ |
-| NfcBack | https://return.purified.app/nfc/ |
-| ColorBack | https://return.purified.app/color/ |
+| App | URL | Default delivery |
+|-----|-----|------------------|
+| Hub | https://return.purified.app/ | — |
+| SignBack | https://return.purified.app/sign/ | hash |
+| ScanBack | https://return.purified.app/scan/ | query |
+| GeoBack | https://return.purified.app/geo/ | query |
+| MapPickBack | https://return.purified.app/map/ | query |
+| PinBack | https://return.purified.app/pin/ | hash |
+| NfcBack | https://return.purified.app/nfc/ | postMessage |
+| ColorBack | https://return.purified.app/color/ | query |
 
-Caller entry is the app root, e.g. `https://return.purified.app/sign?returnUrl=…`. Docs UI lives at `/home` inside each app.
+Caller entry is the app root, e.g. `https://return.purified.app/sign?returnUrl=…&allowedOrigins=…`. Docs UI lives at `/home` inside each app.
 
 Local serve still uses root paths on separate ports (`/`, `/home`, `/demo-caller`).
 
@@ -33,7 +35,8 @@ Local serve still uses root paths on separate ports (`/`, `/home`, `/demo-caller
 | **NfcBack** | `projects/nfc-back` | `bun run start:nfc-back` → :4205 |
 | **ColorBack** | `projects/color-back` | `bun run start:color-back` → :4206 |
 
-Shared library: **`shared-ui`** (`projects/shared-ui`) — styles, `ReturnUrlValidator`, `appBaseUrl`, `RbPanel`, `RbMetaList`, `RbPage`.
+Shared library: **`shared-ui`** — styles, return contract helpers, `RbHomeDocs`, `RbDemoCaller`, `ReturnSession`.  
+SDK: **`packages/return-sdk/return-apps.mjs`** (published to `/sdk/`).
 
 Per-app docs: [docs/](docs/).
 
@@ -63,11 +66,12 @@ bun run start:geo-back   # or any start:* script above
 
 ```text
 return-apps/
+  packages/return-sdk/  # ESM caller SDK
   projects/
     shared-ui/
     sign-back/ scan-back/ geo-back/ map-pick-back/
     pin-back/ nfc-back/ color-back/
-  site/                 # Pages hub (index + CNAME + root 404)
+  site/                 # Pages hub (index + apps.json + sdk + CNAME)
   scripts/build-site.sh
   docs/
 ```
@@ -94,7 +98,7 @@ PAGES_BASE=/return-apps bun run build:site
 - Bun (package manager)
 - Angular 22 (standalone, signals)
 - SignBack: canvas → SVG data URL
-- ScanBack: ZXing
+- ScanBack: Barcode Detection API + `barcode-detector` ponyfill
 - MapPickBack: Leaflet + OpenStreetMap
 - GeoBack / PinBack / NfcBack / ColorBack: Geolocation, keypad, Web NFC, `getUserMedia`
 - GitHub Pages (single site, short path per app)

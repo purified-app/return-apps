@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { ReturnUrlValidator, RbPanel } from 'shared-ui';
+import { ReturnSession, ReturnUrlValidator, RbPanel, nfcFormat } from 'shared-ui';
 
 type NfcStatus =
   | 'idle'
@@ -57,23 +57,18 @@ export class NfcPage implements OnInit, OnDestroy {
   readonly errorDetail = signal<string | null>(null);
   readonly reading = signal<NfcReading | null>(null);
 
-  private returnUrl: URL | null = null;
-  private state: string | null = null;
+  private session!: ReturnSession;
   private abort: AbortController | null = null;
 
   ngOnInit(): void {
-    const params = this.route.snapshot.queryParamMap;
-    this.state = params.get('state');
-
-    const rawReturnUrl = params.get('returnUrl');
-    if (rawReturnUrl) {
-      const validation = this.returnUrlValidator.validate(rawReturnUrl);
-      if (!validation.ok) {
-        this.status.set('invalid-return-url');
-        this.errorDetail.set(validation.reason);
-        return;
-      }
-      this.returnUrl = validation.url;
+    const init = ReturnSession.open(this.returnUrlValidator, this.route.snapshot.queryParamMap, {
+      delivery: 'postMessage',
+    });
+    this.session = init.session;
+    if (!init.ok) {
+      this.status.set('invalid-return-url');
+      this.errorDetail.set(init.reason);
+      return;
     }
 
     void this.startScan();
@@ -117,11 +112,7 @@ export class NfcPage implements OnInit, OnDestroy {
 
   onCancel(): void {
     this.stopScan();
-    if (this.returnUrl) {
-      location.href = this.returnUrlValidator.buildRedirectUrl(this.returnUrl, {
-        error: 'cancelled',
-        state: this.state,
-      });
+    if (this.session.cancel()) {
       return;
     }
     if (history.length > 1) {
@@ -147,14 +138,12 @@ export class NfcPage implements OnInit, OnDestroy {
     this.reading.set(reading);
     this.stopScan();
 
-    if (this.returnUrl) {
-      this.status.set('redirecting');
-      location.href = this.returnUrlValidator.buildRedirectUrl(this.returnUrl, {
-        nfcValue: reading.nfcValue,
+    if (
+      this.session.succeed(reading.nfcValue, nfcFormat(reading.recordType), {
         recordType: reading.recordType,
-        format: 'nfc',
-        state: this.state,
-      });
+      })
+    ) {
+      this.status.set('redirecting');
       return;
     }
 

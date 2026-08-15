@@ -1,27 +1,33 @@
 import { Component, input } from '@angular/core';
 
-/** Displays optional format / state / error rows returned from a helper app. */
+/** Displays optional value / format / state / error rows returned from a helper app. */
 @Component({
   selector: 'rb-meta-list',
   template: `
-    @if (format() || state() || error()) {
+    @if (value() || format() || state() || error()) {
       <dl class="meta">
-        @if (format(); as value) {
+        @if (value(); as v) {
+          <div>
+            <dt>Value</dt>
+            <dd class="meta__value">{{ v }}</dd>
+          </div>
+        }
+        @if (format(); as v) {
           <div>
             <dt>Format</dt>
-            <dd>{{ value }}</dd>
+            <dd>{{ v }}</dd>
           </div>
         }
-        @if (state(); as value) {
+        @if (state(); as v) {
           <div>
             <dt>State</dt>
-            <dd>{{ value }}</dd>
+            <dd>{{ v }}</dd>
           </div>
         }
-        @if (error(); as value) {
+        @if (error(); as v) {
           <div>
             <dt>Error</dt>
-            <dd>{{ value }}</dd>
+            <dd>{{ v }}</dd>
           </div>
         }
       </dl>
@@ -29,6 +35,7 @@ import { Component, input } from '@angular/core';
   `,
 })
 export class RbMetaList {
+  readonly value = input<string | null>(null);
   readonly format = input<string | null>(null);
   readonly state = input<string | null>(null);
   readonly error = input<string | null>(null);

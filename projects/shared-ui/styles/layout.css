@@ -211,9 +211,23 @@
   color: var(--rb-muted-2);
 }
 
+.meta dd.meta__value {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  max-height: 6rem;
+  overflow: auto;
+}
+
 .meta dd {
   margin: 0;
   word-break: break-all;
+}
+
+.meta dd.meta__value {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  max-height: 6rem;
+  overflow: auto;
 }
 
 /* Interactive app toolbars (map / sign / pin / geo / …) */

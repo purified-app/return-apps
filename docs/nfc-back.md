@@ -1,45 +1,11 @@
 # NfcBack
 
-> Lives in the `return-apps` monorepo under `projects/nfc-back`.
+Web NFC reader (Chrome/Android). Contract **v1**: `value` + `format=nfc.<recordType>` plus `recordType`. Default delivery: **postMessage** (hash fallback).
 
-Mobile-first Angular web app that reads an **NFC tag** via Web NFC and can redirect the payload back to a calling app via URL. Everything runs client-side — no backend in v1.
-
-## Requirements
-
-- **HTTPS** (or `localhost`)
-- Browser with **Web NFC** (typically Chrome on Android)
-
-## Getting started
+See [contract-v1.md](./contract-v1.md).
 
 ```bash
-bun install
-bun run start:nfc-back
+bun run start:nfc-back   # :4205
 ```
 
-Open `http://localhost:4205/` (NFC itself needs a supported mobile browser).
-
-| Route | Description |
-|-------|-------------|
-| `/` | Reader (standalone without `returnUrl`) |
-| `/home` | Landing + integration notes |
-| `/demo-caller` | Minimal caller for manual E2E testing |
-
-## Integration contract
-
-### Open
-
-```text
-https://return.purified.app/nfc?returnUrl=<urlencoded-absolute-url>&state=<optional>
-```
-
-### Return after a successful read
-
-```text
-<returnUrl>?nfcValue=<value>&recordType=<type>&format=nfc&state=<state>
-```
-
-On cancel: `error=cancelled` (+ `state` if set).
-
-## Deploy
-
-App URL: **https://return.purified.app/nfc/**
+Demo caller forces `delivery=hash` because it navigates in the same tab.

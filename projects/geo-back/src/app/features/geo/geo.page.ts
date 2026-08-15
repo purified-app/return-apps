@@ -1,6 +1,6 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { ReturnUrlValidator, RbPanel } from 'shared-ui';
+import { ReturnSession, ReturnUrlValidator, RbPanel } from 'shared-ui';
 
 type GeoStatus =
   | 'idle'
@@ -39,27 +39,22 @@ export class GeoPage implements OnInit {
   readonly errorDetail = signal<string | null>(null);
   readonly reading = signal<GeoReading | null>(null);
 
-  private returnUrl: URL | null = null;
-  private state: string | null = null;
+  private session!: ReturnSession;
   private highAccuracy = true;
 
   ngOnInit(): void {
     const params = this.route.snapshot.queryParamMap;
-    this.state = params.get('state');
     const highAccuracyParam = params.get('highAccuracy');
     if (highAccuracyParam === '0' || highAccuracyParam === 'false') {
       this.highAccuracy = false;
     }
 
-    const rawReturnUrl = params.get('returnUrl');
-    if (rawReturnUrl) {
-      const validation = this.returnUrlValidator.validate(rawReturnUrl);
-      if (!validation.ok) {
-        this.status.set('invalid-return-url');
-        this.errorDetail.set(validation.reason);
-        return;
-      }
-      this.returnUrl = validation.url;
+    const init = ReturnSession.open(this.returnUrlValidator, params, { delivery: 'query' });
+    this.session = init.session;
+    if (!init.ok) {
+      this.status.set('invalid-return-url');
+      this.errorDetail.set(init.reason);
+      return;
     }
 
     this.locate();
@@ -88,11 +83,7 @@ export class GeoPage implements OnInit {
   }
 
   onCancel(): void {
-    if (this.returnUrl) {
-      location.href = this.returnUrlValidator.buildRedirectUrl(this.returnUrl, {
-        error: 'cancelled',
-        state: this.state,
-      });
+    if (this.session.cancel()) {
       return;
     }
     if (history.length > 1) {
@@ -124,7 +115,7 @@ export class GeoPage implements OnInit {
     };
     this.reading.set(reading);
 
-    if (this.returnUrl) {
+    if (this.session.isReturnMode) {
       this.returnReading(reading);
       return;
     }
@@ -133,40 +124,44 @@ export class GeoPage implements OnInit {
   }
 
   private returnReading(reading: GeoReading): void {
-    if (!this.returnUrl) {
-      this.status.set('done');
-      return;
-    }
-
-    this.status.set('redirecting');
-    const params: Record<string, string | null | undefined> = {
+    const extras: Record<string, string | null | undefined> = {
       lat: String(reading.lat),
       lng: String(reading.lng),
       accuracy: String(reading.accuracy),
       timestamp: String(reading.timestamp),
-      format: 'geo',
-      state: this.state,
     };
     if (reading.altitude != null) {
-      params['altitude'] = String(reading.altitude);
+      extras['altitude'] = String(reading.altitude);
     }
     if (reading.altitudeAccuracy != null) {
-      params['altitudeAccuracy'] = String(reading.altitudeAccuracy);
+      extras['altitudeAccuracy'] = String(reading.altitudeAccuracy);
     }
     if (reading.heading != null) {
-      params['heading'] = String(reading.heading);
+      extras['heading'] = String(reading.heading);
     }
     if (reading.speed != null) {
-      params['speed'] = String(reading.speed);
+      extras['speed'] = String(reading.speed);
     }
 
-    location.href = this.returnUrlValidator.buildRedirectUrl(this.returnUrl, params);
+    if (
+      this.session.succeed(`${reading.lat},${reading.lng}`, 'geo.point', extras)
+    ) {
+      this.status.set('redirecting');
+      return;
+    }
+
+    this.status.set('done');
   }
 
   private onError(error: GeolocationPositionError): void {
     if (error.code === error.PERMISSION_DENIED) {
       this.status.set('denied');
       this.errorDetail.set('Location permission was denied. Allow location access and try again.');
+      return;
+    }
+    if (error.code === error.TIMEOUT) {
+      this.status.set('error');
+      this.errorDetail.set(error.message || 'Location timed out.');
       return;
     }
     this.status.set('error');
