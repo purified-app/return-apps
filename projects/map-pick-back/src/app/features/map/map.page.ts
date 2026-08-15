@@ -51,6 +51,7 @@ export class MapPage implements OnDestroy {
   private marker: L.Marker | null = null;
   private initialCenter: L.LatLngExpression = DEFAULT_CENTER;
   private initialZoom = DEFAULT_ZOOM;
+  private hasQueryCenter = false;
   private ready = false;
   private resizeObserver: ResizeObserver | null = null;
 
@@ -123,20 +124,7 @@ export class MapPage implements OnDestroy {
   }
 
   useMyLocation(): void {
-    if (!('geolocation' in navigator) || !this.map) {
-      return;
-    }
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const { latitude, longitude } = position.coords;
-        this.map?.setView([latitude, longitude], Math.max(this.map.getZoom(), 14));
-        this.placePin(latitude, longitude);
-      },
-      () => {
-        this.errorDetail.set('Could not read your current location.');
-      },
-      { enableHighAccuracy: true, timeout: 15_000 },
-    );
+    this.centerOnUserLocation({ placePin: true, reportErrors: true });
   }
 
   private bootstrap(): void {
@@ -148,6 +136,7 @@ export class MapPage implements OnDestroy {
     const zoom = Number(params.get('zoom'));
     if (Number.isFinite(lat) && Number.isFinite(lng)) {
       this.initialCenter = [lat, lng];
+      this.hasQueryCenter = true;
     }
     if (Number.isFinite(zoom) && zoom > 0) {
       this.initialZoom = zoom;
@@ -203,8 +192,11 @@ export class MapPage implements OnDestroy {
     });
 
     const center = this.map.getCenter();
-    if (Number.isFinite(Number(this.route.snapshot.queryParamMap.get('lat')))) {
+    if (this.hasQueryCenter) {
       this.placePin(center.lat, center.lng, icon);
+    } else {
+      // No lat/lng from the caller — start on the device location when available.
+      this.centerOnUserLocation();
     }
 
     // Leaflet needs a size pass after layout, and whenever the shell resizes.
@@ -214,6 +206,39 @@ export class MapPage implements OnDestroy {
       this.resizeObserver = new ResizeObserver(() => this.map?.invalidateSize());
       this.resizeObserver.observe(el);
     }
+  }
+
+  private centerOnUserLocation(options?: {
+    placePin?: boolean;
+    reportErrors?: boolean;
+  }): void {
+    if (!('geolocation' in navigator) || !this.map) {
+      if (options?.reportErrors) {
+        this.errorDetail.set('Could not read your current location.');
+        this.status.set('empty');
+      }
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        if (!this.map) {
+          return;
+        }
+        const { latitude, longitude } = position.coords;
+        this.map.setView([latitude, longitude], Math.max(this.map.getZoom(), 14));
+        if (options?.placePin) {
+          this.placePin(latitude, longitude);
+        }
+      },
+      () => {
+        if (options?.reportErrors) {
+          this.errorDetail.set('Could not read your current location.');
+          this.status.set('empty');
+        }
+      },
+      { enableHighAccuracy: true, timeout: 15_000 },
+    );
   }
 
   private placePin(lat: number, lng: number, icon?: L.Icon): void {

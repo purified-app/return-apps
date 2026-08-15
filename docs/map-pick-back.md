@@ -31,7 +31,7 @@ https://return.purified.app/map?returnUrl=<urlencoded-absolute-url>&state=<optio
 |-------|----------|-------------|
 | `returnUrl` | for return mode | Absolute `https:` URL (or `http://localhost`) |
 | `state` | no | Opaque string mirrored back unchanged |
-| `lat` / `lng` / `zoom` | no | Initial map center / zoom |
+| `lat` / `lng` / `zoom` | no | Initial map center / zoom. Without `lat`/`lng`, the map starts on the device location when permission is granted. |
 
 ### Return after Done
 
