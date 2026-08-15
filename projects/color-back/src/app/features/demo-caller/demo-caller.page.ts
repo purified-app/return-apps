@@ -30,6 +30,6 @@ export class DemoCallerPage implements OnInit {
   startColor(): void {
     const base = appBaseUrl();
     const returnUrl = `${base}/demo-caller`;
-    location.href = `${base}/color?returnUrl=${encodeURIComponent(returnUrl)}&state=demo1`;
+    location.href = `${base}?returnUrl=${encodeURIComponent(returnUrl)}&state=demo1`;
   }
 }

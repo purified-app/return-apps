@@ -15,7 +15,7 @@ export class HomePage {
   constructor() {
     const base = appBaseUrl();
     const returnUrl = `${base}/demo-caller`;
-    this.demoOpenUrl = `${base}/color?returnUrl=${encodeURIComponent(returnUrl)}&state=demo1`;
+    this.demoOpenUrl = `${base}?returnUrl=${encodeURIComponent(returnUrl)}&state=demo1`;
     this.demoReturnUrl =
       `${base}/demo-caller?hex=%23c45c26&rgb=196%2C92%2C38&format=hex&state=demo1`;
   }

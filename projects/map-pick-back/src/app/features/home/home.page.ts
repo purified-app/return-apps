@@ -15,7 +15,7 @@ export class HomePage {
   constructor() {
     const base = appBaseUrl();
     const returnUrl = `${base}/demo-caller`;
-    this.demoOpenUrl = `${base}/map?returnUrl=${encodeURIComponent(returnUrl)}&state=demo1`;
+    this.demoOpenUrl = `${base}?returnUrl=${encodeURIComponent(returnUrl)}&state=demo1`;
     this.demoReturnUrl =
       `${base}/demo-caller?lat=59.9139&lng=10.7522&zoom=14&format=map-pin&state=demo1`;
   }

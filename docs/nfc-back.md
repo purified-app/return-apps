@@ -20,8 +20,8 @@ Open `http://localhost:4205/` (NFC itself needs a supported mobile browser).
 
 | Route | Description |
 |-------|-------------|
-| `/` | Landing + integration notes |
-| `/nfc` | Reader (standalone without `returnUrl`) |
+| `/` | Reader (standalone without `returnUrl`) |
+| `/home` | Landing + integration notes |
 | `/demo-caller` | Minimal caller for manual E2E testing |
 
 ## Integration contract
@@ -29,7 +29,7 @@ Open `http://localhost:4205/` (NFC itself needs a supported mobile browser).
 ### Open
 
 ```text
-https://purified-app.github.io/return-apps/nfc-back/nfc?returnUrl=<urlencoded-absolute-url>&state=<optional>
+https://return.purified.app/nfc?returnUrl=<urlencoded-absolute-url>&state=<optional>
 ```
 
 ### Return after a successful read
@@ -39,3 +39,7 @@ https://purified-app.github.io/return-apps/nfc-back/nfc?returnUrl=<urlencoded-ab
 ```
 
 On cancel: `error=cancelled` (+ `state` if set).
+
+## Deploy
+
+App URL: **https://return.purified.app/nfc/**

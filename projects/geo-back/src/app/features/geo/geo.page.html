@@ -2,7 +2,7 @@
   @if (status() === 'invalid-return-url') {
     <rb-panel title="Invalid returnUrl">
       <p>{{ errorDetail() }}</p>
-      <a routerLink="/" class="btn">Back to home</a>
+      <a routerLink="/home" class="btn">Back to home</a>
     </rb-panel>
   } @else if (status() === 'unsupported' || status() === 'denied' || status() === 'error') {
     <rb-panel title="Location unavailable">
@@ -32,7 +32,7 @@
       }
       <div class="actions">
         <button type="button" class="btn btn-ghost" (click)="locate()">Locate again</button>
-        <a routerLink="/" class="btn">Back to home</a>
+        <a routerLink="/home" class="btn">Back to home</a>
       </div>
     </rb-panel>
   } @else {

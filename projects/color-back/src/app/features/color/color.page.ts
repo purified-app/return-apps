@@ -76,7 +76,7 @@ export class ColorPage implements OnDestroy {
       history.back();
       return;
     }
-    void this.router.navigateByUrl('/');
+    void this.router.navigateByUrl('/home');
   }
 
   onUseColor(): void {

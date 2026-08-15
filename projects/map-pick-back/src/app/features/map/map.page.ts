@@ -77,7 +77,7 @@ export class MapPage implements OnDestroy {
       history.back();
       return;
     }
-    void this.router.navigateByUrl('/');
+    void this.router.navigateByUrl('/home');
   }
 
   onClear(): void {

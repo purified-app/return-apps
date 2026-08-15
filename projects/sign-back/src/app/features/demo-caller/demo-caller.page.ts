@@ -42,6 +42,6 @@ export class DemoCallerPage implements OnInit {
   startSign(): void {
     const base = appBaseUrl();
     const returnUrl = `${base}/demo-caller`;
-    location.href = `${base}/sign?returnUrl=${encodeURIComponent(returnUrl)}&state=demo1`;
+    location.href = `${base}?returnUrl=${encodeURIComponent(returnUrl)}&state=demo1`;
   }
 }

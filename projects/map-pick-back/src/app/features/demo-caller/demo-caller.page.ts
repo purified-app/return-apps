@@ -31,6 +31,6 @@ export class DemoCallerPage implements OnInit {
   startMap(): void {
     const base = appBaseUrl();
     const returnUrl = `${base}/demo-caller`;
-    location.href = `${base}/map?returnUrl=${encodeURIComponent(returnUrl)}&state=demo1`;
+    location.href = `${base}?returnUrl=${encodeURIComponent(returnUrl)}&state=demo1`;
   }
 }

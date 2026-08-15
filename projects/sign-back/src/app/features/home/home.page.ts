@@ -15,7 +15,7 @@ export class HomePage {
   constructor() {
     const base = appBaseUrl();
     const returnUrl = `${base}/demo-caller`;
-    this.demoOpenUrl = `${base}/sign?returnUrl=${encodeURIComponent(returnUrl)}&state=demo1`;
+    this.demoOpenUrl = `${base}?returnUrl=${encodeURIComponent(returnUrl)}&state=demo1`;
     this.demoReturnUrl = `${base}/demo-caller?signature=<svg-data-url>&format=image/svg+xml&state=demo1`;
   }
 }

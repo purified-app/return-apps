@@ -7,7 +7,7 @@
       tag payload is redirected back via URL.
     </p>
     <div class="cta">
-      <a routerLink="/nfc" class="btn">Start NFC scan</a>
+      <a routerLink="/" class="btn">Start NFC scan</a>
       <a routerLink="/demo-caller" class="btn btn-ghost">Try demo caller</a>
     </div>
   </header>
@@ -15,7 +15,7 @@
   <section class="docs">
     <h2>Integration</h2>
     <p>Open the reader:</p>
-    <pre><code>/nfc?returnUrl=&lt;urlencoded-https-url&gt;&amp;state=&lt;optional&gt;</code></pre>
+    <pre><code>?returnUrl=&lt;urlencoded-https-url&gt;&amp;state=&lt;optional&gt;</code></pre>
     <p>After a successful read, redirect to:</p>
     <pre><code>&lt;returnUrl&gt;?nfcValue=&lt;value&gt;&amp;recordType=&lt;type&gt;&amp;format=nfc&amp;state=&lt;state&gt;</code></pre>
 

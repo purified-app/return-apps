@@ -7,7 +7,7 @@
       via URL.
     </p>
     <div class="cta">
-      <a routerLink="/pin" class="btn">Enter PIN</a>
+      <a routerLink="/" class="btn">Enter PIN</a>
       <a routerLink="/demo-caller" class="btn btn-ghost">Try demo caller</a>
     </div>
   </header>
@@ -15,7 +15,7 @@
   <section class="docs">
     <h2>Integration</h2>
     <p>Open the keypad:</p>
-    <pre><code>/pin?returnUrl=&lt;urlencoded-https-url&gt;&amp;state=&lt;optional&gt;&amp;length=&lt;optional&gt;&amp;mask=&lt;optional&gt;</code></pre>
+    <pre><code>?returnUrl=&lt;urlencoded-https-url&gt;&amp;state=&lt;optional&gt;&amp;length=&lt;optional&gt;&amp;mask=&lt;optional&gt;</code></pre>
     <p>After Done, redirect to:</p>
     <pre><code>&lt;returnUrl&gt;?pin=&lt;digits&gt;&amp;format=pin&amp;state=&lt;state&gt;</code></pre>
 
