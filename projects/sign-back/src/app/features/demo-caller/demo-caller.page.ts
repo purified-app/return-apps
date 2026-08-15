@@ -1,17 +1,13 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-
-function appBaseUrl(): string {
-  const baseHref = document.querySelector('base')?.href ?? `${location.origin}/`;
-  return baseHref.replace(/\/$/, '');
-}
+import { RbMetaList, appBaseUrl } from 'shared-ui';
 
 @Component({
   selector: 'sb-demo-caller-page',
-  imports: [FormsModule],
+  imports: [FormsModule, RbMetaList],
   templateUrl: './demo-caller.page.html',
-  styleUrl: './demo-caller.page.scss',
+  host: { class: 'rb-page rb-page--demo' },
 })
 export class DemoCallerPage implements OnInit {
   private readonly route = inject(ActivatedRoute);

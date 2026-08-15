@@ -8,7 +8,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { ReturnUrlValidator } from '../../core/return-url.validator';
+import { ReturnUrlValidator, RbPanel } from 'shared-ui';
 import { SignaturePadService } from './signature-pad';
 
 type SignStatus =
@@ -23,9 +23,10 @@ const MAX_SIGNATURE_CHARS = 7000;
 
 @Component({
   selector: 'sb-sign-page',
-  imports: [RouterLink],
+  imports: [RouterLink, RbPanel],
   templateUrl: './sign.page.html',
   styleUrl: './sign.page.scss',
+  host: { class: 'rb-page rb-page--plain' },
 })
 export class SignPage implements OnDestroy {
   private readonly route = inject(ActivatedRoute);

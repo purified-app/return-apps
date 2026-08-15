@@ -8,15 +8,16 @@ import {
   viewChild,
 } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { ReturnUrlValidator } from '../../core/return-url.validator';
+import { ReturnUrlValidator, RbPanel } from 'shared-ui';
 import { ScanPageStatus, ScanResult } from '../../core/scan-result.model';
 import { ScannerService } from './scanner';
 
 @Component({
   selector: 'sb-scan-page',
-  imports: [RouterLink],
+  imports: [RouterLink, RbPanel],
   templateUrl: './scan.page.html',
   styleUrl: './scan.page.scss',
+  host: { class: 'rb-page rb-page--plain' },
 })
 export class ScanPage implements OnDestroy {
   private readonly route = inject(ActivatedRoute);

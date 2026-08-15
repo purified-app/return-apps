@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - 'projects/scan-back/**'
+      - 'projects/shared-ui/**'
       - 'package.json'
       - 'package-lock.json'
       - 'angular.json'

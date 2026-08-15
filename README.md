@@ -9,6 +9,8 @@ Angular workspace for **returnUrl** helper apps — small client-side tools that
 | **SignBack** | `projects/sign-back` | `npm run start:sign-back` → http://localhost:4200 | https://sign-back.purified.app |
 | **ScanBack** | `projects/scan-back` | `npm run start:scan-back` → http://localhost:4201 | https://scan-back.purified.app |
 
+Shared library: **`shared-ui`** (`projects/shared-ui`) — styles, `ReturnUrlValidator`, `appBaseUrl`, `RbPanel`, `RbMetaList`, `RbPage`.
+
 Per-app docs: [docs/sign-back.md](docs/sign-back.md), [docs/scan-back.md](docs/scan-back.md).
 
 ## Requirements
@@ -29,29 +31,22 @@ npm run start:sign-back   # or start:scan-back
 |--------|-------------|
 | `npm run start:sign-back` | Serve SignBack on :4200 |
 | `npm run start:scan-back` | Serve ScanBack on :4201 |
-| `npm run build` | Production build of both apps |
+| `npm run build` | Build shared-ui + both apps |
+| `npm run build:shared-ui` | Build the shared library |
 | `npm run build:sign-back` | Production build of SignBack → `dist/sign-back/browser` |
 | `npm run build:scan-back` | Production build of ScanBack → `dist/scan-back/browser` |
-| `npm test` | Unit tests for both apps |
+| `npm test` | Unit tests for lib + both apps |
 
 ## Workspace layout
 
 ```text
 return-apps/
   projects/
+    shared-ui/     # shared styles + UI + returnUrl helpers
     sign-back/     # signature pad → returnUrl
     scan-back/     # QR/barcode scanner → returnUrl
-  styles/          # shared design tokens + UI (buttons, home/demo/panel)
-  docs/            # per-app READMEs / plans
-  angular.json     # both projects
-```
-
-Created with:
-
-```bash
-npx @angular/cli@22 new return-apps --create-application=false
-npx ng generate application sign-back --routing --style=scss --ssr=false
-npx ng generate application scan-back --routing --style=scss --ssr=false
+  docs/
+  angular.json
 ```
 
 ## Deploy
@@ -72,7 +67,7 @@ Each app keeps its own custom domain. Because GitHub Pages is one site per repo,
    - Custom domain unchanged (`sign-back.purified.app` / `scan-back.purified.app`)
 3. Push to `main` (or run the workflow manually). Path filters deploy only the app that changed.
 
-CI (`.github/workflows/ci.yml`) builds and tests both apps on every push/PR to `main`.
+CI builds and tests `shared-ui`, `sign-back`, and `scan-back` on every push/PR to `main`.
 
 ## Stack
 

@@ -1,13 +1,11 @@
 <div class="sign">
   @if (status() === 'invalid-return-url') {
-    <section class="panel">
-      <h1>Invalid returnUrl</h1>
+    <rb-panel title="Invalid returnUrl">
       <p>{{ errorDetail() }}</p>
       <a routerLink="/" class="btn">Back to home</a>
-    </section>
+    </rb-panel>
   } @else if (status() === 'done') {
-    <section class="panel">
-      <h1>Signature captured</h1>
+    <rb-panel title="Signature captured">
       @if (previewUrl(); as url) {
         <img [src]="url" alt="Captured signature preview" class="preview" />
       }
@@ -17,7 +15,7 @@
         </button>
         <a routerLink="/" class="btn">Back to home</a>
       </div>
-    </section>
+    </rb-panel>
   } @else {
     <section class="pad-shell">
       <header class="top">

@@ -12,7 +12,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        app: [sign-back, scan-back]
+        app: [shared-ui, sign-back, scan-back]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -20,5 +20,8 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npm run build:${{ matrix.app }}
+      - if: matrix.app == 'shared-ui'
+        run: npm run build:shared-ui
+      - if: matrix.app != 'shared-ui'
+        run: npm run build:${{ matrix.app }}
       - run: npm run test:${{ matrix.app }}

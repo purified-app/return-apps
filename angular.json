@@ -29,13 +29,9 @@
                 "input": "projects/sign-back/public"
               }
             ],
-            "styles": [
-              "styles/main.scss"
-            ],
+            "styles": ["projects/shared-ui/styles/main.scss"],
             "stylePreprocessorOptions": {
-              "includePaths": [
-                "styles"
-              ]
+              "includePaths": ["projects/shared-ui/styles"]
             }
           },
           "configurations": {
@@ -103,13 +99,9 @@
                 "input": "projects/scan-back/public"
               }
             ],
-            "styles": [
-              "styles/main.scss"
-            ],
+            "styles": ["projects/shared-ui/styles/main.scss"],
             "stylePreprocessorOptions": {
-              "includePaths": [
-                "styles"
-              ]
+              "includePaths": ["projects/shared-ui/styles"]
             }
           },
           "configurations": {
@@ -151,6 +143,32 @@
         },
         "test": {
           "builder": "@angular/build:unit-test"
+        }
+      }
+    },
+    "shared-ui": {
+      "projectType": "library",
+      "root": "projects/shared-ui",
+      "sourceRoot": "projects/shared-ui/src",
+      "prefix": "rb",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:ng-packagr",
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/shared-ui/tsconfig.lib.prod.json"
+            },
+            "development": {
+              "tsConfig": "projects/shared-ui/tsconfig.lib.json"
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "test": {
+          "builder": "@angular/build:unit-test",
+          "options": {
+            "tsConfig": "projects/shared-ui/tsconfig.spec.json"
+          }
         }
       }
     }

@@ -11,6 +11,9 @@
     "isolatedModules": true,
     "experimentalDecorators": true,
     "importHelpers": true,
+    "paths": {
+      "shared-ui": ["./projects/shared-ui/src/public-api.ts"]
+    },
     "target": "ES2022",
     "module": "preserve"
   },
@@ -32,6 +35,12 @@
     },
     {
       "path": "./projects/scan-back/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/shared-ui/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/shared-ui/tsconfig.spec.json"
     }
   ]
 }

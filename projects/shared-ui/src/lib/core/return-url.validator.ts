@@ -4,6 +4,14 @@ export type ReturnUrlValidation =
   | { ok: true; url: URL }
   | { ok: false; reason: string };
 
+/** Query params appended when redirecting back to the caller. */
+export type ReturnRedirectParams = {
+  error?: string;
+  state?: string | null;
+  format?: string;
+  [key: string]: string | null | undefined;
+};
+
 @Service()
 export class ReturnUrlValidator {
   validate(returnUrl: string | null | undefined): ReturnUrlValidation {
@@ -34,10 +42,7 @@ export class ReturnUrlValidator {
     return { ok: true, url };
   }
 
-  buildRedirectUrl(
-    returnUrl: URL,
-    params: { scanValue?: string; format?: string; state?: string | null; error?: string },
-  ): string {
+  buildRedirectUrl(returnUrl: URL, params: ReturnRedirectParams): string {
     // Hash-based return URLs (e.g. https://host/app/#/demo-caller) must carry
     // query params in the hash, or Angular Router will not see them.
     if (returnUrl.hash.startsWith('#/')) {
@@ -45,8 +50,7 @@ export class ReturnUrlValidator {
       const qIndex = hashWithoutSharp.indexOf('?');
       const hashPath =
         qIndex >= 0 ? hashWithoutSharp.slice(0, qIndex) : hashWithoutSharp;
-      const existingQuery =
-        qIndex >= 0 ? hashWithoutSharp.slice(qIndex + 1) : '';
+      const existingQuery = qIndex >= 0 ? hashWithoutSharp.slice(qIndex + 1) : '';
       const search = new URLSearchParams(existingQuery);
       this.applyParams(search, params);
 
@@ -61,21 +65,12 @@ export class ReturnUrlValidator {
     return target.toString();
   }
 
-  private applyParams(
-    search: URLSearchParams,
-    params: { scanValue?: string; format?: string; state?: string | null; error?: string },
-  ): void {
-    if (params.error) {
-      search.set('error', params.error);
-    }
-    if (params.scanValue !== undefined) {
-      search.set('scanValue', params.scanValue);
-    }
-    if (params.format !== undefined) {
-      search.set('format', params.format);
-    }
-    if (params.state) {
-      search.set('state', params.state);
+  private applyParams(search: URLSearchParams, params: ReturnRedirectParams): void {
+    for (const [key, value] of Object.entries(params)) {
+      if (value == null || value === '') {
+        continue;
+      }
+      search.set(key, value);
     }
   }
 }

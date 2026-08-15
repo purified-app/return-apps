@@ -1,9 +1,3 @@
-@use 'mixins';
-
-:host {
-  @include mixins.page-host-plain;
-}
-
 .scan {
   min-height: 100dvh;
 }
@@ -116,9 +110,8 @@ video {
   color: var(--rb-fg) !important;
 }
 
-.panel .meta {
+.result-format {
   font-size: 0.9rem;
-  display: block;
 }
 
 .actions {
