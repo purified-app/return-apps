@@ -1,0 +1,44 @@
+name: Deploy scan-back
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'projects/scan-back/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'angular.json'
+      - 'tsconfig.json'
+      - '.github/workflows/deploy-scan-back.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-scan-back
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build:scan-back
+      # Publishes the production build to purified-app/scan-back (gh-pages) so
+      # https://scan-back.purified.app keeps working after the monorepo move.
+      # Requires repo secret DEPLOY_GITHUB_TOKEN with contents:write on scan-back.
+      - name: Deploy to scan-back Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          personal_token: ${{ secrets.DEPLOY_GITHUB_TOKEN }}
+          external_repository: purified-app/scan-back
+          publish_dir: dist/scan-back/browser
+          publish_branch: gh-pages
+          force_orphan: true
+          commit_message: 'Deploy scan-back from return-apps'

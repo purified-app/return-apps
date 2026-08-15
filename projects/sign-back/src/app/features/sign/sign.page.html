@@ -1,0 +1,46 @@
+<div class="sign">
+  @if (status() === 'invalid-return-url') {
+    <section class="panel">
+      <h1>Invalid returnUrl</h1>
+      <p>{{ errorDetail() }}</p>
+      <a routerLink="/" class="btn">Back to home</a>
+    </section>
+  } @else if (status() === 'done') {
+    <section class="panel">
+      <h1>Signature captured</h1>
+      @if (previewUrl(); as url) {
+        <img [src]="url" alt="Captured signature preview" class="preview" />
+      }
+      <div class="actions">
+        <button type="button" class="btn btn-ghost" (click)="onClear(); status.set('ready')">
+          Sign again
+        </button>
+        <a routerLink="/" class="btn">Back to home</a>
+      </div>
+    </section>
+  } @else {
+    <section class="pad-shell">
+      <header class="top">
+        <h1>Sign here</h1>
+        <p>Draw your signature, then tap Done.</p>
+      </header>
+
+      <div class="canvas-wrap">
+        <canvas #pad aria-label="Signature pad"></canvas>
+      </div>
+
+      @if (status() === 'empty' || status() === 'too-large') {
+        <p class="error" role="alert">{{ errorDetail() }}</p>
+      }
+      @if (status() === 'redirecting') {
+        <p class="status" role="status">Returning…</p>
+      }
+
+      <div class="toolbar">
+        <button type="button" class="btn btn-ghost" (click)="onCancel()">Cancel</button>
+        <button type="button" class="btn btn-ghost" (click)="onClear()">Clear</button>
+        <button type="button" class="btn" (click)="onDone()">Done</button>
+      </div>
+    </section>
+  }
+</div>

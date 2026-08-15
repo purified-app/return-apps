@@ -1,0 +1,34 @@
+{
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "ng serve sign-back",
+      "type": "chrome",
+      "request": "launch",
+      "preLaunchTask": "npm: start:sign-back",
+      "url": "http://localhost:4200/"
+    },
+    {
+      "name": "ng serve scan-back",
+      "type": "chrome",
+      "request": "launch",
+      "preLaunchTask": "npm: start:scan-back",
+      "url": "http://localhost:4201/"
+    },
+    {
+      "name": "ng test sign-back",
+      "type": "chrome",
+      "request": "launch",
+      "preLaunchTask": "npm: test:sign-back",
+      "url": "http://localhost:9876/debug.html"
+    },
+    {
+      "name": "ng test scan-back",
+      "type": "chrome",
+      "request": "launch",
+      "preLaunchTask": "npm: test:scan-back",
+      "url": "http://localhost:9876/debug.html"
+    }
+  ]
+}

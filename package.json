@@ -1,0 +1,41 @@
+{
+  "name": "return-apps",
+  "version": "0.0.0",
+  "scripts": {
+    "ng": "ng",
+    "start": "ng serve sign-back",
+    "start:sign-back": "ng serve sign-back",
+    "start:scan-back": "ng serve scan-back --port 4201",
+    "build": "npm run build:sign-back && npm run build:scan-back",
+    "build:sign-back": "ng build sign-back --configuration production",
+    "build:scan-back": "ng build scan-back --configuration production",
+    "watch:sign-back": "ng build sign-back --watch --configuration development",
+    "watch:scan-back": "ng build scan-back --watch --configuration development",
+    "test": "npm run test:sign-back && npm run test:scan-back",
+    "test:sign-back": "ng test sign-back",
+    "test:scan-back": "ng test scan-back"
+  },
+  "private": true,
+  "packageManager": "npm@10.9.8",
+  "dependencies": {
+    "@angular/common": "^22.1.0",
+    "@angular/compiler": "^22.1.0",
+    "@angular/core": "^22.1.0",
+    "@angular/forms": "^22.1.0",
+    "@angular/platform-browser": "^22.1.0",
+    "@angular/router": "^22.1.0",
+    "@zxing/browser": "^0.2.1",
+    "@zxing/library": "^0.23.0",
+    "rxjs": "~7.8.0",
+    "tslib": "^2.3.0"
+  },
+  "devDependencies": {
+    "@angular/build": "^22.1.2",
+    "@angular/cli": "^22.1.2",
+    "@angular/compiler-cli": "^22.1.0",
+    "jsdom": "^28.0.0",
+    "prettier": "^3.8.1",
+    "typescript": "~6.0.2",
+    "vitest": "^4.0.8"
+  }
+}
