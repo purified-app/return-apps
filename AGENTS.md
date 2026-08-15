@@ -56,3 +56,21 @@ You are an expert in TypeScript, Angular, and scalable web application developme
 - Use the `providedIn: 'root'` option for singleton services
 - Prefer the `@Service` decorator over `@Injectable({providedIn: 'root'})` for new singleton services (Angular v22+)
 - Use the `inject()` function instead of constructor injection
+
+## Cursor Cloud specific instructions
+
+### Toolchain
+
+- Package manager is Bun (`bun@1.3.14`, pinned in `package.json`). The Angular CLI (v22) requires Node `>=22.22.3`; the base image's default `/exec-daemon/node` is too old, so the environment uses nvm's Node `22.23.2` (set as the nvm `default` alias) and `~/.bun/bin` on `PATH`. A fresh login shell resolves the correct `node`/`bun` automatically — no manual `nvm use` needed.
+- Angular CLI analytics is disabled globally (`~/.angular-config.json`) so `ng`/`bun run` commands don't block on the first-run interactive analytics prompt. If a future run hits that `(y/N)` prompt, run `bunx ng analytics off --global` once.
+
+### Services & running
+
+- There is no backend. Each app (`sign-back`, `scan-back`, `geo-back`, `map-pick-back`, `pin-back`, `nfc-back`, `color-back`) is a self-contained client-side Angular SPA. Serve one with `bun run start:<app>` (ports 4200–4206; see `README.md`). `shared-ui` is consumed from source via tsconfig path mappings, so it does NOT need to be prebuilt for `ng serve`.
+- To exercise an app's core `returnUrl` flow in a browser, use its `/demo-caller` route (e.g. `http://localhost:4204/demo-caller` for `pin-back`), which simulates a calling app and shows the returned value.
+- Some apps need device APIs that a headless/remote browser can't provide: `scan-back`/`color-back` need camera, `geo-back` needs geolocation, `nfc-back` needs Web NFC (Chrome/Android only). `pin-back` and `sign-back` are the most deterministic to test in a browser.
+
+### Lint / test / build
+
+- Tests: `bun run test` (all projects) or `bun run test:<app>` — Vitest + jsdom, runs headless. Build a single app with `bun run build:<app>`; full static site with `bun run build:site` (`scripts/build-site.sh`).
+- There is no dedicated lint script or committed lint gate; Prettier is available (`bunx prettier --check .`) but currently reports pre-existing formatting warnings across the repo.
