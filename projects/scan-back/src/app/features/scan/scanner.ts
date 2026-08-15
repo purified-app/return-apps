@@ -55,12 +55,48 @@ const NATIVE_TO_FORMAT: Record<string, string> = {
 const DIGITAL_ZOOM_MIN = 1;
 const DIGITAL_ZOOM_MAX = 4;
 /** Balance detect latency vs CPU / canvas pressure (esp. Safari). */
-const SCAN_INTERVAL_MS = 80;
+const SCAN_INTERVAL_MS = 100;
 /** Decode canvas long-edge target — keep under browser canvas / GPU limits. */
-const TARGET_DECODE_WIDTH = 720;
-const MAX_DECODE_EDGE = 960;
-/** When native BarcodeDetector works, only run ZXing every Nth miss. */
-const ZXING_FALLBACK_EVERY = 4;
+const TARGET_DECODE_WIDTH = 640;
+const MAX_DECODE_EDGE = 720;
+
+/**
+ * ZXing MultiFormatReader logs console.warn for many expected mid-scan failures
+ * (often due to instanceof ReaderException breaking across bundles). Mute those
+ * for the duration of a decode attempt only.
+ */
+function withMutedZxingConsole<T>(fn: () => T): T {
+  const originalWarn = console.warn;
+  const originalError = console.error;
+  const shouldMute = (args: unknown[]): boolean => {
+    const head = String(args[0] ?? '');
+    return (
+      head.includes('MultiFormatReader') ||
+      head.includes('BrowserCodeReader') ||
+      head.includes('Could not create a Canvas element')
+    );
+  };
+
+  console.warn = (...args: unknown[]) => {
+    if (shouldMute(args)) {
+      return;
+    }
+    originalWarn.apply(console, args as Parameters<typeof console.warn>);
+  };
+  console.error = (...args: unknown[]) => {
+    if (shouldMute(args)) {
+      return;
+    }
+    originalError.apply(console, args as Parameters<typeof console.error>);
+  };
+
+  try {
+    return fn();
+  } finally {
+    console.warn = originalWarn;
+    console.error = originalError;
+  }
+}
 
 export interface ZoomState {
   min: number;
@@ -85,7 +121,7 @@ interface NativeBarcodeDetectorCtor {
   getSupportedFormats?: () => Promise<string[]>;
 }
 
-type EnhanceMode = 'plain' | 'contrast' | 'invert';
+type EnhanceMode = 'plain' | 'contrast';
 
 @Service()
 export class ScannerService {
@@ -98,7 +134,6 @@ export class ScannerService {
   private loopTimer: ReturnType<typeof setTimeout> | null = null;
   private enhanceCanvas: HTMLCanvasElement | null = null;
   private enhanceModeIndex = 0;
-  private zxingFallbackTick = 0;
   private zoomMode: 'native' | 'digital' = 'digital';
   private zoomMin = DIGITAL_ZOOM_MIN;
   private zoomMax = DIGITAL_ZOOM_MAX;
@@ -165,14 +200,13 @@ export class ScannerService {
 
     const hints = new Map<DecodeHintType, unknown>();
     hints.set(DecodeHintType.POSSIBLE_FORMATS, formats);
-    // Avoid TRY_HARDER: it rotates via offscreen canvases and throws
-    // "Could not create a Canvas element" (logged as MultiFormatReader noise)
-    // on Safari / memory-constrained devices.
 
-    this.reader = new BrowserMultiFormatReader(hints);
     this.nativeDetector = await this.createNativeDetector(formats);
+    // Prefer native BarcodeDetector when available — avoids ZXing console spam
+    // and canvas rotate failures on Chromium / Safari.
+    this.reader = this.nativeDetector ? null : new BrowserMultiFormatReader(hints);
     this.videoElement = videoElement;
-    this.enhanceCanvas = document.createElement('canvas');
+    this.enhanceCanvas = this.reader ? document.createElement('canvas') : null;
 
     const constraints: MediaStreamConstraints = {
       audio: false,
@@ -226,7 +260,6 @@ export class ScannerService {
     this.nativeDetector = null;
     this.enhanceCanvas = null;
     this.enhanceModeIndex = 0;
-    this.zxingFallbackTick = 0;
     this.zoomMode = 'digital';
     this.zoomMin = DIGITAL_ZOOM_MIN;
     this.zoomMax = DIGITAL_ZOOM_MAX;
@@ -276,22 +309,17 @@ export class ScannerService {
           };
         }
       } catch {
-        // Native detector can fail on some frames; continue with ZXing.
+        // Empty / failed frames are normal — keep looping.
       }
-
-      // Native path is preferred — only occasionally fall back to ZXing to
-      // cover formats / frames the detector misses, and to cut canvas churn.
-      this.zxingFallbackTick += 1;
-      if (this.zxingFallbackTick % ZXING_FALLBACK_EVERY !== 0) {
-        return null;
-      }
+      // Native path only: do not fall through to ZXing (it warns on every miss).
+      return null;
     }
 
     if (!this.reader || !this.enhanceCanvas) {
       return null;
     }
 
-    const modes: EnhanceMode[] = ['plain', 'contrast', 'invert'];
+    const modes: EnhanceMode[] = ['plain', 'contrast'];
     const mode = modes[this.enhanceModeIndex % modes.length] ?? 'plain';
     this.enhanceModeIndex += 1;
 
@@ -299,16 +327,18 @@ export class ScannerService {
       return null;
     }
 
-    try {
-      const result = this.reader.decodeFromCanvas(this.enhanceCanvas);
-      return {
-        scanValue: result.getText(),
-        format: BarcodeFormat[result.getBarcodeFormat()] ?? String(result.getBarcodeFormat()),
-      };
-    } catch {
-      // NotFoundException and canvas/rotate failures are expected mid-scan.
-      return null;
-    }
+    return withMutedZxingConsole(() => {
+      try {
+        const result = this.reader!.decodeFromCanvas(this.enhanceCanvas!);
+        return {
+          scanValue: result.getText(),
+          format: BarcodeFormat[result.getBarcodeFormat()] ?? String(result.getBarcodeFormat()),
+        };
+      } catch {
+        // NotFoundException and related failures are expected mid-scan.
+        return null;
+      }
+    });
   }
 
   /**
@@ -366,8 +396,6 @@ export class ScannerService {
 
     if (mode === 'contrast') {
       ctx.filter = 'contrast(185%) brightness(112%) saturate(0%)';
-    } else if (mode === 'invert') {
-      ctx.filter = 'invert(1) contrast(160%) saturate(0%)';
     } else {
       ctx.filter = 'contrast(125%) saturate(0%)';
     }
