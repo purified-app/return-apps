@@ -1,33 +1,57 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { RbMetaList, appBaseUrl, readReturnParams } from 'shared-ui';
+import {
+  RbDemoCaller,
+  appBaseUrl,
+  buildDemoOpenUrl,
+  readReturnParams,
+  type ReturnResult,
+} from 'shared-ui';
 
 @Component({
   selector: 'nb-demo-caller-page',
-  imports: [RbMetaList],
-  templateUrl: './demo-caller.page.html',
+  imports: [RbDemoCaller],
+  template: `
+    <rb-demo-caller
+      title="Simulate another app that opens NfcBack"
+      lead="Tap “Scan NFC” to open the reader. After a successful read, the value returns here."
+      startLabel="Scan NFC"
+      [result]="result()"
+      (start)="startNfc()"
+    >
+      @if (result().value) {
+        <dl class="meta" rbResult>
+          <div>
+            <dt>NFC</dt>
+            <dd>{{ result().value }}</dd>
+          </div>
+          @if (result().extras['recordType']; as recordType) {
+            <div>
+              <dt>Record</dt>
+              <dd>{{ recordType }}</dd>
+            </div>
+          }
+        </dl>
+      }
+    </rb-demo-caller>
+  `,
   host: { class: 'rb-page rb-page--demo' },
 })
 export class DemoCallerPage implements OnInit {
   private readonly route = inject(ActivatedRoute);
-
-  readonly value = signal<string | null>(null);
-  readonly lastFormat = signal<string | null>(null);
-  readonly lastError = signal<string | null>(null);
-  readonly lastState = signal<string | null>(null);
+  readonly result = signal<ReturnResult>({
+    value: null,
+    format: null,
+    error: null,
+    state: null,
+    extras: {},
+  });
 
   ngOnInit(): void {
-    const result = readReturnParams(this.route.snapshot.queryParamMap);
-    this.value.set(result.value);
-    this.lastFormat.set(result.format);
-    this.lastError.set(result.error);
-    this.lastState.set(result.state);
+    this.result.set(readReturnParams(this.route.snapshot.queryParamMap));
   }
 
   startNfc(): void {
-    const base = appBaseUrl();
-    const returnUrl = `${base}/demo-caller`;
-    const origin = new URL(base).origin;
-    location.href = `${base}?returnUrl=${encodeURIComponent(returnUrl)}&state=demo1&allowedOrigins=${encodeURIComponent(origin)}`;
+    location.href = buildDemoOpenUrl(appBaseUrl());
   }
 }

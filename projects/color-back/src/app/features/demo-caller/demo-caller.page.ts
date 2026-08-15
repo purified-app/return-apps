@@ -1,36 +1,52 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { RbMetaList, appBaseUrl, readReturnParams } from 'shared-ui';
+import {
+  RbDemoCaller,
+  appBaseUrl,
+  buildDemoOpenUrl,
+  readReturnParams,
+  type ReturnResult,
+} from 'shared-ui';
 
 @Component({
   selector: 'cb-demo-caller-page',
-  imports: [RbMetaList],
-  templateUrl: './demo-caller.page.html',
+  imports: [RbDemoCaller],
+  template: `
+    <rb-demo-caller
+      title="Simulate another app that opens ColorBack"
+      lead="Tap “Pick color” to open the eyedropper. After Use color, the value returns here."
+      startLabel="Pick color"
+      [result]="result()"
+      (start)="startColor()"
+    >
+      @if (result().value; as hex) {
+        <div class="swatch-row" rbResult>
+          <span class="swatch" [style.background]="hex" aria-hidden="true"></span>
+          @if (result().extras['rgb']; as rgb) {
+            <p class="lead">RGB {{ rgb }}</p>
+          }
+        </div>
+      }
+    </rb-demo-caller>
+  `,
   styleUrl: './demo-caller.page.css',
   host: { class: 'rb-page rb-page--demo' },
 })
 export class DemoCallerPage implements OnInit {
   private readonly route = inject(ActivatedRoute);
-
-  readonly value = signal<string | null>(null);
-  readonly lastFormat = signal<string | null>(null);
-  readonly lastError = signal<string | null>(null);
-  readonly lastState = signal<string | null>(null);
-  readonly rgb = signal<string | null>(null);
+  readonly result = signal<ReturnResult>({
+    value: null,
+    format: null,
+    error: null,
+    state: null,
+    extras: {},
+  });
 
   ngOnInit(): void {
-    const result = readReturnParams(this.route.snapshot.queryParamMap);
-    this.value.set(result.value);
-    this.lastFormat.set(result.format);
-    this.lastError.set(result.error);
-    this.lastState.set(result.state);
-    this.rgb.set(this.route.snapshot.queryParamMap.get('rgb'));
+    this.result.set(readReturnParams(this.route.snapshot.queryParamMap));
   }
 
   startColor(): void {
-    const base = appBaseUrl();
-    const returnUrl = `${base}/demo-caller`;
-    const origin = new URL(base).origin;
-    location.href = `${base}?returnUrl=${encodeURIComponent(returnUrl)}&state=demo1&allowedOrigins=${encodeURIComponent(origin)}`;
+    location.href = buildDemoOpenUrl(appBaseUrl());
   }
 }
