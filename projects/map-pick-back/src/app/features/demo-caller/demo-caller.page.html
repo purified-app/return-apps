@@ -1,0 +1,34 @@
+<main class="demo">
+  <header>
+    <p class="brand">Demo caller</p>
+    <h1>Simulate another app that opens MapPickBack</h1>
+    <p class="lead">Tap “Pick on map” to open the map. After Done, the pin returns here.</p>
+  </header>
+
+  <button type="button" class="btn" (click)="startMap()">Pick on map</button>
+
+  @if (lat() || lng()) {
+    <dl class="meta">
+      @if (lat()) {
+        <div>
+          <dt>Latitude</dt>
+          <dd>{{ lat() }}</dd>
+        </div>
+      }
+      @if (lng()) {
+        <div>
+          <dt>Longitude</dt>
+          <dd>{{ lng() }}</dd>
+        </div>
+      }
+      @if (zoom()) {
+        <div>
+          <dt>Zoom</dt>
+          <dd>{{ zoom() }}</dd>
+        </div>
+      }
+    </dl>
+  }
+
+  <rb-meta-list [format]="lastFormat()" [state]="lastState()" [error]="lastError()" />
+</main>

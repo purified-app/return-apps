@@ -1,0 +1,32 @@
+<main class="home">
+  <header>
+    <p class="brand">GeoBack</p>
+    <h1>Capture GPS coordinates and return them to the app you came from</h1>
+    <p class="lead">
+      Mobile-first geolocation helper that other web apps can open. After a successful reading, the
+      coordinates are redirected back via URL.
+    </p>
+    <div class="cta">
+      <a routerLink="/geo" class="btn">Get location</a>
+      <a routerLink="/demo-caller" class="btn btn-ghost">Try demo caller</a>
+    </div>
+  </header>
+
+  <section class="docs">
+    <h2>Integration</h2>
+    <p>Open the locator:</p>
+    <pre><code>/geo?returnUrl=&lt;urlencoded-https-url&gt;&amp;state=&lt;optional&gt;&amp;highAccuracy=&lt;optional&gt;</code></pre>
+    <p>After success, redirect to:</p>
+    <pre><code>&lt;returnUrl&gt;?lat=&lt;lat&gt;&amp;lng=&lt;lng&gt;&amp;accuracy=&lt;meters&gt;&amp;format=geo&amp;state=&lt;state&gt;</code></pre>
+
+    <h3>Demo URL example</h3>
+    <p>Open GeoBack and return to the built-in demo caller:</p>
+    <pre><code>{{ demoOpenUrl }}</code></pre>
+    <p>Example return shape:</p>
+    <pre><code>{{ demoReturnUrl }}</code></pre>
+    <p>
+      Without <code>returnUrl</code>, the reading is shown in the app (standalone mode).
+      <code>returnUrl</code> must be <code>https:</code> (or <code>http://localhost</code>).
+    </p>
+  </section>
+</main>

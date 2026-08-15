@@ -1,0 +1,32 @@
+<main class="home">
+  <header>
+    <p class="brand">PinBack</p>
+    <h1>Enter a PIN and return it to the app you came from</h1>
+    <p class="lead">
+      Fullscreen numeric keypad that other web apps can open. After Done, the PIN is redirected back
+      via URL.
+    </p>
+    <div class="cta">
+      <a routerLink="/pin" class="btn">Enter PIN</a>
+      <a routerLink="/demo-caller" class="btn btn-ghost">Try demo caller</a>
+    </div>
+  </header>
+
+  <section class="docs">
+    <h2>Integration</h2>
+    <p>Open the keypad:</p>
+    <pre><code>/pin?returnUrl=&lt;urlencoded-https-url&gt;&amp;state=&lt;optional&gt;&amp;length=&lt;optional&gt;&amp;mask=&lt;optional&gt;</code></pre>
+    <p>After Done, redirect to:</p>
+    <pre><code>&lt;returnUrl&gt;?pin=&lt;digits&gt;&amp;format=pin&amp;state=&lt;state&gt;</code></pre>
+
+    <h3>Demo URL example</h3>
+    <p>Open PinBack and return to the built-in demo caller:</p>
+    <pre><code>{{ demoOpenUrl }}</code></pre>
+    <p>Example return shape:</p>
+    <pre><code>{{ demoReturnUrl }}</code></pre>
+    <p>
+      Without <code>returnUrl</code>, the PIN is shown in the app (standalone mode).
+      <code>returnUrl</code> must be <code>https:</code> (or <code>http://localhost</code>).
+    </p>
+  </section>
+</main>
