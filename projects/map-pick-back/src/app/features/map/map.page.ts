@@ -22,6 +22,14 @@ type MapPick = {
 const DEFAULT_CENTER: L.LatLngExpression = [59.9139, 10.7522];
 const DEFAULT_ZOOM = 12;
 
+/** Parse a query param as a number; missing/blank → NaN (unlike Number(null) === 0). */
+function parseOptionalNumber(raw: string | null): number {
+  if (raw == null || raw.trim() === '') {
+    return Number.NaN;
+  }
+  return Number(raw);
+}
+
 function leafletAsset(file: string): string {
   const base = document.querySelector('base')?.href ?? `${location.origin}/`;
   return new URL(`assets/leaflet/${file}`, base).toString();
@@ -131,9 +139,9 @@ export class MapPage implements OnDestroy {
     const params = this.route.snapshot.queryParamMap;
     this.state = params.get('state');
 
-    const lat = Number(params.get('lat'));
-    const lng = Number(params.get('lng'));
-    const zoom = Number(params.get('zoom'));
+    const lat = parseOptionalNumber(params.get('lat'));
+    const lng = parseOptionalNumber(params.get('lng'));
+    const zoom = parseOptionalNumber(params.get('zoom'));
     if (Number.isFinite(lat) && Number.isFinite(lng)) {
       this.initialCenter = [lat, lng];
       this.hasQueryCenter = true;
