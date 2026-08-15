@@ -1,0 +1,19 @@
+.btn {
+  appearance: none;
+  border: 0;
+  border-radius: var(--rb-radius-pill);
+  padding: 0.75rem 1.2rem;
+  background: var(--rb-btn);
+  color: var(--rb-btn-fg);
+  font: inherit;
+  font-weight: 650;
+  text-decoration: none;
+  text-align: center;
+  max-width: 100%;
+  cursor: pointer;
+}
+
+.btn-ghost {
+  background: var(--rb-btn-ghost);
+  color: var(--rb-fg);
+}

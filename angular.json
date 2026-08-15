@@ -29,7 +29,14 @@
                 "input": "projects/sign-back/public"
               }
             ],
-            "styles": ["projects/sign-back/src/styles.scss"]
+            "styles": [
+              "styles/main.scss"
+            ],
+            "stylePreprocessorOptions": {
+              "includePaths": [
+                "styles"
+              ]
+            }
           },
           "configurations": {
             "production": {
@@ -96,7 +103,14 @@
                 "input": "projects/scan-back/public"
               }
             ],
-            "styles": ["projects/scan-back/src/styles.scss"]
+            "styles": [
+              "styles/main.scss"
+            ],
+            "stylePreprocessorOptions": {
+              "includePaths": [
+                "styles"
+              ]
+            }
           },
           "configurations": {
             "production": {

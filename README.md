@@ -41,6 +41,7 @@ return-apps/
   projects/
     sign-back/     # signature pad → returnUrl
     scan-back/     # QR/barcode scanner → returnUrl
+  styles/          # shared design tokens + UI (buttons, home/demo/panel)
   docs/            # per-app READMEs / plans
   angular.json     # both projects
 ```
