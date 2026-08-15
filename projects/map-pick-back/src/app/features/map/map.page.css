@@ -1,0 +1,57 @@
+.map-page {
+  min-height: 100dvh;
+}
+
+.shell {
+  max-width: var(--rb-content);
+  margin: 0 auto;
+  min-height: 100dvh;
+  padding: 1.25rem 1rem calc(1.25rem + env(safe-area-inset-bottom));
+  display: grid;
+  grid-template-rows: auto 1fr auto auto;
+  gap: 0.85rem;
+}
+
+.top h1 {
+  margin: 0;
+  font-size: 1.45rem;
+  font-weight: 700;
+}
+
+.top p {
+  margin: 0.35rem 0 0;
+  color: var(--rb-muted);
+}
+
+.map {
+  min-height: 320px;
+  height: min(60dvh, 520px);
+  border-radius: var(--rb-radius-lg);
+  overflow: hidden;
+  border: 1px solid rgb(255 255 255 / 10%);
+  background: #1a2228;
+}
+
+.coords,
+.status {
+  margin: 0;
+  color: var(--rb-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.error {
+  margin: 0;
+  color: var(--rb-error);
+}
+
+.toolbar,
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  justify-content: flex-end;
+}
+
+.actions {
+  justify-content: flex-start;
+}

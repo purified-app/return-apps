@@ -1,0 +1,68 @@
+.nfc {
+  min-height: 100dvh;
+}
+
+.shell {
+  max-width: var(--rb-content);
+  margin: 0 auto;
+  min-height: 100dvh;
+  padding: 1.25rem 1rem calc(1.25rem + env(safe-area-inset-bottom));
+  display: grid;
+  grid-template-rows: auto 1fr auto auto;
+  gap: 1rem;
+  justify-items: center;
+  text-align: center;
+}
+
+.top h1 {
+  margin: 0;
+  font-size: 1.45rem;
+  font-weight: 700;
+}
+
+.top p {
+  margin: 0.35rem 0 0;
+  color: var(--rb-muted);
+}
+
+.pulse {
+  width: 8rem;
+  height: 8rem;
+  border-radius: 999px;
+  border: 2px solid rgb(232 237 242 / 45%);
+  box-shadow: 0 0 0 0 rgb(232 237 242 / 35%);
+  animation: pulse 1.8s ease-out infinite;
+  align-self: center;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(0.92);
+    box-shadow: 0 0 0 0 rgb(232 237 242 / 35%);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 1.5rem rgb(232 237 242 / 0%);
+  }
+  100% {
+    transform: scale(0.92);
+    box-shadow: 0 0 0 0 rgb(232 237 242 / 0%);
+  }
+}
+
+.status {
+  margin: 0;
+  color: var(--rb-muted);
+}
+
+.toolbar,
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  justify-content: center;
+}
+
+.actions {
+  justify-content: flex-start;
+}

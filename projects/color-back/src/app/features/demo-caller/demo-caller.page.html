@@ -1,0 +1,29 @@
+<main class="demo">
+  <header>
+    <p class="brand">Demo caller</p>
+    <h1>Simulate another app that opens ColorBack</h1>
+    <p class="lead">Tap “Pick color” to open the eyedropper. After Use color, the value returns here.</p>
+  </header>
+
+  <button type="button" class="btn" (click)="startColor()">Pick color</button>
+
+  @if (hex()) {
+    <div class="swatch-row">
+      <span class="swatch" [style.background]="hex()" aria-hidden="true"></span>
+      <dl class="meta">
+        <div>
+          <dt>Hex</dt>
+          <dd>{{ hex() }}</dd>
+        </div>
+        @if (rgb()) {
+          <div>
+            <dt>RGB</dt>
+            <dd>{{ rgb() }}</dd>
+          </div>
+        }
+      </dl>
+    </div>
+  }
+
+  <rb-meta-list [format]="lastFormat()" [state]="lastState()" [error]="lastError()" />
+</main>

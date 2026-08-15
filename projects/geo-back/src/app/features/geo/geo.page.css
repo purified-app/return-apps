@@ -1,0 +1,42 @@
+.geo {
+  min-height: 100dvh;
+}
+
+.shell {
+  max-width: var(--rb-content);
+  margin: 0 auto;
+  min-height: 100dvh;
+  padding: 1.25rem 1rem calc(1.25rem + env(safe-area-inset-bottom));
+  display: grid;
+  grid-template-rows: auto 1fr auto auto;
+  gap: 1rem;
+  align-content: start;
+}
+
+.top h1 {
+  margin: 0;
+  font-size: 1.45rem;
+  font-weight: 700;
+}
+
+.top p {
+  margin: 0.35rem 0 0;
+  color: var(--rb-muted);
+}
+
+.status {
+  margin: 0;
+  color: var(--rb-muted);
+}
+
+.toolbar,
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  justify-content: flex-end;
+}
+
+.actions {
+  justify-content: flex-start;
+}
