@@ -15,6 +15,7 @@ export class SignaturePadService {
   private width = 0;
   private height = 0;
   private readonly strokeWidth = 2.5;
+  private resizeObserver: ResizeObserver | null = null;
 
   private readonly onPointerDown = (event: PointerEvent): void => {
     event.preventDefault();
@@ -73,9 +74,23 @@ export class SignaturePadService {
     canvas.addEventListener('pointermove', this.onPointerMove);
     canvas.addEventListener('pointerup', this.onPointerUp);
     canvas.addEventListener('pointercancel', this.onPointerUp);
+
+    if (typeof ResizeObserver !== 'undefined') {
+      this.resizeObserver = new ResizeObserver(() => {
+        if (this.drawing) {
+          return;
+        }
+        const previous = this.strokes;
+        this.resizeToDisplaySize();
+        this.redrawStrokes(previous);
+      });
+      this.resizeObserver.observe(canvas);
+    }
   }
 
   detach(): void {
+    this.resizeObserver?.disconnect();
+    this.resizeObserver = null;
     if (this.canvas) {
       this.canvas.removeEventListener('pointerdown', this.onPointerDown);
       this.canvas.removeEventListener('pointermove', this.onPointerMove);
@@ -157,6 +172,25 @@ export class SignaturePadService {
     this.ctx.lineJoin = 'round';
     this.ctx.strokeStyle = '#0b0d10';
     this.ctx.lineWidth = this.strokeWidth;
+  }
+
+  private redrawStrokes(strokes: Point[][]): void {
+    if (!this.ctx) {
+      return;
+    }
+    this.ctx.clearRect(0, 0, this.width, this.height);
+    this.strokes = strokes;
+    for (const stroke of strokes) {
+      if (stroke.length === 0) {
+        continue;
+      }
+      this.ctx.beginPath();
+      this.ctx.moveTo(stroke[0].x, stroke[0].y);
+      for (let i = 1; i < stroke.length; i++) {
+        this.ctx.lineTo(stroke[i].x, stroke[i].y);
+      }
+      this.ctx.stroke();
+    }
   }
 
   private toLocalPoint(event: PointerEvent): Point | null {

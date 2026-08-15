@@ -32,7 +32,11 @@
   width: 100%;
   max-width: var(--rb-content);
   margin: 0 auto;
-  padding: 2rem max(1rem, env(safe-area-inset-right)) 3rem max(1rem, env(safe-area-inset-left));
+  padding:
+    var(--rb-space-page-top)
+    max(1rem, env(safe-area-inset-right))
+    max(3rem, calc(2rem + env(safe-area-inset-bottom)))
+    max(1rem, env(safe-area-inset-left));
   display: grid;
   gap: 2rem;
   min-width: 0;
@@ -98,7 +102,11 @@
 .demo {
   max-width: var(--rb-panel);
   margin: 0 auto;
-  padding: 2.5rem 1.25rem;
+  padding:
+    var(--rb-space-page-top)
+    max(1.25rem, env(safe-area-inset-right))
+    max(2.5rem, calc(1.5rem + env(safe-area-inset-bottom)))
+    max(1.25rem, env(safe-area-inset-left));
   display: grid;
   gap: 1.25rem;
 }
@@ -136,21 +144,31 @@
   box-sizing: border-box;
   border: 1px solid var(--rb-border-strong);
   border-radius: var(--rb-radius);
+  min-height: var(--rb-tap);
   padding: 0.85rem 0.95rem;
   background: var(--rb-surface-input);
   color: inherit;
   font: inherit;
 }
 
+.field input:focus-visible,
+.demo input:focus-visible {
+  outline: 2px solid var(--rb-fg);
+  outline-offset: 2px;
+}
+
 .demo .btn {
   justify-self: start;
-  padding: 0.8rem 1.2rem;
 }
 
 .panel {
   max-width: var(--rb-panel);
   margin: 0 auto;
-  padding: 2.5rem 1.25rem;
+  padding:
+    var(--rb-space-page-top)
+    max(1.25rem, env(safe-area-inset-right))
+    max(2.5rem, calc(1.5rem + env(safe-area-inset-bottom)))
+    max(1.25rem, env(safe-area-inset-left));
   display: grid;
   gap: 1rem;
 }
@@ -185,7 +203,7 @@
 
 .meta div {
   display: grid;
-  grid-template-columns: 5rem 1fr;
+  grid-template-columns: minmax(5rem, 7rem) 1fr;
   gap: 0.5rem;
 }
 
@@ -198,12 +216,46 @@
   word-break: break-all;
 }
 
-@media (max-width: 24rem) {
+/* Interactive app toolbars (map / sign / pin / geo / …) */
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  justify-content: flex-end;
+  align-items: stretch;
+}
+
+@media (max-width: 30rem) {
   .cta {
     flex-direction: column;
   }
 
   .cta .btn {
+    width: 100%;
+  }
+
+  .toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: stretch;
+  }
+
+  .toolbar > .btn {
+    flex: 1 1 calc(50% - 0.35rem);
+    min-width: calc(50% - 0.35rem);
+  }
+
+  /* Primary solid button sits full-width at the bottom */
+  .toolbar > .btn:not(.btn-ghost) {
+    flex: 1 1 100%;
+    order: 10;
+  }
+
+  .actions {
+    flex-direction: column;
+  }
+
+  .actions > .btn {
     width: 100%;
   }
 }

@@ -53,8 +53,8 @@ video {
 
 .zoom {
   position: absolute;
-  left: 1rem;
-  right: 1rem;
+  left: max(1rem, env(safe-area-inset-left));
+  right: max(1rem, env(safe-area-inset-right));
   bottom: calc(4.75rem + env(safe-area-inset-bottom));
   display: grid;
   grid-template-columns: auto 1fr auto auto;
@@ -67,8 +67,8 @@ video {
 
 .zoom-btn {
   appearance: none;
-  width: 2.1rem;
-  height: 2.1rem;
+  width: var(--rb-tap);
+  height: var(--rb-tap);
   border: 0;
   border-radius: var(--rb-radius-pill);
   background: rgb(255 255 255 / 16%);
@@ -77,6 +77,12 @@ video {
   font-size: 1.25rem;
   line-height: 1;
   cursor: pointer;
+  touch-action: manipulation;
+}
+
+.zoom-btn:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
 }
 
 .zoom-slider {
@@ -99,8 +105,28 @@ video {
   right: 0;
   display: flex;
   justify-content: center;
+  flex-wrap: wrap;
   gap: 0.75rem;
-  padding: 0 1rem;
+  padding: 0 max(1rem, env(safe-area-inset-left), env(safe-area-inset-right));
+}
+
+/* Keep scan's floating bar centered — don't inherit shell toolbar grid. */
+@media (max-width: 30rem) {
+  .toolbar {
+    display: flex;
+    justify-content: center;
+  }
+
+  .toolbar > .btn {
+    flex: 0 1 auto;
+    width: auto;
+    min-width: var(--rb-tap);
+  }
+
+  .toolbar > .btn:not(.btn-ghost) {
+    flex: 0 1 auto;
+    order: initial;
+  }
 }
 
 .scan-value {
