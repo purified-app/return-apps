@@ -1,60 +1,35 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-import {
-  RbDemoCaller,
-  appBaseUrl,
-  buildDemoOpenUrl,
-  parseReturnResult,
-  type ReturnResult,
-} from 'shared-ui';
+import { RbMetaList, appBaseUrl, readReturnParams } from 'shared-ui';
 
 @Component({
   selector: 'sb-demo-caller-page',
-  imports: [FormsModule, RbDemoCaller],
-  template: `
-    <rb-demo-caller
-      title="Simulate another app that opens SignBack"
-      lead="Tap “Sign” to open the pad. After Done, the signature is returned here (hash delivery)."
-      startLabel="Sign"
-      [result]="result()"
-      (start)="startSign()"
-    >
-      <label class="field">
-        <span>Note (optional)</span>
-        <input
-          type="text"
-          [ngModel]="note()"
-          (ngModelChange)="note.set($event)"
-          placeholder="Local field unrelated to signature"
-        />
-      </label>
-
-      @if (result().value; as url) {
-        <figure class="preview-wrap" rbResult>
-          <img [src]="url" alt="Returned signature" class="preview" />
-        </figure>
-      }
-    </rb-demo-caller>
-  `,
+  imports: [FormsModule, RbMetaList],
+  templateUrl: './demo-caller.page.html',
   host: { class: 'rb-page rb-page--demo' },
 })
 export class DemoCallerPage implements OnInit {
   private readonly route = inject(ActivatedRoute);
+
   readonly note = signal('');
-  readonly result = signal<ReturnResult>({
-    value: null,
-    format: null,
-    error: null,
-    state: null,
-    extras: {},
-  });
+  readonly value = signal<string | null>(null);
+  readonly lastFormat = signal<string | null>(null);
+  readonly lastError = signal<string | null>(null);
+  readonly lastState = signal<string | null>(null);
 
   ngOnInit(): void {
-    this.result.set(parseReturnResult(this.route.snapshot.queryParamMap));
+    const result = readReturnParams(this.route.snapshot.queryParamMap);
+    this.value.set(result.value);
+    this.lastFormat.set(result.format);
+    this.lastError.set(result.error);
+    this.lastState.set(result.state);
   }
 
   startSign(): void {
-    location.href = buildDemoOpenUrl(appBaseUrl(), { delivery: 'hash' });
+    const base = appBaseUrl();
+    const returnUrl = `${base}/demo-caller`;
+    const origin = new URL(base).origin;
+    location.href = `${base}?returnUrl=${encodeURIComponent(returnUrl)}&state=demo1&allowedOrigins=${encodeURIComponent(origin)}&delivery=hash`;
   }
 }

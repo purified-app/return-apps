@@ -1,35 +1,22 @@
 import { Component } from '@angular/core';
-import { RbHomeDocs, appBaseUrl, buildDemoOpenUrl } from 'shared-ui';
+import { RouterLink } from '@angular/router';
+import { appBaseUrl } from 'shared-ui';
 
 @Component({
   selector: 'nb-home-page',
-  imports: [RbHomeDocs],
-  template: `
-    <rb-home-docs
-      brand="NfcBack"
-      title="Read an NFC tag and return it to the app you came from"
-      lead="Web NFC reader (Chrome/Android). Returns value + format=nfc.* with recordType."
-      ctaLabel="Start NFC scan"
-      [openExample]="openExample"
-      [returnExample]="returnExample"
-      [demoOpenUrl]="demoOpenUrl"
-      [demoReturnUrl]="demoReturnUrl"
-      footnote="Requires HTTPS and Web NFC (Chrome on Android)."
-    />
-  `,
+  imports: [RouterLink],
+  templateUrl: './home.page.html',
   host: { class: 'rb-page rb-page--home' },
 })
 export class HomePage {
-  readonly openExample =
-    '?returnUrl=<urlencoded-https-url>&state=<optional>&allowedOrigins=<optional>';
-  readonly returnExample =
-    '<returnUrl>?value=<payload>&format=nfc.url&recordType=url&state=<state>';
   readonly demoOpenUrl: string;
   readonly demoReturnUrl: string;
 
   constructor() {
     const base = appBaseUrl();
-    this.demoOpenUrl = buildDemoOpenUrl(base);
+    const returnUrl = `${base}/demo-caller`;
+    const origin = new URL(base).origin;
+    this.demoOpenUrl = `${base}?returnUrl=${encodeURIComponent(returnUrl)}&state=demo1&allowedOrigins=${encodeURIComponent(origin)}`;
     this.demoReturnUrl = `${base}/demo-caller?value=https://example.com&format=nfc.url&recordType=url&state=demo1`;
   }
 }

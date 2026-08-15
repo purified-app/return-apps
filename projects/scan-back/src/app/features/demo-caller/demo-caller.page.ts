@@ -1,50 +1,33 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
-import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-import {
-  RbDemoCaller,
-  appBaseUrl,
-  buildDemoOpenUrl,
-  parseReturnResult,
-  type ReturnResult,
-} from 'shared-ui';
+import { RbMetaList, appBaseUrl, readReturnParams } from 'shared-ui';
 
 @Component({
   selector: 'sb-demo-caller-page',
-  imports: [FormsModule, RbDemoCaller],
-  template: `
-    <rb-demo-caller
-      title="Simulate another app that opens ScanBack"
-      lead="Tap “Scan” to open the scanner. After a successful read, the value returns here."
-      startLabel="Scan"
-      [result]="result()"
-      (start)="startScan()"
-    >
-      @if (result().value; as scanned) {
-        <label class="field" rbResult>
-          <span>Value</span>
-          <input type="text" [ngModel]="scanned" readonly />
-        </label>
-      }
-    </rb-demo-caller>
-  `,
+  imports: [RbMetaList],
+  templateUrl: './demo-caller.page.html',
   host: { class: 'rb-page rb-page--demo' },
 })
 export class DemoCallerPage implements OnInit {
   private readonly route = inject(ActivatedRoute);
-  readonly result = signal<ReturnResult>({
-    value: null,
-    format: null,
-    error: null,
-    state: null,
-    extras: {},
-  });
+
+  readonly value = signal<string | null>(null);
+  readonly lastFormat = signal<string | null>(null);
+  readonly lastError = signal<string | null>(null);
+  readonly lastState = signal<string | null>(null);
 
   ngOnInit(): void {
-    this.result.set(parseReturnResult(this.route.snapshot.queryParamMap));
+    const result = readReturnParams(this.route.snapshot.queryParamMap);
+    this.value.set(result.value);
+    this.lastFormat.set(result.format);
+    this.lastError.set(result.error);
+    this.lastState.set(result.state);
   }
 
   startScan(): void {
-    location.href = buildDemoOpenUrl(appBaseUrl());
+    const base = appBaseUrl();
+    const returnUrl = `${base}/demo-caller`;
+    const origin = new URL(base).origin;
+    location.href = `${base}?returnUrl=${encodeURIComponent(returnUrl)}&state=demo1&allowedOrigins=${encodeURIComponent(origin)}`;
   }
 }

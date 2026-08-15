@@ -1,0 +1,26 @@
+<main class="home">
+  <header>
+    <p class="brand">NfcBack</p>
+    <h1>Read an NFC tag and return it to the app you came from</h1>
+    <p class="lead">
+      Web NFC reader (Chrome/Android). Returns <code>value</code> +
+      <code>format=nfc.*</code> with <code>recordType</code> (query by default).
+    </p>
+    <div class="cta">
+      <a routerLink="/" class="btn">Start NFC scan</a>
+      <a routerLink="/demo-caller" class="btn btn-ghost">Try demo caller</a>
+    </div>
+  </header>
+
+  <section class="docs">
+    <h2>Integration</h2>
+    <p>Open:</p>
+    <pre><code>?returnUrl=&lt;url&gt;&amp;state=&lt;optional&gt;&amp;allowedOrigins=&lt;optional&gt;</code></pre>
+    <p>Return:</p>
+    <pre><code>&lt;returnUrl&gt;?value=&lt;payload&gt;&amp;format=nfc.url&amp;recordType=url&amp;state=&lt;state&gt;</code></pre>
+    <p>Requires HTTPS and Web NFC (Chrome on Android).</p>
+    <h3>Demo</h3>
+    <pre><code>{{ demoOpenUrl }}</code></pre>
+    <pre><code>{{ demoReturnUrl }}</code></pre>
+  </section>
+</main>

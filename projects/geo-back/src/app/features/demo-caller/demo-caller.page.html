@@ -1,0 +1,16 @@
+<main class="demo">
+  <header>
+    <p class="brand">Demo caller</p>
+    <h1>Simulate another app that opens GeoBack</h1>
+    <p class="lead">Tap “Get location” to open GeoBack. After success, coordinates return here.</p>
+  </header>
+
+  <button type="button" class="btn" (click)="startGeo()">Get location</button>
+
+  <rb-meta-list
+    [value]="value()"
+    [format]="lastFormat()"
+    [state]="lastState()"
+    [error]="lastError()"
+  />
+</main>

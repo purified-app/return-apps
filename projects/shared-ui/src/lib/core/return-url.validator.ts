@@ -1,4 +1,5 @@
 import { Service } from '@angular/core';
+import type { ParamMap } from '@angular/router';
 
 export type ReturnDelivery = 'query' | 'hash';
 
@@ -129,14 +130,6 @@ export class ReturnUrlValidator {
     return target.toString();
   }
 
-  complete(
-    returnUrl: URL,
-    params: ReturnRedirectParams,
-    delivery: ReturnDelivery = 'query',
-  ): void {
-    location.href = this.buildRedirectUrl(returnUrl, params, delivery);
-  }
-
   private applyParams(search: URLSearchParams, params: ReturnRedirectParams): void {
     for (const [key, value] of Object.entries(params)) {
       if (value == null || value === '') {
@@ -145,4 +138,41 @@ export class ReturnUrlValidator {
       search.set(key, value);
     }
   }
+}
+
+/** Read contract result from query and/or hash (for demo callers). */
+export function readReturnParams(
+  queryParamMap: ParamMap,
+  hash: string = typeof location !== 'undefined' ? location.hash : '',
+): {
+  value: string | null;
+  format: string | null;
+  error: string | null;
+  state: string | null;
+} {
+  const merged: Record<string, string> = {};
+  if (hash && hash !== '#') {
+    const raw = hash.startsWith('#') ? hash.slice(1) : hash;
+    const qIndex = raw.indexOf('?');
+    const query = qIndex >= 0 ? raw.slice(qIndex + 1) : raw.startsWith('/') ? '' : raw;
+    if (query) {
+      for (const [k, v] of new URLSearchParams(query)) {
+        if (v) {
+          merged[k] = v;
+        }
+      }
+    }
+  }
+  for (const key of queryParamMap.keys) {
+    const value = queryParamMap.get(key);
+    if (value) {
+      merged[key] = value;
+    }
+  }
+  return {
+    value: merged['value'] ?? null,
+    format: merged['format'] ?? null,
+    error: merged['error'] ?? null,
+    state: merged['state'] ?? null,
+  };
 }

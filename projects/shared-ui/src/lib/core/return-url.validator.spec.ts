@@ -1,10 +1,4 @@
-import { ReturnUrlValidator } from './return-url.validator';
-import {
-  ReturnSession,
-  buildOpenUrl,
-  parseReturnResult,
-  taggedFormat,
-} from './return';
+import { ReturnUrlValidator, readReturnParams } from './return-url.validator';
 
 describe('ReturnUrlValidator', () => {
   const validator = new ReturnUrlValidator();
@@ -50,35 +44,14 @@ describe('ReturnUrlValidator', () => {
     );
     expect(hash).toContain('#value=1234&format=pin.digits');
   });
-});
 
-describe('ReturnSession + helpers', () => {
-  const validator = new ReturnUrlValidator();
-  const paramMap = (entries: Record<string, string>) =>
-    ({
-      get: (key: string) => entries[key] ?? null,
-      keys: Object.keys(entries),
-    }) as never;
-
-  it('opens standalone when returnUrl is missing', () => {
-    const init = ReturnSession.open(validator, paramMap({ state: 's1' }), {
-      delivery: 'hash',
-    });
-    expect(init.ok).toBe(true);
-    expect(init.session.isReturnMode).toBe(false);
-  });
-
-  it('parses hash results and builds open URLs', () => {
-    const result = parseReturnResult(paramMap({}), '#value=secret&format=pin.digits');
+  it('reads return params from hash', () => {
+    const params = {
+      get: () => null,
+      keys: [] as string[],
+    };
+    const result = readReturnParams(params as never, '#value=secret&format=pin.digits');
     expect(result.value).toBe('secret');
-
-    const url = buildOpenUrl({
-      baseUrl: 'https://return.purified.app/pin',
-      returnUrl: 'https://app.example/cb',
-      allowedOrigins: ['https://app.example'],
-      delivery: 'hash',
-    });
-    expect(new URL(url).searchParams.get('v')).toBe('1');
-    expect(taggedFormat('scan', 'QR_CODE')).toBe('scan.qr_code');
+    expect(result.format).toBe('pin.digits');
   });
 });

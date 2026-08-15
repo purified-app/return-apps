@@ -1,0 +1,25 @@
+<main class="home">
+  <header>
+    <p class="brand">GeoBack</p>
+    <h1>Capture GPS coordinates and return them to the app you came from</h1>
+    <p class="lead">
+      Mobile-first geolocation helper. After a successful reading, coordinates are returned as
+      <code>value</code> (<code>lat,lng</code>) plus extras (query by default).
+    </p>
+    <div class="cta">
+      <a routerLink="/" class="btn">Get location</a>
+      <a routerLink="/demo-caller" class="btn btn-ghost">Try demo caller</a>
+    </div>
+  </header>
+
+  <section class="docs">
+    <h2>Integration</h2>
+    <p>Open:</p>
+    <pre><code>?returnUrl=&lt;url&gt;&amp;state=&lt;optional&gt;&amp;allowedOrigins=&lt;optional&gt;&amp;highAccuracy=&lt;optional&gt;</code></pre>
+    <p>Return:</p>
+    <pre><code>&lt;returnUrl&gt;?value=&lt;lat&gt;,&lt;lng&gt;&amp;format=geo.point&amp;lat=&amp;lng=&amp;accuracy=&amp;timestamp=&amp;state=&lt;state&gt;</code></pre>
+    <h3>Demo</h3>
+    <pre><code>{{ demoOpenUrl }}</code></pre>
+    <pre><code>{{ demoReturnUrl }}</code></pre>
+  </section>
+</main>

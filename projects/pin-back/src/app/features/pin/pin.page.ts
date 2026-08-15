@@ -1,6 +1,6 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { ReturnSession, ReturnUrlValidator, RbPanel } from 'shared-ui';
+import { ReturnUrlValidator, RbPanel, type ReturnDelivery } from 'shared-ui';
 
 type PinStatus = 'ready' | 'invalid-return-url' | 'incomplete' | 'done' | 'redirecting';
 
@@ -33,10 +33,14 @@ export class PinPage implements OnInit {
     return '•'.repeat(value.length).padEnd(this.length(), '·');
   });
 
-  private session!: ReturnSession;
+  private returnUrl: URL | null = null;
+  private state: string | null = null;
+  private delivery: ReturnDelivery = 'hash';
 
   ngOnInit(): void {
     const params = this.route.snapshot.queryParamMap;
+    this.state = params.get('state');
+    this.delivery = this.returnUrlValidator.parseDelivery(params.get('delivery'), 'hash');
 
     const lengthParam = Number(params.get('length'));
     if (Number.isFinite(lengthParam) && lengthParam >= 3 && lengthParam <= 12) {
@@ -48,11 +52,17 @@ export class PinPage implements OnInit {
       this.mask.set(false);
     }
 
-    const init = ReturnSession.open(this.returnUrlValidator, params, { delivery: 'hash' });
-    this.session = init.session;
-    if (!init.ok) {
-      this.status.set('invalid-return-url');
-      this.errorDetail.set(init.reason);
+    const rawReturnUrl = params.get('returnUrl');
+    if (rawReturnUrl) {
+      const validation = this.returnUrlValidator.validate(rawReturnUrl, {
+        allowedOrigins: this.returnUrlValidator.parseAllowedOrigins(params.get('allowedOrigins')),
+      });
+      if (!validation.ok) {
+        this.status.set('invalid-return-url');
+        this.errorDetail.set(validation.reason);
+        return;
+      }
+      this.returnUrl = validation.url;
     }
   }
 
@@ -85,7 +95,12 @@ export class PinPage implements OnInit {
   }
 
   onCancel(): void {
-    if (this.session.cancel()) {
+    if (this.returnUrl) {
+      location.href = this.returnUrlValidator.buildRedirectUrl(
+        this.returnUrl,
+        { error: 'cancelled', state: this.state },
+        this.delivery,
+      );
       return;
     }
     if (history.length > 1) {
@@ -103,8 +118,13 @@ export class PinPage implements OnInit {
       return;
     }
 
-    if (this.session.succeed(pin, 'pin.digits')) {
+    if (this.returnUrl) {
       this.status.set('redirecting');
+      location.href = this.returnUrlValidator.buildRedirectUrl(
+        this.returnUrl,
+        { value: pin, format: 'pin.digits', state: this.state },
+        this.delivery,
+      );
       return;
     }
 

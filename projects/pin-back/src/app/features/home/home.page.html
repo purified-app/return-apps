@@ -1,0 +1,25 @@
+<main class="home">
+  <header>
+    <p class="brand">PinBack</p>
+    <h1>Enter a PIN and return it to the app you came from</h1>
+    <p class="lead">
+      Fullscreen numeric keypad. After Done, the PIN is returned as
+      <code>value</code> + <code>format=pin.digits</code> (hash by default).
+    </p>
+    <div class="cta">
+      <a routerLink="/" class="btn">Enter PIN</a>
+      <a routerLink="/demo-caller" class="btn btn-ghost">Try demo caller</a>
+    </div>
+  </header>
+
+  <section class="docs">
+    <h2>Integration</h2>
+    <p>Open:</p>
+    <pre><code>?returnUrl=&lt;url&gt;&amp;state=&lt;optional&gt;&amp;allowedOrigins=&lt;optional&gt;&amp;delivery=hash&amp;length=&lt;optional&gt;&amp;mask=&lt;optional&gt;</code></pre>
+    <p>Return:</p>
+    <pre><code>&lt;returnUrl&gt;#value=&lt;digits&gt;&amp;format=pin.digits&amp;state=&lt;state&gt;</code></pre>
+    <h3>Demo</h3>
+    <pre><code>{{ demoOpenUrl }}</code></pre>
+    <pre><code>{{ demoReturnUrl }}</code></pre>
+  </section>
+</main>

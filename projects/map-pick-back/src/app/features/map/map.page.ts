@@ -9,7 +9,7 @@ import {
 } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import * as L from 'leaflet';
-import { ReturnSession, ReturnUrlValidator, RbPanel } from 'shared-ui';
+import { ReturnUrlValidator, RbPanel, type ReturnDelivery } from 'shared-ui';
 
 type MapStatus = 'ready' | 'invalid-return-url' | 'empty' | 'done' | 'redirecting';
 
@@ -53,7 +53,9 @@ export class MapPage implements OnDestroy {
   readonly errorDetail = signal<string | null>(null);
   readonly pick = signal<MapPick | null>(null);
 
-  private session!: ReturnSession;
+  private returnUrl: URL | null = null;
+  private state: string | null = null;
+  private delivery: ReturnDelivery = 'query';
   private map: L.Map | null = null;
   private marker: L.Marker | null = null;
   private initialCenter: L.LatLngExpression = DEFAULT_CENTER;
@@ -75,7 +77,12 @@ export class MapPage implements OnDestroy {
 
   onCancel(): void {
     this.teardownMap();
-    if (this.session.cancel()) {
+    if (this.returnUrl) {
+      location.href = this.returnUrlValidator.buildRedirectUrl(
+        this.returnUrl,
+        { error: 'cancelled', state: this.state },
+        this.delivery,
+      );
       return;
     }
     if (history.length > 1) {
@@ -103,15 +110,21 @@ export class MapPage implements OnDestroy {
       return;
     }
 
-    if (
-      this.session.succeed(`${pick.lat},${pick.lng}`, 'map.point', {
-        lat: String(pick.lat),
-        lng: String(pick.lng),
-        zoom: String(pick.zoom),
-      })
-    ) {
+    if (this.returnUrl) {
       this.status.set('redirecting');
       this.teardownMap();
+      location.href = this.returnUrlValidator.buildRedirectUrl(
+        this.returnUrl,
+        {
+          value: `${pick.lat},${pick.lng}`,
+          format: 'map.point',
+          state: this.state,
+          lat: String(pick.lat),
+          lng: String(pick.lng),
+          zoom: String(pick.zoom),
+        },
+        this.delivery,
+      );
       return;
     }
 
@@ -132,6 +145,9 @@ export class MapPage implements OnDestroy {
   private bootstrap(): void {
     const params = this.route.snapshot.queryParamMap;
 
+    this.state = params.get('state');
+    this.delivery = this.returnUrlValidator.parseDelivery(params.get('delivery'), 'query');
+
     const lat = parseOptionalNumber(params.get('lat'));
     const lng = parseOptionalNumber(params.get('lng'));
     const zoom = parseOptionalNumber(params.get('zoom'));
@@ -143,12 +159,17 @@ export class MapPage implements OnDestroy {
       this.initialZoom = zoom;
     }
 
-    const init = ReturnSession.open(this.returnUrlValidator, params, { delivery: 'query' });
-    this.session = init.session;
-    if (!init.ok) {
-      this.status.set('invalid-return-url');
-      this.errorDetail.set(init.reason);
-      return;
+    const rawReturnUrl = params.get('returnUrl');
+    if (rawReturnUrl) {
+      const validation = this.returnUrlValidator.validate(rawReturnUrl, {
+        allowedOrigins: this.returnUrlValidator.parseAllowedOrigins(params.get('allowedOrigins')),
+      });
+      if (!validation.ok) {
+        this.status.set('invalid-return-url');
+        this.errorDetail.set(validation.reason);
+        return;
+      }
+      this.returnUrl = validation.url;
     }
 
     this.initMap();

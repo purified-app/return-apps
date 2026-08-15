@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { ReturnSession, ReturnUrlValidator, RbPanel, taggedFormat } from 'shared-ui';
+import { ReturnUrlValidator, RbPanel, type ReturnDelivery } from 'shared-ui';
 
 type NfcStatus =
   | 'idle'
@@ -57,18 +57,27 @@ export class NfcPage implements OnInit, OnDestroy {
   readonly errorDetail = signal<string | null>(null);
   readonly reading = signal<NfcReading | null>(null);
 
-  private session!: ReturnSession;
+  private returnUrl: URL | null = null;
+  private state: string | null = null;
+  private delivery: ReturnDelivery = 'query';
   private abort: AbortController | null = null;
 
   ngOnInit(): void {
-    const init = ReturnSession.open(this.returnUrlValidator, this.route.snapshot.queryParamMap, {
-      delivery: 'query',
-    });
-    this.session = init.session;
-    if (!init.ok) {
-      this.status.set('invalid-return-url');
-      this.errorDetail.set(init.reason);
-      return;
+    const params = this.route.snapshot.queryParamMap;
+    this.state = params.get('state');
+    this.delivery = this.returnUrlValidator.parseDelivery(params.get('delivery'), 'query');
+
+    const rawReturnUrl = params.get('returnUrl');
+    if (rawReturnUrl) {
+      const validation = this.returnUrlValidator.validate(rawReturnUrl, {
+        allowedOrigins: this.returnUrlValidator.parseAllowedOrigins(params.get('allowedOrigins')),
+      });
+      if (!validation.ok) {
+        this.status.set('invalid-return-url');
+        this.errorDetail.set(validation.reason);
+        return;
+      }
+      this.returnUrl = validation.url;
     }
 
     void this.startScan();
@@ -112,7 +121,12 @@ export class NfcPage implements OnInit, OnDestroy {
 
   onCancel(): void {
     this.stopScan();
-    if (this.session.cancel()) {
+    if (this.returnUrl) {
+      location.href = this.returnUrlValidator.buildRedirectUrl(
+        this.returnUrl,
+        { error: 'cancelled', state: this.state },
+        this.delivery,
+      );
       return;
     }
     if (history.length > 1) {
@@ -138,12 +152,21 @@ export class NfcPage implements OnInit, OnDestroy {
     this.reading.set(reading);
     this.stopScan();
 
-    if (
-      this.session.succeed(reading.nfcValue, taggedFormat('nfc', reading.recordType), {
-        recordType: reading.recordType,
-      })
-    ) {
+    const normalized = reading.recordType.trim().toLowerCase().replace(/[^a-z0-9]+/g, '_');
+    const format = `nfc.${normalized || 'unknown'}`;
+
+    if (this.returnUrl) {
       this.status.set('redirecting');
+      location.href = this.returnUrlValidator.buildRedirectUrl(
+        this.returnUrl,
+        {
+          value: reading.nfcValue,
+          format,
+          state: this.state,
+          recordType: reading.recordType,
+        },
+        this.delivery,
+      );
       return;
     }
 

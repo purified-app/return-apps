@@ -8,7 +8,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { ReturnSession, ReturnUrlValidator, RbPanel } from 'shared-ui';
+import { ReturnUrlValidator, RbPanel, type ReturnDelivery } from 'shared-ui';
 import { SignaturePadService } from './signature-pad';
 
 type SignStatus =
@@ -40,7 +40,9 @@ export class SignPage implements OnDestroy {
   readonly errorDetail = signal<string | null>(null);
   readonly previewUrl = signal<string | null>(null);
 
-  private session!: ReturnSession;
+  private returnUrl: URL | null = null;
+  private state: string | null = null;
+  private delivery: ReturnDelivery = 'hash';
   private ready = false;
 
   constructor() {
@@ -73,7 +75,12 @@ export class SignPage implements OnDestroy {
 
   onCancel(): void {
     this.pad.detach();
-    if (this.session.cancel()) {
+    if (this.returnUrl) {
+      location.href = this.returnUrlValidator.buildRedirectUrl(
+        this.returnUrl,
+        { error: 'cancelled', state: this.state },
+        this.delivery,
+      );
       return;
     }
     if (history.length > 1) {
@@ -99,8 +106,13 @@ export class SignPage implements OnDestroy {
       return;
     }
 
-    if (this.session.succeed(signature, 'sign.svg')) {
+    if (this.returnUrl) {
       this.status.set('redirecting');
+      location.href = this.returnUrlValidator.buildRedirectUrl(
+        this.returnUrl,
+        { value: signature, format: 'sign.svg', state: this.state },
+        this.delivery,
+      );
       return;
     }
 
@@ -110,14 +122,21 @@ export class SignPage implements OnDestroy {
   }
 
   private bootstrap(): void {
-    const init = ReturnSession.open(this.returnUrlValidator, this.route.snapshot.queryParamMap, {
-      delivery: 'hash',
-    });
-    this.session = init.session;
-    if (!init.ok) {
-      this.status.set('invalid-return-url');
-      this.errorDetail.set(init.reason);
-      return;
+    const params = this.route.snapshot.queryParamMap;
+    this.state = params.get('state');
+    this.delivery = this.returnUrlValidator.parseDelivery(params.get('delivery'), 'hash');
+
+    const rawReturnUrl = params.get('returnUrl');
+    if (rawReturnUrl) {
+      const validation = this.returnUrlValidator.validate(rawReturnUrl, {
+        allowedOrigins: this.returnUrlValidator.parseAllowedOrigins(params.get('allowedOrigins')),
+      });
+      if (!validation.ok) {
+        this.status.set('invalid-return-url');
+        this.errorDetail.set(validation.reason);
+        return;
+      }
+      this.returnUrl = validation.url;
     }
 
     this.attachPad();

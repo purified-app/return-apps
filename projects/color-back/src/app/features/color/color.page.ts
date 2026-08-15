@@ -8,7 +8,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { ReturnSession, ReturnUrlValidator, RbPanel } from 'shared-ui';
+import { ReturnUrlValidator, RbPanel, type ReturnDelivery } from 'shared-ui';
 
 type ColorStatus =
   | 'starting'
@@ -46,7 +46,9 @@ export class ColorPage implements OnDestroy {
   readonly liveColor = signal<SampledColor | null>(null);
   readonly captured = signal<SampledColor | null>(null);
 
-  private session!: ReturnSession;
+  private returnUrl: URL | null = null;
+  private state: string | null = null;
+  private delivery: ReturnDelivery = 'query';
   private stream: MediaStream | null = null;
   private raf = 0;
   private ready = false;
@@ -64,7 +66,12 @@ export class ColorPage implements OnDestroy {
 
   onCancel(): void {
     this.stopCamera();
-    if (this.session.cancel()) {
+    if (this.returnUrl) {
+      location.href = this.returnUrlValidator.buildRedirectUrl(
+        this.returnUrl,
+        { error: 'cancelled', state: this.state },
+        this.delivery,
+      );
       return;
     }
     if (history.length > 1) {
@@ -81,13 +88,19 @@ export class ColorPage implements OnDestroy {
       return;
     }
 
-    if (
-      this.session.succeed(color.hex, 'color.hex', {
-        rgb: `${color.r},${color.g},${color.b}`,
-      })
-    ) {
+    if (this.returnUrl) {
       this.status.set('redirecting');
       this.stopCamera();
+      location.href = this.returnUrlValidator.buildRedirectUrl(
+        this.returnUrl,
+        {
+          value: color.hex,
+          format: 'color.hex',
+          state: this.state,
+          rgb: `${color.r},${color.g},${color.b}`,
+        },
+        this.delivery,
+      );
       return;
     }
 
@@ -103,14 +116,21 @@ export class ColorPage implements OnDestroy {
   }
 
   private bootstrap(): void {
-    const init = ReturnSession.open(this.returnUrlValidator, this.route.snapshot.queryParamMap, {
-      delivery: 'query',
-    });
-    this.session = init.session;
-    if (!init.ok) {
-      this.status.set('invalid-return-url');
-      this.errorDetail.set(init.reason);
-      return;
+    const params = this.route.snapshot.queryParamMap;
+    this.state = params.get('state');
+    this.delivery = this.returnUrlValidator.parseDelivery(params.get('delivery'), 'query');
+
+    const rawReturnUrl = params.get('returnUrl');
+    if (rawReturnUrl) {
+      const validation = this.returnUrlValidator.validate(rawReturnUrl, {
+        allowedOrigins: this.returnUrlValidator.parseAllowedOrigins(params.get('allowedOrigins')),
+      });
+      if (!validation.ok) {
+        this.status.set('invalid-return-url');
+        this.errorDetail.set(validation.reason);
+        return;
+      }
+      this.returnUrl = validation.url;
     }
 
     void this.startCamera();

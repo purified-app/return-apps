@@ -1,0 +1,16 @@
+<main class="demo">
+  <header>
+    <p class="brand">Demo caller</p>
+    <h1>Simulate another app that opens PinBack</h1>
+    <p class="lead">Tap “Enter PIN” to open the keypad. After Done, the PIN returns here.</p>
+  </header>
+
+  <button type="button" class="btn" (click)="startPin()">Enter PIN</button>
+
+  <rb-meta-list
+    [value]="value()"
+    [format]="lastFormat()"
+    [state]="lastState()"
+    [error]="lastError()"
+  />
+</main>
