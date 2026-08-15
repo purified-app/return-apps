@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { RbHomeDocs, appBaseUrl, buildDemoOpenUrl } from 'shared-ui';
+import { RbHomeDocs } from 'shared-ui';
 
 @Component({
   selector: 'sb-home-page',
@@ -8,26 +8,13 @@ import { RbHomeDocs, appBaseUrl, buildDemoOpenUrl } from 'shared-ui';
     <rb-home-docs
       brand="ScanBack"
       title="Scan a code and return it to the app you came from"
-      lead="Camera barcode scanner that other web apps can open. After a successful scan, the value is returned via value + format=scan.* (query by default)."
+      lead="Camera barcode scanner. After a successful scan, the value is returned via value + format=scan.* (query by default)."
       ctaLabel="Start scanning"
-      [openExample]="openExample"
-      [returnExample]="returnExample"
-      [demoOpenUrl]="demoOpenUrl"
-      [demoReturnUrl]="demoReturnUrl"
+      format="scan.qr_code"
+      [openParamDocs]="['formats']"
+      demoValue="ABC-123"
     />
   `,
   host: { class: 'rb-page rb-page--home' },
 })
-export class HomePage {
-  readonly openExample =
-    '?returnUrl=<url>&state=<optional>&allowedOrigins=<optional>&delivery=query&formats=<optional>';
-  readonly returnExample = '<returnUrl>?value=<payload>&format=scan.qr_code&state=<state>';
-  readonly demoOpenUrl: string;
-  readonly demoReturnUrl: string;
-
-  constructor() {
-    const base = appBaseUrl();
-    this.demoOpenUrl = buildDemoOpenUrl(base);
-    this.demoReturnUrl = `${base}/demo-caller?value=ABC-123&format=scan.qr_code&state=demo1`;
-  }
-}
+export class HomePage {}

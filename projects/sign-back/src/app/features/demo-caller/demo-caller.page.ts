@@ -1,24 +1,17 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
-import {
-  RbDemoCaller,
-  appBaseUrl,
-  buildDemoOpenUrl,
-  readReturnParams,
-  type ReturnResult,
-} from 'shared-ui';
+import { RbDemoCaller } from 'shared-ui';
 
 @Component({
   selector: 'sb-demo-caller-page',
   imports: [FormsModule, RbDemoCaller],
   template: `
     <rb-demo-caller
+      #demo
       title="Simulate another app that opens SignBack"
       lead="Tap “Sign” to open the pad. After Done, the signature is returned here (hash delivery)."
       startLabel="Sign"
-      [result]="result()"
-      (start)="startSign()"
+      delivery="hash"
     >
       <label class="field">
         <span>Note (optional)</span>
@@ -30,7 +23,7 @@ import {
         />
       </label>
 
-      @if (result().value; as url) {
+      @if (demo.result().value; as url) {
         <figure class="preview-wrap" rbResult>
           <img [src]="url" alt="Returned signature" class="preview" />
         </figure>
@@ -39,22 +32,6 @@ import {
   `,
   host: { class: 'rb-page rb-page--demo' },
 })
-export class DemoCallerPage implements OnInit {
-  private readonly route = inject(ActivatedRoute);
+export class DemoCallerPage {
   readonly note = signal('');
-  readonly result = signal<ReturnResult>({
-    value: null,
-    format: null,
-    error: null,
-    state: null,
-    extras: {},
-  });
-
-  ngOnInit(): void {
-    this.result.set(readReturnParams(this.route.snapshot.queryParamMap));
-  }
-
-  startSign(): void {
-    location.href = buildDemoOpenUrl(appBaseUrl(), { delivery: 'hash' });
-  }
 }

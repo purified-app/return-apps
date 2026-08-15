@@ -1,12 +1,5 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
-import {
-  RbDemoCaller,
-  appBaseUrl,
-  buildDemoOpenUrl,
-  readReturnParams,
-  type ReturnResult,
-} from 'shared-ui';
+import { Component } from '@angular/core';
+import { RbDemoCaller } from 'shared-ui';
 
 @Component({
   selector: 'pb-demo-caller-page',
@@ -16,30 +9,10 @@ import {
       title="Simulate another app that opens PinBack"
       lead="Tap “Enter PIN” to open the keypad. After Done, the PIN returns here."
       startLabel="Enter PIN"
-      [result]="result()"
-      (start)="startPin()"
+      delivery="hash"
+      [params]="{ length: 4 }"
     />
   `,
   host: { class: 'rb-page rb-page--demo' },
 })
-export class DemoCallerPage implements OnInit {
-  private readonly route = inject(ActivatedRoute);
-  readonly result = signal<ReturnResult>({
-    value: null,
-    format: null,
-    error: null,
-    state: null,
-    extras: {},
-  });
-
-  ngOnInit(): void {
-    this.result.set(readReturnParams(this.route.snapshot.queryParamMap));
-  }
-
-  startPin(): void {
-    location.href = buildDemoOpenUrl(appBaseUrl(), {
-      delivery: 'hash',
-      params: { length: 4 },
-    });
-  }
-}
+export class DemoCallerPage {}
