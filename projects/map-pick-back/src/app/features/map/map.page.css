@@ -1,0 +1,70 @@
+.map-page {
+  min-height: 100dvh;
+}
+
+.shell {
+  width: 100%;
+  max-width: var(--rb-content);
+  margin: 0 auto;
+  height: 100dvh;
+  max-height: 100dvh;
+  padding:
+    var(--rb-space-page-top)
+    max(1rem, env(safe-area-inset-right))
+    var(--rb-space-page-bottom)
+    max(1rem, env(safe-area-inset-left));
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto auto;
+  gap: 0.75rem;
+  overflow: hidden;
+}
+
+.top h1 {
+  margin: 0;
+  font-size: clamp(1.2rem, 4.5vw, 1.45rem);
+  font-weight: 700;
+}
+
+.top p {
+  margin: 0.35rem 0 0;
+  color: var(--rb-muted);
+}
+
+.map {
+  min-height: 0;
+  height: 100%;
+  border-radius: var(--rb-radius-lg);
+  overflow: hidden;
+  border: 1px solid rgb(255 255 255 / 10%);
+  background: #1a2228;
+}
+
+.coords,
+.status {
+  margin: 0;
+  color: var(--rb-muted);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.95rem;
+}
+
+.error {
+  margin: 0;
+  color: var(--rb-error);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  justify-content: flex-start;
+}
+
+@media (max-height: 32rem) {
+  .top p {
+    display: none;
+  }
+
+  .shell {
+    gap: 0.5rem;
+  }
+}

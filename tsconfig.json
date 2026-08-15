@@ -1,0 +1,76 @@
+/* To learn more about Typescript configuration file: https://www.typescriptlang.org/docs/handbook/tsconfig-json.html. */
+/* To learn more about Angular compiler options: https://angular.dev/reference/configs/angular-compiler-options. */
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "skipLibCheck": true,
+    "isolatedModules": true,
+    "experimentalDecorators": true,
+    "importHelpers": true,
+    "paths": {
+      "shared-ui": ["./projects/shared-ui/src/public-api.ts"]
+    },
+    "target": "ES2022",
+    "module": "preserve"
+  },
+  "angularCompilerOptions": {
+    "enableI18nLegacyMessageIdFormat": false,
+    "strictInjectionParameters": true,
+    "strictInputAccessModifiers": true
+  },
+  "files": [],
+  "references": [
+    {
+      "path": "./projects/sign-back/tsconfig.app.json"
+    },
+    {
+      "path": "./projects/sign-back/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/scan-back/tsconfig.app.json"
+    },
+    {
+      "path": "./projects/scan-back/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/shared-ui/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/shared-ui/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/geo-back/tsconfig.app.json"
+    },
+    {
+      "path": "./projects/map-pick-back/tsconfig.app.json"
+    },
+    {
+      "path": "./projects/pin-back/tsconfig.app.json"
+    },
+    {
+      "path": "./projects/nfc-back/tsconfig.app.json"
+    },
+    {
+      "path": "./projects/color-back/tsconfig.app.json"
+    },
+    {
+      "path": "./projects/geo-back/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/map-pick-back/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/pin-back/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/nfc-back/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/color-back/tsconfig.spec.json"
+    }
+  ]
+}

@@ -1,0 +1,261 @@
+/* Shared page chrome used by home / demo / result panels. */
+
+.brand {
+  margin: 0 0 0.75rem;
+  font-size: clamp(1.75rem, 7.5vw, 2.75rem);
+  font-weight: 750;
+  letter-spacing: -0.03em;
+  overflow-wrap: anywhere;
+}
+
+.lead {
+  margin: 0.85rem 0 0;
+  color: var(--rb-muted);
+  font-size: clamp(0.95rem, 3.5vw, 1rem);
+  line-height: 1.55;
+  text-wrap: pretty;
+  overflow-wrap: break-word;
+}
+
+.cta,
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.cta {
+  margin-top: 1.5rem;
+}
+
+.home {
+  width: 100%;
+  max-width: var(--rb-content);
+  margin: 0 auto;
+  padding:
+    var(--rb-space-page-top)
+    max(1rem, env(safe-area-inset-right))
+    max(3rem, calc(2rem + env(safe-area-inset-bottom)))
+    max(1rem, env(safe-area-inset-left));
+  display: grid;
+  gap: 2rem;
+  min-width: 0;
+  overflow-wrap: break-word;
+}
+
+.home h1 {
+  margin: 0;
+  font-size: clamp(1.15rem, 4.2vw, 1.55rem);
+  font-weight: 600;
+  line-height: 1.35;
+  text-wrap: pretty;
+  overflow-wrap: break-word;
+}
+
+.docs {
+  min-width: 0;
+}
+
+.docs h2 {
+  margin: 0 0 0.75rem;
+  font-size: 1.1rem;
+}
+
+.docs h3 {
+  margin: 1.35rem 0 0.65rem;
+  font-size: 1rem;
+  font-weight: 650;
+}
+
+.docs p {
+  margin: 0 0 0.65rem;
+  color: var(--rb-muted);
+  line-height: 1.5;
+  overflow-wrap: break-word;
+}
+
+.docs pre {
+  margin: 0 0 1rem;
+  padding: 0.85rem 1rem;
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  border-radius: var(--rb-radius);
+  background: var(--rb-surface);
+  border: 1px solid var(--rb-border);
+}
+
+.docs code {
+  font-family: var(--rb-mono);
+  font-size: clamp(0.72rem, 2.8vw, 0.82rem);
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.docs p code {
+  white-space: normal;
+}
+
+.demo {
+  max-width: var(--rb-panel);
+  margin: 0 auto;
+  padding:
+    var(--rb-space-page-top)
+    max(1.25rem, env(safe-area-inset-right))
+    max(2.5rem, calc(1.5rem + env(safe-area-inset-bottom)))
+    max(1.25rem, env(safe-area-inset-left));
+  display: grid;
+  gap: 1.25rem;
+}
+
+.demo .brand {
+  margin: 0;
+  font-size: 1.75rem;
+  letter-spacing: -0.02em;
+}
+
+.demo h1 {
+  margin: 0.35rem 0 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.demo .lead {
+  margin: 0.65rem 0 0;
+}
+
+.field {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.field span {
+  font-size: 0.9rem;
+  color: var(--rb-muted);
+}
+
+.field input,
+.demo input {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--rb-border-strong);
+  border-radius: var(--rb-radius);
+  min-height: var(--rb-tap);
+  padding: 0.85rem 0.95rem;
+  background: var(--rb-surface-input);
+  color: inherit;
+  font: inherit;
+}
+
+.field input:focus-visible,
+.demo input:focus-visible {
+  outline: 2px solid var(--rb-fg);
+  outline-offset: 2px;
+}
+
+.demo .btn {
+  justify-self: start;
+}
+
+.panel {
+  max-width: var(--rb-panel);
+  margin: 0 auto;
+  padding:
+    var(--rb-space-page-top)
+    max(1.25rem, env(safe-area-inset-right))
+    max(2.5rem, calc(1.5rem + env(safe-area-inset-bottom)))
+    max(1.25rem, env(safe-area-inset-left));
+  display: grid;
+  gap: 1rem;
+}
+
+.panel h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 650;
+}
+
+.panel p {
+  margin: 0;
+  color: var(--rb-muted);
+  line-height: 1.5;
+}
+
+.preview-wrap {
+  margin: 0;
+}
+
+.preview {
+  width: 100%;
+  background: var(--rb-preview-bg);
+  border-radius: var(--rb-radius);
+}
+
+.meta {
+  margin: 0;
+  display: grid;
+  gap: 0.65rem;
+}
+
+.meta div {
+  display: grid;
+  grid-template-columns: minmax(5rem, 7rem) 1fr;
+  gap: 0.5rem;
+}
+
+.meta dt {
+  color: var(--rb-muted-2);
+}
+
+.meta dd {
+  margin: 0;
+  word-break: break-all;
+}
+
+/* Interactive app toolbars (map / sign / pin / geo / …) */
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  justify-content: flex-end;
+  align-items: stretch;
+}
+
+@media (max-width: 30rem) {
+  .cta {
+    flex-direction: column;
+  }
+
+  .cta .btn {
+    width: 100%;
+  }
+
+  .toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: stretch;
+  }
+
+  .toolbar > .btn {
+    flex: 1 1 calc(50% - 0.35rem);
+    min-width: calc(50% - 0.35rem);
+  }
+
+  /* Primary solid button sits full-width at the bottom */
+  .toolbar > .btn:not(.btn-ghost) {
+    flex: 1 1 100%;
+    order: 10;
+  }
+
+  .actions {
+    flex-direction: column;
+  }
+
+  .actions > .btn {
+    width: 100%;
+  }
+}

@@ -1,0 +1,56 @@
+<div class="nfc">
+  @if (status() === 'invalid-return-url') {
+    <rb-panel title="Invalid returnUrl">
+      <p>{{ errorDetail() }}</p>
+      <a routerLink="/home" class="btn">Back to home</a>
+    </rb-panel>
+  } @else if (status() === 'unsupported' || status() === 'error') {
+    <rb-panel [title]="status() === 'unsupported' ? 'NFC unavailable' : 'Scan failed'">
+      <p>{{ errorDetail() }}</p>
+      <div class="actions">
+        <button type="button" class="btn btn-ghost" (click)="onCancel()">Cancel</button>
+        <button type="button" class="btn" (click)="startScan()">Try again</button>
+      </div>
+    </rb-panel>
+  } @else if (status() === 'done') {
+    <rb-panel title="NFC tag read">
+      @if (reading(); as r) {
+        <dl class="meta">
+          <div>
+            <dt>Value</dt>
+            <dd>{{ r.nfcValue }}</dd>
+          </div>
+          <div>
+            <dt>Record type</dt>
+            <dd>{{ r.recordType }}</dd>
+          </div>
+        </dl>
+      }
+      <div class="actions">
+        <button type="button" class="btn btn-ghost" (click)="startScan()">Scan again</button>
+        <a routerLink="/home" class="btn">Back to home</a>
+      </div>
+    </rb-panel>
+  } @else {
+    <section class="shell">
+      <header class="top">
+        <h1>Hold a tag near the phone</h1>
+        <p>Keep this page open. Scanning starts after you allow NFC.</p>
+      </header>
+
+      <div class="pulse" aria-hidden="true"></div>
+
+      @if (status() === 'scanning') {
+        <p class="status" role="status">Listening for NFC…</p>
+      }
+      @if (status() === 'redirecting') {
+        <p class="status" role="status">Returning…</p>
+      }
+
+      <div class="toolbar">
+        <button type="button" class="btn btn-ghost" (click)="onCancel()">Cancel</button>
+        <button type="button" class="btn" (click)="startScan()">Restart scan</button>
+      </div>
+    </section>
+  }
+</div>

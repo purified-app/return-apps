@@ -1,0 +1,54 @@
+<div class="pin">
+  @if (status() === 'invalid-return-url') {
+    <rb-panel title="Invalid returnUrl">
+      <p>{{ errorDetail() }}</p>
+      <a routerLink="/home" class="btn">Back to home</a>
+    </rb-panel>
+  } @else if (status() === 'done') {
+    <rb-panel title="PIN captured">
+      <p class="pin-result">{{ digits() }}</p>
+      <div class="actions">
+        <button type="button" class="btn btn-ghost" (click)="onClear(); status.set('ready')">
+          Enter again
+        </button>
+        <a routerLink="/home" class="btn">Back to home</a>
+      </div>
+    </rb-panel>
+  } @else {
+    <section class="shell">
+      <header class="top">
+        <h1>Enter PIN</h1>
+        <p>{{ length() }}-digit code</p>
+      </header>
+
+      <p class="display" aria-live="polite" aria-label="PIN entry">{{ display() }}</p>
+
+      <div class="pad" role="group" aria-label="Number pad">
+        @for (key of keys; track $index) {
+          @if (key === '') {
+            <span class="pad-spacer" aria-hidden="true"></span>
+          } @else if (key === 'back') {
+            <button type="button" class="pad-key" (click)="onKey('back')" aria-label="Delete">
+              ⌫
+            </button>
+          } @else {
+            <button type="button" class="pad-key" (click)="onKey(key)">{{ key }}</button>
+          }
+        }
+      </div>
+
+      @if (status() === 'incomplete') {
+        <p class="error" role="alert">{{ errorDetail() }}</p>
+      }
+      @if (status() === 'redirecting') {
+        <p class="status" role="status">Returning…</p>
+      }
+
+      <div class="toolbar">
+        <button type="button" class="btn btn-ghost" (click)="onCancel()">Cancel</button>
+        <button type="button" class="btn btn-ghost" (click)="onClear()">Clear</button>
+        <button type="button" class="btn" (click)="onDone()">Done</button>
+      </div>
+    </section>
+  }
+</div>

@@ -1,0 +1,27 @@
+/* Marker images are copied to /assets/leaflet via angular.json assets. */
+
+/* Enlarge Leaflet zoom controls for finger taps (default is 30×30). */
+.leaflet-control-zoom a {
+  width: var(--rb-tap) !important;
+  height: var(--rb-tap) !important;
+  line-height: var(--rb-tap) !important;
+  font-size: 1.25rem !important;
+}
+
+.leaflet-bar a,
+.leaflet-bar a:hover {
+  width: var(--rb-tap);
+  height: var(--rb-tap);
+  line-height: var(--rb-tap);
+}
+
+.leaflet-touch .leaflet-bar a {
+  width: var(--rb-tap);
+  height: var(--rb-tap);
+  line-height: var(--rb-tap);
+}
+
+.leaflet-control-attribution {
+  font-size: 0.7rem;
+  max-width: min(70vw, 18rem);
+}
