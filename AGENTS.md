@@ -76,7 +76,7 @@ When writing code that **opens** a return-app from another web app, follow **`do
 
 - Success is always `value` + `format` (+ `state`). Cancel is `error=cancelled`.
 - Prefer SDK: `site/sdk/return-apps.mjs` → `openReturnApp` / `parseReturnResult`.
-- **pin** and **sign** default to `delivery=hash` — do not parse only `location.search`.
+- **pin** and **sign** default to `delivery=hash` — do not parse only `location.search`. QR with `output=png` also defaults to hash.
 - Always pass `allowedOrigins` with the caller origin.
 - Machine-readable: `site/apps.json`, `site/llms.txt`.
 - Do **not** use legacy return keys (`pin`, `signature`, `scanValue`, `nfcValue`, `hex` as primary).

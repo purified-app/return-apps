@@ -8,10 +8,10 @@ import { RbHomeDocs } from 'shared-ui';
     <rb-home-docs
       brand="QR"
       title="Generate a QR code and return it to the app you came from"
-      lead="Type text or a URL. After Done, an SVG data URL is returned as value with format=qr.svg."
+      lead="Type text or a URL. After Done, value is an SVG data URL (format=qr.svg), or a PNG data URL when opened with output=png (format=qr.png, delivery=hash)."
       ctaLabel="Generate QR"
       format="qr.svg"
-      [openParamDocs]="['text']"
+      [openParamDocs]="['text', 'output', 'auto']"
       demoValue="data:image/svg+xml,…"
     />
   `,

@@ -12,7 +12,7 @@ SDK: https://return.purified.app/sdk/return-apps.mjs
 ## Critical rules for agents
 
 1. Success params are always `value` and `format` (plus optional `state`). Cancel: `error=cancelled`.
-2. Apps `pin` and `sign` default to delivery=hash — parse `location.hash` (or use SDK `parseReturnResult`).
+2. Apps `pin` and `sign` default to delivery=hash — parse `location.hash` (or use SDK `parseReturnResult`). QR with `output=png` also defaults to hash.
 3. Always pass `allowedOrigins=<caller-origin>` with `returnUrl`.
 4. Base: `https://return.purified.app/<id>/` with query string open params.
 5. Prefer SDK:
@@ -33,7 +33,7 @@ const { value, format, error } = parseReturnResult(location);
 - nfc — /nfc/ — query — format=nfc.* — value=payload — extras: recordType — open: mode?,text? — Chrome/Android HTTPS
 - color — /color/ — query — format=color.hex — value=#rrggbb — extras: rgb — open: mode?,hex?
 - level — /level/ — query — format=level.level|level.incline — value=pitch,roll or incline° — open: mode?,threshold?,requireLevel? — extras: mode,heading?,pitch?,roll?,incline?,withinThreshold?,deviation?,tare? — tool: Hold/Copy/Tare
-- qr — /qr/ — query — format=qr.svg — value=SVG data URL — open: text?
+- qr — /qr/ — query (hash if output=png) — format=qr.svg\|qr.png — value=SVG or PNG data URL — open: text?,output?,auto?
 - compass — /compass/ — query — format=compass.heading — value=heading° — extras: mode,heading? — tool: Hold/Copy
 - orient is an alias of level (`openReturnApp('orient')` → `/level/`; old `orient.*` formats are now `level.*`). `mode=compass` on Level redirects to Compass.
 
@@ -41,4 +41,4 @@ const { value, format, error } = parseReturnResult(location);
 
 - Do not use legacy keys pin/signature/scanValue/nfcValue/hex as primary return fields
 - Do not assume postMessage delivery
-- Do not skip hash parsing for pin/sign
+- Do not skip hash parsing for pin/sign (or qr when output=png)

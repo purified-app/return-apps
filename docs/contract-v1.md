@@ -14,14 +14,14 @@ https://return.purified.app/<app>?returnUrl=<url>&allowedOrigins=<origins>&state
 | `returnUrl` | for return mode | Absolute `https:` (or `http://localhost` / `127.0.0.1` / `::1`) |
 | `allowedOrigins` | recommended | Comma-separated origins; when set, `returnUrl` must match |
 | `state` | no | Echoed on return |
-| `delivery` | no | `query` (default) or `hash` (**default for pin + sign**) |
+| `delivery` | no | `query` (default) or `hash` (**default for pin + sign**, and for **qr** when `output=png`) |
 
 ## Return
 
 | Param | Description |
 |-------|-------------|
 | `value` | Primary payload — **always use this** |
-| `format` | `sign.svg` · `pin.digits` · `geo.point` · `map.point` · `map.distance` · `map.area` · `color.hex` · `level.level` · `level.incline` · `compass.heading` · `qr.svg` · `scan.*` · `nfc.*` |
+| `format` | `sign.svg` · `pin.digits` · `geo.point` · `map.point` · `map.distance` · `map.area` · `color.hex` · `level.level` · `level.incline` · `compass.heading` · `qr.svg` · `qr.png` · `scan.*` · `nfc.*` |
 | `error` | `cancelled` on cancel |
 | `state` | Echo |
 

@@ -27,6 +27,14 @@ describe('return-apps SDK', () => {
       '/compass/',
     );
     expect(new URL(openReturnApp('qr', { returnUrl: 'https://a.example/' })).pathname).toBe('/qr/');
+    expect(
+      new URL(
+        openReturnApp('qr', {
+          returnUrl: 'https://a.example/',
+          params: { output: 'png', text: 'hi' },
+        }),
+      ).searchParams.get('delivery'),
+    ).toBe('hash');
   });
 
   it('throws on unknown apps', () => {

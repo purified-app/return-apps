@@ -7,7 +7,7 @@
  *
  *   import { openReturnApp, parseReturnResult } from './return-apps.mjs';
  *
- * Pin/sign default to delivery=hash — always use parseReturnResult (not search alone).
+ * Pin/sign (and qr with output=png) default to delivery=hash — always use parseReturnResult.
  *
  * @typedef {'sign'|'scan'|'geo'|'map'|'pin'|'nfc'|'color'|'level'|'compass'|'qr'} ReturnAppId
  * @typedef {ReturnAppId|'orient'} ReturnAppName
@@ -70,8 +70,12 @@ export function openReturnApp(app, options) {
   );
   if (origins.length) url.searchParams.set('allowedOrigins', origins.join(','));
 
+  const output = String(options.params?.output ?? '').toLowerCase();
   const delivery =
-    options.delivery ?? (id === 'pin' || id === 'sign' ? 'hash' : 'query');
+    options.delivery ??
+    (id === 'pin' || id === 'sign' || (id === 'qr' && (output === 'png' || output === 'qr.png'))
+      ? 'hash'
+      : 'query');
   url.searchParams.set('delivery', delivery);
 
   if (options.params) {

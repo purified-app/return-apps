@@ -80,7 +80,7 @@ const error = params.get('error');
 | `nfc` | `/nfc/` | query | `nfc.<recordType>` / `nfc.written` | tag payload |
 | `color` | `/color/` | query | `color.hex` | `#rrggbb` |
 | `level` | `/level/` | query | `level.level` / `level.incline` | `pitch,roll` / incline° |
-| `qr` | `/qr/` | query | `qr.svg` | SVG data URL |
+| `qr` | `/qr/` | query (hash if `output=png`) | `qr.svg` / `qr.png` | SVG or PNG data URL |
 | `compass` | `/compass/` | query | `compass.heading` | heading° |
 
 `orient` is an SDK alias for `level` (`openReturnApp('orient', …)` opens `/level/`). Legacy `/orient/` URLs redirect to `/level/`. Formats were renamed from `orient.*` to `level.*`. `mode=compass` on Level redirects to Compass (`compass.heading`).
@@ -133,9 +133,9 @@ Live docs + demo caller per app: `https://return.purified.app/<id>/home` and `�
 - Notes: measuring tool with Hold / Copy / Incline Tare; DeviceOrientation with manual fallback; iOS needs a tap to enable sensors. `mode=compass` redirects to the Compass app.
 
 ### qr
-- Open: `text` (optional seed)
+- Open: `text` (optional seed), `output` (`svg` \| `png`), `auto` (`true`/`1` to skip the editor when `text` is set)
 - Return extras: none
-- Notes: `value` is an SVG data URL
+- Notes: default `value` is an SVG data URL (`qr.svg`). `output=png` returns a PNG data URL (`qr.png`) and defaults to **hash** delivery. For bulk generation, do not loop this app — generate with `uqr` on the server (see [qr.md](./qr.md)).
 
 ### compass
 - Open: (none beyond common)

@@ -7,7 +7,7 @@ import { RbDemoCaller } from 'shared-ui';
   template: `
     <rb-demo-caller
       title="Simulate another app that opens QR"
-      lead="Tap “Generate QR” to encode text as an SVG. After Done, the data URL returns here."
+      lead="Tap “Generate QR” to encode text. After Done, the SVG data URL returns here. Use output=png for a PNG data URL (hash delivery)."
       startLabel="Generate QR"
       [params]="{ text: 'https://return.purified.app' }"
     />

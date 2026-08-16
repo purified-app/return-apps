@@ -2,7 +2,17 @@ import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { TranslatePipe, ALTranslate } from '@angular-libs/translate';
-import { ReturnUrlValidator, RbPanel, RbResultActions, type ReturnDelivery } from 'shared-ui';
+import {
+  ReturnUrlValidator,
+  RbPanel,
+  RbResultActions,
+  downloadBlob,
+  parseFlag,
+  type ResultDownload,
+  type ReturnDelivery,
+} from 'shared-ui';
+import { parseQrOutput, type QrOutput } from './qr-params';
+import { blobToDataUrl, qrPngBlob } from './qr-png';
 import { qrSvg, qrSvgDataUrl } from './qr-svg';
 
 type QrStatus = 'ready' | 'invalid-return-url' | 'done' | 'redirecting';
@@ -30,25 +40,46 @@ export class QrPage implements OnInit {
     return svg ? this.sanitizer.bypassSecurityTrustHtml(svg) : null;
   });
 
-  readonly downloads = computed(() => {
+  readonly pngBusy = signal(false);
+
+  readonly downloads = computed((): ResultDownload[] => {
     const svg = this.svg();
-    if (!svg) {
+    const value = this.text().trim();
+    if (!svg || !value) {
       return [];
     }
     return [
-      { kind: 'text' as const, text: svg, filename: 'qr.svg', mimeType: 'image/svg+xml', label: 'SVG' },
+      {
+        kind: 'text',
+        text: svg,
+        filename: 'qr.svg',
+        mimeType: 'image/svg+xml',
+        label: this.translate.get('qr.downloadSvg'),
+      },
+      {
+        kind: 'blob',
+        filename: 'qr.png',
+        label: this.translate.get('qr.downloadPng'),
+        getBlob: () => qrPngBlob(value),
+      },
     ];
   });
 
   private returnUrl: URL | null = null;
   private state: string | null = null;
   private delivery: ReturnDelivery = 'query';
+  private output: QrOutput = 'svg';
 
   ngOnInit(): void {
     const params = this.route.snapshot.queryParamMap;
     this.state = params.get('state');
-    this.delivery = this.returnUrlValidator.parseDelivery(params.get('delivery'), 'query');
+    this.output = parseQrOutput(params.get('output'));
+    this.delivery = this.returnUrlValidator.parseDelivery(
+      params.get('delivery'),
+      this.output === 'png' ? 'hash' : 'query',
+    );
     const seed = params.get('text') ?? params.get('value') ?? '';
+    const auto = parseFlag(params.get('auto'));
     if (seed) {
       this.text.set(seed);
       this.generate();
@@ -65,6 +96,16 @@ export class QrPage implements OnInit {
         return;
       }
       this.returnUrl = validation.url;
+    }
+
+    if (auto && seed.trim()) {
+      if (this.returnUrl) {
+        void this.onDone();
+      } else if (this.output === 'png') {
+        void this.downloadPng();
+      } else {
+        this.status.set('done');
+      }
     }
   }
 
@@ -83,6 +124,24 @@ export class QrPage implements OnInit {
     this.svg.set(qrSvg(value));
   }
 
+  async downloadPng(): Promise<void> {
+    const value = this.text().trim();
+    if (!value) {
+      this.errorDetail.set(this.translate.get('qr.empty'));
+      return;
+    }
+    this.generate();
+    this.pngBusy.set(true);
+    this.errorDetail.set(null);
+    try {
+      downloadBlob(await qrPngBlob(value), 'qr.png');
+    } catch {
+      this.errorDetail.set(this.translate.get('common.downloadFailed', { filename: 'qr.png' }));
+    } finally {
+      this.pngBusy.set(false);
+    }
+  }
+
   onCancel(): void {
     if (this.returnUrl) {
       location.href = this.returnUrlValidator.buildRedirectUrl(
@@ -99,21 +158,32 @@ export class QrPage implements OnInit {
     void this.router.navigateByUrl('/home');
   }
 
-  onDone(): void {
+  async onDone(): Promise<void> {
     const value = this.text().trim();
     if (!value) {
       this.errorDetail.set(this.translate.get('qr.empty'));
       return;
     }
     this.generate();
-    const dataUrl = qrSvgDataUrl(value);
     if (this.returnUrl) {
       this.status.set('redirecting');
-      location.href = this.returnUrlValidator.buildRedirectUrl(
-        this.returnUrl,
-        { value: dataUrl, format: 'qr.svg', state: this.state },
-        this.delivery,
-      );
+      this.pngBusy.set(true);
+      try {
+        const payload =
+          this.output === 'png'
+            ? { value: await blobToDataUrl(await qrPngBlob(value)), format: 'qr.png' }
+            : { value: qrSvgDataUrl(value), format: 'qr.svg' };
+        location.href = this.returnUrlValidator.buildRedirectUrl(
+          this.returnUrl,
+          { ...payload, state: this.state },
+          this.delivery,
+        );
+      } catch {
+        this.status.set('ready');
+        this.errorDetail.set(this.translate.get('common.downloadFailed', { filename: 'qr.png' }));
+      } finally {
+        this.pngBusy.set(false);
+      }
       return;
     }
     this.status.set('done');

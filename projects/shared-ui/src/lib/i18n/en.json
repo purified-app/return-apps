@@ -154,6 +154,7 @@
     "generate": "Generate",
     "generated": "QR generated",
     "downloadSvg": "Download SVG",
+    "downloadPng": "Download PNG",
     "copySvg": "Copy SVG",
     "again": "Generate again",
     "empty": "Enter text to encode."

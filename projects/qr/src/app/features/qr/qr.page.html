@@ -50,7 +50,10 @@
         <button type="button" class="btn btn-ghost" (click)="generate()">
           {{ 'qr.generate' | translate }}
         </button>
-        <button type="button" class="btn" (click)="onDone()">{{ 'common.done' | translate }}</button>
+        <button type="button" class="btn btn-ghost" (click)="downloadPng()" [disabled]="pngBusy()">
+          {{ 'qr.downloadPng' | translate }}
+        </button>
+        <button type="button" class="btn" (click)="onDone()" [disabled]="pngBusy()">{{ 'common.done' | translate }}</button>
       </div>
     </section>
   }

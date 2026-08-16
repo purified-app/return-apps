@@ -154,6 +154,7 @@
     "generate": "Generer",
     "generated": "QR generert",
     "downloadSvg": "Last ned SVG",
+    "downloadPng": "Last ned PNG",
     "copySvg": "Kopier SVG",
     "again": "Generer igjen",
     "empty": "Skriv inn tekst som skal kodes."

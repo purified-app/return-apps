@@ -167,9 +167,13 @@
       "demo": "/qr/demo-caller",
       "format": "qr.svg",
       "delivery": "query",
-      "blurb": "Generate a QR code as SVG",
-      "value": "SVG data URL",
-      "openParams": [{ "name": "text", "description": "Optional seed text/URL to encode." }],
+      "blurb": "Generate a QR code as SVG or PNG",
+      "value": "SVG or PNG data URL",
+      "openParams": [
+        { "name": "text", "description": "Optional seed text/URL to encode." },
+        { "name": "output", "description": "svg (default) or png. png returns format=qr.png and defaults to hash delivery." },
+        { "name": "auto", "description": "If true/1 and text is set, skip the editor (redirect back, or download PNG when there is no returnUrl)." }
+      ],
       "returnExtras": []
     },
     {
