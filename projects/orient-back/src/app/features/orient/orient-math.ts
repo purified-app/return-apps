@@ -11,6 +11,7 @@ export type OrientationSample = {
   roll: number | null;
   /** Absolute angle from horizontal (deg), 0 = flat. */
   incline: number | null;
+  absolute: boolean;
 };
 
 export const ORIENT_MODES: readonly OrientMode[] = ['compass', 'level', 'incline'];
@@ -55,10 +56,11 @@ export function roundOrient(value: number, digits = 1): number {
 
 /**
  * Derive a compass heading from DeviceOrientation fields.
- * Prefers `webkitCompassHeading` (iOS), then alpha.
+ * Prefers `webkitCompassHeading` (iOS), then absolute alpha.
  */
 export function compassHeadingFromEvent(event: {
   alpha: number | null;
+  absolute?: boolean;
   webkitCompassHeading?: number;
 }): number | null {
   const webkit = event.webkitCompassHeading;
@@ -98,10 +100,16 @@ export function levelDeviation(pitch: number, roll: number): number {
   return Math.max(Math.abs(pitch), Math.abs(roll));
 }
 
+/** Apply incline tare: reported = raw − offset, clamped to sensible range. */
+export function applyInclineTare(rawIncline: number, tareOffset: number): number {
+  return rawIncline - tareOffset;
+}
+
 export function sampleFromDeviceOrientation(event: {
   alpha: number | null;
   beta: number | null;
   gamma: number | null;
+  absolute?: boolean;
   webkitCompassHeading?: number;
 }): OrientationSample {
   const pitch = event.beta != null && Number.isFinite(event.beta) ? event.beta : null;
@@ -113,6 +121,7 @@ export function sampleFromDeviceOrientation(event: {
     pitch,
     roll,
     incline,
+    absolute: Boolean(event.absolute) || typeof event.webkitCompassHeading === 'number',
   };
 }
 
@@ -126,7 +135,7 @@ export function withInclineTare(
   }
   return {
     ...sample,
-    incline: sample.incline - tareOffset,
+    incline: applyInclineTare(sample.incline, tareOffset),
   };
 }
 

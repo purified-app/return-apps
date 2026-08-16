@@ -43,30 +43,6 @@ import { RbDemoCaller } from 'shared-ui';
               <dd>{{ incline }}°</dd>
             </div>
           }
-          @if (demo.result().extras['tare']; as tare) {
-            <div>
-              <dt>Tare</dt>
-              <dd>{{ tare }}°</dd>
-            </div>
-          }
-          @if (demo.result().extras['withinThreshold']; as within) {
-            <div>
-              <dt>Within threshold</dt>
-              <dd>{{ within }}</dd>
-            </div>
-          }
-          @if (demo.result().extras['threshold']; as threshold) {
-            <div>
-              <dt>Threshold</dt>
-              <dd>±{{ threshold }}°</dd>
-            </div>
-          }
-          @if (demo.result().extras['deviation']; as deviation) {
-            <div>
-              <dt>Deviation</dt>
-              <dd>{{ deviation }}°</dd>
-            </div>
-          }
         </dl>
       }
     </rb-demo-caller>

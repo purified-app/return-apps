@@ -1,8 +1,5 @@
 /** Earth mean radius in meters (WGS84 approximation). */
-const EARTH_RADIUS_M = 6_371_008.8;
-
-/** Shared stroke/fill for live map overlays and PNG export. */
-export const MAP_STROKE = '#4aa3c7';
+export const EARTH_RADIUS_M = 6_371_008.8;
 
 export type MapMode = 'pick' | 'measure' | 'area';
 export type UnitSystem = 'metric' | 'imperial';

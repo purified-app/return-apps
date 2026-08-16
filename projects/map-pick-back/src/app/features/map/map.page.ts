@@ -9,7 +9,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import type * as L from 'leaflet';
+import * as L from 'leaflet';
 import { ReturnUrlValidator, RbPanel, RbResultActions, downloadBlob, type ReturnDelivery } from 'shared-ui';
 import {
   MAP_MODES,
@@ -23,15 +23,16 @@ import {
   parseUnitSystem,
   pathLengthMeters,
   polygonAreaSquareMeters,
+  polygonLabelPoint,
   polygonPerimeterMeters,
   roundCoord,
+  segmentLengthsMeters,
   unitsTitle,
   type LatLngPoint,
   type MapMode,
   type UnitSystem,
 } from './map-geo';
 import { captureMapPng } from './map-snapshot';
-import { MapSession } from './map-session';
 
 type MapStatus = 'ready' | 'invalid-return-url' | 'incomplete' | 'done' | 'redirecting';
 
@@ -52,12 +53,31 @@ type CapturedResult = {
 const DEFAULT_CENTER: L.LatLngExpression = [59.9139, 10.7522];
 const DEFAULT_ZOOM = 12;
 
+const LINE_STYLE: L.PolylineOptions = {
+  color: '#4aa3c7',
+  weight: 3,
+  opacity: 0.95,
+  lineCap: 'round',
+  lineJoin: 'round',
+};
+
+const AREA_STYLE: L.PolylineOptions = {
+  ...LINE_STYLE,
+  fillColor: '#4aa3c7',
+  fillOpacity: 0.22,
+};
+
 /** Parse a query param as a number; missing/blank → NaN (unlike Number(null) === 0). */
 function parseOptionalNumber(raw: string | null): number {
   if (raw == null || raw.trim() === '') {
     return Number.NaN;
   }
   return Number(raw);
+}
+
+function leafletAsset(file: string): string {
+  const base = document.querySelector('base')?.href ?? `${location.origin}/`;
+  return new URL(`assets/leaflet/${file}`, base).toString();
 }
 
 @Component({
@@ -93,25 +113,19 @@ export class MapPage implements OnDestroy {
   readonly areaSqMeters = computed(() => polygonAreaSquareMeters(this.points()));
   readonly perimeterMeters = computed(() => polygonPerimeterMeters(this.points()));
 
-  readonly measureLabel = computed(() => {
+  readonly readoutLabel = computed(() => {
     const pts = this.points();
     const units = this.units();
-    if (pts.length === 0) {
-      return 'Tap the map to add points, or start from your location.';
+    const n = pts.length;
+    if (this.mode() === 'measure') {
+      if (n === 0) return 'Tap the map to add points, or start from your location.';
+      if (n === 1) return '1 point · tap to add the next';
+      return `${formatDistance(this.pathMeters(), units)} · ${n} points`;
     }
-    if (pts.length === 1) {
-      return '1 point · tap to add the next';
-    }
-    return `${formatDistance(this.pathMeters(), units)} · ${pts.length} points`;
-  });
-
-  readonly areaLabel = computed(() => {
-    const pts = this.points();
-    const units = this.units();
-    if (pts.length < 3) {
-      return pts.length === 0
+    if (n < 3) {
+      return n === 0
         ? 'Tap to place vertices (need 3+ for an area).'
-        : `${pts.length} vertices · need ${3 - pts.length} more`;
+        : `${n} vertices · need ${3 - n} more`;
     }
     return `${formatArea(this.areaSqMeters(), units)} · perimeter ${formatDistance(this.perimeterMeters(), units)}`;
   });
@@ -138,18 +152,18 @@ export class MapPage implements OnDestroy {
   private returnUrl: URL | null = null;
   private state: string | null = null;
   private delivery: ReturnDelivery = 'query';
+  private map: L.Map | null = null;
+  private pickMarker: L.Marker | null = null;
+  private pathLayer: L.LayerGroup | null = null;
+  private vertexLayer: L.LayerGroup | null = null;
   private initialCenter: L.LatLngExpression = DEFAULT_CENTER;
   private initialZoom = DEFAULT_ZOOM;
   private hasQueryCenter = false;
   private ready = false;
-
-  private readonly session = new MapSession({
-    onMapClick: (lat, lng) => this.onMapClick(lat, lng),
-    onPickDragEnd: (lat, lng, zoom) => {
-      this.pick.set({ lat, lng, zoom });
-    },
-    onVertexMove: (index, lat, lng) => this.movePoint(index, lat, lng),
-  });
+  private resizeObserver: ResizeObserver | null = null;
+  private pickIcon: L.Icon | null = null;
+  /** Suppress the map click that often follows a vertex drag on touch devices. */
+  private suppressMapClick = false;
 
   constructor() {
     afterNextRender(() => {
@@ -159,7 +173,7 @@ export class MapPage implements OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.session.destroy();
+    this.teardownMap();
   }
 
   setMode(next: MapMode): void {
@@ -172,7 +186,7 @@ export class MapPage implements OnDestroy {
     if (this.status() === 'incomplete') {
       this.status.set('ready');
     }
-    this.syncDraw();
+    this.syncDrawLayer();
   }
 
   setUnits(next: UnitSystem): void {
@@ -180,11 +194,11 @@ export class MapPage implements OnDestroy {
       return;
     }
     this.units.set(next);
-    this.syncDraw();
+    this.syncDrawLayer();
   }
 
   onCancel(): void {
-    this.session.destroy();
+    this.teardownMap();
     if (this.returnUrl) {
       location.href = this.returnUrlValidator.buildRedirectUrl(
         this.returnUrl,
@@ -202,7 +216,7 @@ export class MapPage implements OnDestroy {
 
   onClear(): void {
     this.clearGeometry();
-    this.syncDraw();
+    this.syncDrawLayer();
     if (this.status() === 'incomplete' || this.status() === 'done') {
       this.status.set('ready');
       this.errorDetail.set(null);
@@ -215,7 +229,7 @@ export class MapPage implements OnDestroy {
       return;
     }
     this.points.update((pts) => pts.slice(0, -1));
-    this.syncDraw();
+    this.syncDrawLayer();
     if (this.status() === 'incomplete') {
       this.status.set('ready');
       this.errorDetail.set(null);
@@ -239,7 +253,7 @@ export class MapPage implements OnDestroy {
 
     if (this.returnUrl) {
       this.status.set('redirecting');
-      this.session.destroy();
+      this.teardownMap();
       location.href = this.returnUrlValidator.buildRedirectUrl(
         this.returnUrl,
         { ...result.extras, value: result.value, format: result.format, state: this.state },
@@ -248,14 +262,14 @@ export class MapPage implements OnDestroy {
       return;
     }
 
-    this.session.destroy();
+    this.teardownMap();
     this.captured.set(result);
     this.status.set('done');
   }
 
   async onSaveImage(): Promise<void> {
     const mode = this.mode();
-    const map = this.session.leaflet;
+    const map = this.map;
     if (mode === 'pick' || !this.canSaveImage() || !map || this.savingImage()) {
       return;
     }
@@ -352,13 +366,41 @@ export class MapPage implements OnDestroy {
       return;
     }
 
-    this.session.create(el, this.initialCenter, this.initialZoom);
+    this.pickIcon = L.icon({
+      iconUrl: leafletAsset('marker-icon.png'),
+      iconRetinaUrl: leafletAsset('marker-icon-2x.png'),
+      shadowUrl: leafletAsset('marker-shadow.png'),
+      iconSize: [25, 41],
+      iconAnchor: [12, 41],
+      popupAnchor: [1, -34],
+      shadowSize: [41, 41],
+    });
 
-    const center = this.session.center;
-    if (!center) {
-      return;
-    }
+    this.map = L.map(el, {
+      center: this.initialCenter,
+      zoom: this.initialZoom,
+      zoomControl: true,
+    });
 
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+      maxZoom: 20,
+      // Required so Save image can composite tiles onto a canvas (OSM tiles lack CORS).
+      crossOrigin: true,
+    }).addTo(this.map);
+
+    this.pathLayer = L.layerGroup().addTo(this.map);
+    this.vertexLayer = L.layerGroup().addTo(this.map);
+
+    this.map.on('click', (event: L.LeafletMouseEvent) => {
+      if (this.suppressMapClick) {
+        this.suppressMapClick = false;
+        return;
+      }
+      this.onMapClick(event.latlng.lat, event.latlng.lng);
+    });
+
+    const center = this.map.getCenter();
     if (this.mode() === 'pick') {
       if (this.hasQueryCenter) {
         this.placePickPin(center.lat, center.lng);
@@ -367,9 +409,16 @@ export class MapPage implements OnDestroy {
       }
     } else if (this.hasQueryCenter) {
       // Non-pick modes: use lat/lng only as view center, not a vertex.
-      this.session.setView(center.lat, center.lng);
+      this.map.setView([center.lat, center.lng], this.map.getZoom());
     } else {
       this.centerOnUserLocation();
+    }
+
+    requestAnimationFrame(() => this.map?.invalidateSize());
+    if (typeof ResizeObserver !== 'undefined') {
+      this.resizeObserver?.disconnect();
+      this.resizeObserver = new ResizeObserver(() => this.map?.invalidateSize());
+      this.resizeObserver.observe(el);
     }
   }
 
@@ -390,7 +439,7 @@ export class MapPage implements OnDestroy {
       this.status.set('ready');
       this.errorDetail.set(null);
     }
-    this.syncDraw();
+    this.syncDrawLayer();
   }
 
   private centerOnUserLocation(options?: {
@@ -398,7 +447,7 @@ export class MapPage implements OnDestroy {
     reportErrors?: boolean;
     onSuccess?: (lat: number, lng: number) => void;
   }): void {
-    if (!('geolocation' in navigator) || !this.session.leaflet) {
+    if (!('geolocation' in navigator) || !this.map) {
       if (options?.reportErrors) {
         this.errorDetail.set('Could not read your current location.');
         this.status.set('incomplete');
@@ -408,11 +457,11 @@ export class MapPage implements OnDestroy {
 
     navigator.geolocation.getCurrentPosition(
       (position) => {
-        if (!this.session.leaflet) {
+        if (!this.map) {
           return;
         }
         const { latitude, longitude } = position.coords;
-        this.session.setView(latitude, longitude, Math.max(this.session.zoom, 14));
+        this.map.setView([latitude, longitude], Math.max(this.map.getZoom(), 14));
         if (options?.placePin) {
           this.placePickPin(latitude, longitude);
         }
@@ -429,11 +478,34 @@ export class MapPage implements OnDestroy {
   }
 
   private placePickPin(lat: number, lng: number): void {
-    this.session.placePickPin(lat, lng);
+    if (!this.map || !this.pickIcon) {
+      return;
+    }
+
+    if (this.pickMarker) {
+      this.pickMarker.setLatLng([lat, lng]);
+    } else {
+      this.pickMarker = L.marker([lat, lng], {
+        icon: this.pickIcon,
+        draggable: true,
+      }).addTo(this.map);
+      this.pickMarker.on('dragend', () => {
+        const pos = this.pickMarker?.getLatLng();
+        if (!pos || !this.map) {
+          return;
+        }
+        this.pick.set({
+          lat: pos.lat,
+          lng: pos.lng,
+          zoom: this.map.getZoom(),
+        });
+      });
+    }
+
     this.pick.set({
       lat,
       lng,
-      zoom: this.session.zoom,
+      zoom: this.map.getZoom(),
     });
     if (this.status() === 'incomplete') {
       this.status.set('ready');
@@ -441,11 +513,89 @@ export class MapPage implements OnDestroy {
     }
   }
 
-  private syncDraw(): void {
-    this.session.syncDraw({
-      mode: this.mode(),
-      points: this.points(),
-      units: this.units(),
+  private syncDrawLayer(): void {
+    this.redrawPath();
+    this.syncVertexMarkers();
+  }
+
+  private redrawPath(): void {
+    if (!this.map || !this.pathLayer) {
+      return;
+    }
+    this.pathLayer.clearLayers();
+
+    if (this.mode() === 'pick') {
+      return;
+    }
+
+    const pts = this.points();
+    if (pts.length === 0) {
+      return;
+    }
+
+    const latLngs: L.LatLngExpression[] = pts.map((p) => [p.lat, p.lng]);
+
+    if (this.mode() === 'measure' && pts.length >= 2) {
+      L.polyline(latLngs, LINE_STYLE).addTo(this.pathLayer);
+      this.addSegmentLabels(pts);
+    }
+
+    if (this.mode() === 'area' && pts.length >= 2) {
+      if (pts.length >= 3) {
+        L.polygon(latLngs, AREA_STYLE).addTo(this.pathLayer);
+        this.addAreaCenterLabel(pts);
+      } else {
+        L.polyline(latLngs, LINE_STYLE).addTo(this.pathLayer);
+      }
+    }
+  }
+
+  private syncVertexMarkers(): void {
+    if (!this.map || !this.vertexLayer) {
+      return;
+    }
+    this.vertexLayer.clearLayers();
+
+    if (this.mode() === 'pick') {
+      return;
+    }
+
+    const pts = this.points();
+    pts.forEach((p, index) => {
+      const marker = L.marker([p.lat, p.lng], {
+        icon: vertexDivIcon(index),
+        draggable: true,
+        autoPan: true,
+        keyboard: true,
+        title: `Point ${index + 1} (drag to move)`,
+        alt: `Point ${index + 1}`,
+        zIndexOffset: 500,
+      }).addTo(this.vertexLayer!);
+
+      marker.on('dragstart', () => {
+        this.suppressMapClick = true;
+        this.map?.dragging.disable();
+      });
+
+      marker.on('drag', () => {
+        const pos = marker.getLatLng();
+        this.movePoint(index, pos.lat, pos.lng);
+      });
+
+      marker.on('dragend', () => {
+        this.map?.dragging.enable();
+        const pos = marker.getLatLng();
+        this.movePoint(index, pos.lat, pos.lng);
+        // Touch browsers often emit a map click after dragend.
+        this.suppressMapClick = true;
+        window.setTimeout(() => {
+          this.suppressMapClick = false;
+        }, 300);
+      });
+
+      marker.on('click', (event: L.LeafletMouseEvent) => {
+        L.DomEvent.stopPropagation(event);
+      });
     });
   }
 
@@ -458,18 +608,58 @@ export class MapPage implements OnDestroy {
       next[index] = { lat, lng };
       return next;
     });
-    this.session.syncPath({
-      mode: this.mode(),
-      points: this.points(),
-      units: this.units(),
-    });
+    // Path only — rebuilding vertex markers mid-drag would abort the drag.
+    this.redrawPath();
+  }
+
+  private addSegmentLabels(pts: readonly LatLngPoint[]): void {
+    if (!this.pathLayer) {
+      return;
+    }
+    const units = this.units();
+    const lengths = segmentLengthsMeters(pts);
+    for (let i = 0; i < lengths.length; i++) {
+      const a = pts[i]!;
+      const b = pts[i + 1]!;
+      const mid: L.LatLngExpression = [(a.lat + b.lat) / 2, (a.lng + b.lng) / 2];
+      L.tooltip({
+        permanent: true,
+        direction: 'center',
+        className: 'mp-segment-label',
+      })
+        .setContent(formatDistance(lengths[i]!, units))
+        .setLatLng(mid)
+        .addTo(this.pathLayer);
+    }
+  }
+
+  private addAreaCenterLabel(pts: readonly LatLngPoint[]): void {
+    if (!this.pathLayer) {
+      return;
+    }
+    const center = polygonLabelPoint(pts);
+    if (!center) {
+      return;
+    }
+    const units = this.units();
+    const areaText = formatArea(polygonAreaSquareMeters(pts), units);
+    L.tooltip({
+      permanent: true,
+      direction: 'center',
+      className: 'mp-area-label',
+    })
+      .setContent(areaText)
+      .setLatLng([center.lat, center.lng])
+      .addTo(this.pathLayer);
   }
 
   private clearGeometry(): void {
-    this.session.clearPickMarker();
-    this.session.clearDrawLayers();
+    this.pickMarker?.remove();
+    this.pickMarker = null;
     this.pick.set(null);
     this.points.set([]);
+    this.pathLayer?.clearLayers();
+    this.vertexLayer?.clearLayers();
   }
 
   private buildResult(mode: MapMode): CapturedResult | null {
@@ -543,4 +733,30 @@ export class MapPage implements OnDestroy {
         return 'Add at least three points to measure an area.';
     }
   }
+
+
+  private teardownMap(): void {
+    this.resizeObserver?.disconnect();
+    this.resizeObserver = null;
+    this.pickMarker?.remove();
+    this.pickMarker = null;
+    this.pathLayer?.clearLayers();
+    this.pathLayer = null;
+    this.vertexLayer?.clearLayers();
+    this.vertexLayer = null;
+    this.map?.remove();
+    this.map = null;
+  }
+}
+
+function vertexDivIcon(index: number): L.DivIcon {
+  return L.divIcon({
+    className: 'mp-vertex',
+    html:
+      `<span class="mp-vertex__hit" aria-hidden="true"></span>` +
+      `<span class="mp-vertex__dot" aria-hidden="true"></span>` +
+      `<span class="mp-vertex__n">${index + 1}</span>`,
+    iconSize: [44, 44],
+    iconAnchor: [22, 22],
+  });
 }

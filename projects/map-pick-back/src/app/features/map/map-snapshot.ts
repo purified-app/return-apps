@@ -1,6 +1,5 @@
 import type * as L from 'leaflet';
 import {
-  MAP_STROKE,
   formatArea,
   formatDistance,
   type LatLngPoint,
@@ -37,10 +36,7 @@ export async function captureMapPng(
   const settleMs = options?.settleMs ?? 250;
 
   map.invalidateSize();
-  await waitForTiles(map, 2_500);
-  if (settleMs > 0) {
-    await delay(settleMs);
-  }
+  await delay(settleMs > 0 ? settleMs : 300);
 
   const size = map.getSize();
   const dpr = Math.min(2, typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1);
@@ -69,6 +65,7 @@ export async function captureMapPng(
   return blob;
 }
 
+
 export function parseCssTranslate(el: HTMLElement): { x: number; y: number } {
   const inline = el.style.transform;
   const fromInline = parseTransformValue(inline);
@@ -95,11 +92,6 @@ function parseTransformValue(value: string | null | undefined): { x: number; y: 
   if (matrix) {
     const parts = matrix[1]!.split(',').map((p) => parseFloat(p.trim()));
     return { x: parts[4] || 0, y: parts[5] || 0 };
-  }
-  const matrix3 = value.match(/matrix3d\(([^)]+)\)/);
-  if (matrix3) {
-    const parts = matrix3[1]!.split(',').map((p) => parseFloat(p.trim()));
-    return { x: parts[12] || 0, y: parts[13] || 0 };
   }
   return null;
 }
@@ -166,7 +158,7 @@ function drawOverlays(
     ctx.closePath();
     ctx.fillStyle = 'rgba(74, 163, 199, 0.28)';
     ctx.fill();
-    ctx.strokeStyle = MAP_STROKE;
+    ctx.strokeStyle = '#4aa3c7';
     ctx.lineWidth = 3;
     ctx.lineJoin = 'round';
     ctx.stroke();
@@ -179,7 +171,7 @@ function drawOverlays(
   } else if (screen.length >= 2) {
     ctx.beginPath();
     screen.forEach((p, i) => (i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y)));
-    ctx.strokeStyle = MAP_STROKE;
+    ctx.strokeStyle = '#4aa3c7';
     ctx.lineWidth = 3;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
@@ -258,73 +250,14 @@ function drawPill(
   ctx.font = `700 ${fontPx}px "Segoe UI", Helvetica, Arial, sans-serif`;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  const metrics = ctx.measureText(text);
-  const padX = 8;
-  const padY = 5;
-  const w = metrics.width + padX * 2;
-  const h = fontPx + padY * 2;
-  const left = x - w / 2;
-  const top = y - h / 2;
-  const r = Math.min(999, h / 2);
-
-  ctx.beginPath();
-  ctx.moveTo(left + r, top);
-  ctx.arcTo(left + w, top, left + w, top + h, r);
-  ctx.arcTo(left + w, top + h, left, top + h, r);
-  ctx.arcTo(left, top + h, left, top, r);
-  ctx.arcTo(left, top, left + w, top, r);
-  ctx.closePath();
+  const w = ctx.measureText(text).width + 16;
+  const h = fontPx + 10;
   ctx.fillStyle = 'rgba(16, 21, 26, 0.88)';
-  ctx.fill();
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.14)';
-  ctx.lineWidth = 1;
-  ctx.stroke();
-
+  ctx.fillRect(x - w / 2, y - h / 2, w, h);
   ctx.fillStyle = '#eef2f5';
   ctx.fillText(text, x, y);
 }
 
-function waitForTiles(map: L.Map, timeoutMs: number): Promise<void> {
-  return new Promise((resolve) => {
-    let settled = false;
-    const done = () => {
-      if (settled) {
-        return;
-      }
-      settled = true;
-      window.clearTimeout(timer);
-      resolve();
-    };
-
-    const timer = window.setTimeout(done, timeoutMs);
-    let waiting = 0;
-
-    map.eachLayer((layer) => {
-      const candidate = layer as {
-        getTileUrl?: unknown;
-        once?: (type: string, fn: () => void) => void;
-        _loading?: boolean;
-      };
-      if (typeof candidate.getTileUrl !== 'function' || typeof candidate.once !== 'function') {
-        return;
-      }
-      if (candidate._loading) {
-        waiting += 1;
-        candidate.once('load', () => {
-          waiting -= 1;
-          if (waiting <= 0) {
-            done();
-          }
-        });
-      }
-    });
-
-    if (waiting === 0) {
-      // Visible tiles already cached — brief settle for layout/paint.
-      window.setTimeout(done, 120);
-    }
-  });
-}
 
 function delay(ms: number): Promise<void> {
   return new Promise((resolve) => window.setTimeout(resolve, ms));

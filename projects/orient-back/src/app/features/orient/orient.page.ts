@@ -31,12 +31,6 @@ import {
   valueForMode,
   withInclineTare,
 } from './orient-math';
-import {
-  ScreenWakeLock,
-  isDeviceOrientationSupported,
-  needsOrientationGesture,
-  requestOrientationPermission,
-} from './orient-sensors';
 
 type OrientStatus =
   | 'need-gesture'
@@ -47,11 +41,8 @@ type OrientStatus =
   | 'done'
   | 'redirecting';
 
-type CapturedReading = {
-  mode: OrientMode;
-  value: string;
-  format: string;
-  sample: OrientationSample;
+type DeviceOrientationConstructor = typeof DeviceOrientationEvent & {
+  requestPermission?: () => Promise<'granted' | 'denied' | string>;
 };
 
 @Component({
@@ -73,25 +64,21 @@ export class OrientPage implements OnInit, OnDestroy {
   readonly mode = signal<OrientMode>('compass');
   readonly modeLocked = signal(false);
   readonly held = signal(false);
-  readonly copyFlash = signal(false);
   readonly tareOffset = signal(0);
   readonly threshold = signal(2);
   readonly hasReturnUrl = signal(false);
-
-  /** Raw live sample from sensors / manual. */
-  private readonly liveSample = signal<OrientationSample | null>(null);
-  /** Frozen sample when Hold is on. */
-  private readonly heldSample = signal<OrientationSample | null>(null);
+  readonly liveSample = signal<OrientationSample | null>(null);
+  readonly captured = signal<{
+    mode: OrientMode;
+    value: string;
+    format: string;
+    sample: OrientationSample;
+  } | null>(null);
 
   readonly sample = computed(() => {
-    const raw = this.held() ? this.heldSample() : this.liveSample();
-    if (!raw) {
-      return null;
-    }
-    return withInclineTare(raw, this.tareOffset());
+    const raw = this.liveSample();
+    return raw ? withInclineTare(raw, this.tareOffset()) : null;
   });
-
-  readonly captured = signal<CapturedReading | null>(null);
 
   readonly copyValue = computed(() => this.captured()?.value ?? null);
 
@@ -102,19 +89,16 @@ export class OrientPage implements OnInit, OnDestroy {
 
   readonly primaryReadout = computed(() => {
     const s = this.sample();
-    const mode = this.mode();
     if (!s) {
       return '—';
     }
-    switch (mode) {
+    switch (this.mode()) {
       case 'compass':
         return s.heading == null ? '—' : `${roundOrient(s.heading, 0)}°`;
-      case 'level': {
-        if (s.pitch == null || s.roll == null) {
-          return '—';
-        }
-        return `${roundOrient(levelDeviation(s.pitch, s.roll), 1)}°`;
-      }
+      case 'level':
+        return s.pitch == null || s.roll == null
+          ? '—'
+          : `${roundOrient(levelDeviation(s.pitch, s.roll), 1)}°`;
       case 'incline':
         return s.incline == null ? '—' : `${roundOrient(s.incline, 1)}°`;
     }
@@ -122,18 +106,16 @@ export class OrientPage implements OnInit, OnDestroy {
 
   readonly secondaryReadout = computed(() => {
     const s = this.sample();
-    const mode = this.mode();
     if (!s) {
       return '';
     }
-    switch (mode) {
+    switch (this.mode()) {
       case 'compass':
         return s.heading == null ? '' : cardinalLabel(s.heading);
       case 'level':
-        if (s.pitch == null || s.roll == null) {
-          return '';
-        }
-        return `P ${roundOrient(s.pitch)}° · R ${roundOrient(s.roll)}°`;
+        return s.pitch == null || s.roll == null
+          ? ''
+          : `P ${roundOrient(s.pitch)}° · R ${roundOrient(s.roll)}°`;
       case 'incline':
         return this.tareOffset() !== 0 ? `tare ${roundOrient(this.tareOffset())}°` : 'from horizontal';
     }
@@ -141,10 +123,11 @@ export class OrientPage implements OnInit, OnDestroy {
 
   readonly levelOk = computed(() => {
     const s = this.sample();
-    if (!s || s.pitch == null || s.roll == null) {
-      return false;
-    }
-    return isWithinLevelThreshold(s.pitch, s.roll, this.threshold());
+    return (
+      s?.pitch != null &&
+      s.roll != null &&
+      isWithinLevelThreshold(s.pitch, s.roll, this.threshold())
+    );
   });
 
   readonly compassRotation = computed(() => {
@@ -162,10 +145,9 @@ export class OrientPage implements OnInit, OnDestroy {
     return Math.max(-42, Math.min(42, pitch * (28 / Math.max(this.threshold(), 0.5))));
   });
 
-  readonly inclineNeedle = computed(() => {
-    const incline = this.sample()?.incline ?? 0;
-    return Math.max(-90, Math.min(90, incline));
-  });
+  readonly inclineNeedle = computed(() =>
+    Math.max(-90, Math.min(90, this.sample()?.incline ?? 0)),
+  );
 
   readonly canConfirm = computed(() => {
     if (this.liveValue() == null) {
@@ -186,15 +168,7 @@ export class OrientPage implements OnInit, OnDestroy {
   private delivery: ReturnDelivery = 'query';
   private requireLevel = false;
   private listening = false;
-  private wasLevelOk = false;
-  private copyTimer = 0;
-  private readonly wakeLock = new ScreenWakeLock();
   private readonly onOrientation = (event: DeviceOrientationEvent) => this.handleOrientation(event);
-  private readonly onVisibility = () => {
-    if (document.visibilityState === 'visible' && this.listening) {
-      void this.wakeLock.request();
-    }
-  };
 
   ngOnInit(): void {
     const params = this.route.snapshot.queryParamMap;
@@ -223,15 +197,13 @@ export class OrientPage implements OnInit, OnDestroy {
       this.hasReturnUrl.set(true);
     }
 
-    document.addEventListener('visibilitychange', this.onVisibility);
-
-    if (!isDeviceOrientationSupported()) {
+    if (!('DeviceOrientationEvent' in window)) {
       this.useManual();
       return;
     }
 
-    // iOS requires a user gesture for permission — show enable CTA when needed.
-    if (needsOrientationGesture()) {
+    const DOE = DeviceOrientationEvent as DeviceOrientationConstructor;
+    if (typeof DOE.requestPermission === 'function') {
       this.status.set('need-gesture');
       return;
     }
@@ -241,11 +213,6 @@ export class OrientPage implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.stopSensors();
-    document.removeEventListener('visibilitychange', this.onVisibility);
-    void this.wakeLock.release();
-    if (this.copyTimer) {
-      window.clearTimeout(this.copyTimer);
-    }
   }
 
   setMode(next: OrientMode): void {
@@ -254,7 +221,6 @@ export class OrientPage implements OnInit, OnDestroy {
     }
     this.mode.set(next);
     this.held.set(false);
-    this.heldSample.set(null);
   }
 
   async enableSensors(): Promise<void> {
@@ -264,30 +230,30 @@ export class OrientPage implements OnInit, OnDestroy {
   async startSensors(): Promise<void> {
     this.errorDetail.set(null);
     this.held.set(false);
-    this.heldSample.set(null);
 
-    const permission = await requestOrientationPermission();
-    if (permission === 'denied') {
-      this.status.set('denied');
-      this.errorDetail.set('Motion/orientation permission was denied.');
-      return;
-    }
-    if (permission === 'unavailable') {
-      this.useManual();
-      return;
+    const DOE = DeviceOrientationEvent as DeviceOrientationConstructor;
+    if (typeof DOE.requestPermission === 'function') {
+      try {
+        const result = await DOE.requestPermission();
+        if (result !== 'granted') {
+          this.status.set('denied');
+          this.errorDetail.set('Motion/orientation permission was denied.');
+          return;
+        }
+      } catch {
+        this.status.set('denied');
+        this.errorDetail.set('Could not request orientation permission.');
+        return;
+      }
     }
 
     this.stopSensors();
     window.addEventListener('deviceorientation', this.onOrientation, true);
     this.listening = true;
     this.status.set('listening');
-    void this.wakeLock.request();
 
     window.setTimeout(() => {
-      if (this.status() !== 'listening') {
-        return;
-      }
-      if (!this.hasUsefulSample(this.liveSample())) {
+      if (this.status() === 'listening' && !this.hasUsefulSample(this.liveSample())) {
         this.useManual();
       }
     }, 1500);
@@ -295,34 +261,20 @@ export class OrientPage implements OnInit, OnDestroy {
 
   useManual(): void {
     this.stopSensors();
-    void this.wakeLock.release();
     this.status.set('manual');
     this.held.set(false);
-    this.heldSample.set(null);
     this.ensureManualSample();
   }
 
   toggleHold(): void {
-    if (this.held()) {
-      this.held.set(false);
-      this.heldSample.set(null);
-      return;
-    }
-    const current = this.liveSample();
-    if (!current || !this.hasUsefulSample(current)) {
-      return;
-    }
-    this.heldSample.set({ ...current });
-    this.held.set(true);
+    this.held.update((h) => !h);
   }
 
   tareIncline(): void {
-    const raw = this.held() ? this.heldSample() : this.liveSample();
-    if (!raw || raw.incline == null) {
-      return;
+    const raw = this.liveSample();
+    if (raw?.incline != null) {
+      this.tareOffset.set(raw.incline);
     }
-    // Tare against raw incline so display becomes ~0.
-    this.tareOffset.set(raw.incline);
   }
 
   clearTare(): void {
@@ -335,16 +287,9 @@ export class OrientPage implements OnInit, OnDestroy {
       this.errorDetail.set('Nothing to copy yet.');
       return;
     }
-    const ok = await copyText(value);
-    if (!ok) {
+    if (!(await copyText(value))) {
       this.errorDetail.set('Could not copy to clipboard.');
-      return;
     }
-    this.copyFlash.set(true);
-    if (this.copyTimer) {
-      window.clearTimeout(this.copyTimer);
-    }
-    this.copyTimer = window.setTimeout(() => this.copyFlash.set(false), 1200);
   }
 
   onManualHeading(event: Event): void {
@@ -361,7 +306,6 @@ export class OrientPage implements OnInit, OnDestroy {
 
   onCancel(): void {
     this.stopSensors();
-    void this.wakeLock.release();
     if (this.returnUrl) {
       location.href = this.returnUrlValidator.buildRedirectUrl(
         this.returnUrl,
@@ -397,7 +341,6 @@ export class OrientPage implements OnInit, OnDestroy {
     if (this.returnUrl) {
       this.status.set('redirecting');
       this.stopSensors();
-      void this.wakeLock.release();
       location.href = this.returnUrlValidator.buildRedirectUrl(
         this.returnUrl,
         this.buildReturnParams(mode, value, current),
@@ -408,7 +351,6 @@ export class OrientPage implements OnInit, OnDestroy {
 
     this.captured.set({ mode, value, format, sample: current });
     this.stopSensors();
-    void this.wakeLock.release();
     this.status.set('done');
   }
 
@@ -416,12 +358,12 @@ export class OrientPage implements OnInit, OnDestroy {
     this.captured.set(null);
     this.errorDetail.set(null);
     this.held.set(false);
-    this.heldSample.set(null);
-    if (!isDeviceOrientationSupported()) {
+    if (!('DeviceOrientationEvent' in window)) {
       this.useManual();
       return;
     }
-    if (needsOrientationGesture()) {
+    const DOE = DeviceOrientationEvent as DeviceOrientationConstructor;
+    if (typeof DOE.requestPermission === 'function') {
       this.status.set('need-gesture');
       return;
     }
@@ -429,25 +371,15 @@ export class OrientPage implements OnInit, OnDestroy {
   }
 
   private patchManual(partial: Partial<OrientationSample>): void {
-    if (this.held()) {
-      this.held.set(false);
-      this.heldSample.set(null);
-    }
-    const base = this.liveSample() ?? {
-      heading: 0,
-      pitch: 0,
-      roll: 0,
-      incline: 0,
-    };
-    const next: OrientationSample = {
-      ...base,
-      ...partial,
-    };
+    this.held.set(false);
+    const base = this.liveSample() ?? { heading: 0, pitch: 0, roll: 0, incline: 0, absolute: false };
+    const next: OrientationSample = { ...base, ...partial };
     if (next.pitch != null && next.roll != null) {
       next.incline = sampleFromDeviceOrientation({
         alpha: next.heading == null ? null : (360 - next.heading) % 360,
         beta: next.pitch,
         gamma: next.roll,
+        absolute: false,
       }).incline;
     }
     if (partial.heading != null && Number.isFinite(partial.heading)) {
@@ -466,51 +398,27 @@ export class OrientPage implements OnInit, OnDestroy {
       alpha: event.alpha,
       beta: event.beta,
       gamma: event.gamma,
+      absolute: event.absolute,
       webkitCompassHeading: webkitHeading,
     });
-    if (!this.hasUsefulSample(next)) {
-      return;
+    if (this.hasUsefulSample(next)) {
+      this.liveSample.set(next);
     }
-    this.liveSample.set(next);
-    this.maybeHapticLevel(next);
-  }
-
-  private maybeHapticLevel(raw: OrientationSample): void {
-    if (this.mode() !== 'level' || raw.pitch == null || raw.roll == null) {
-      this.wasLevelOk = false;
-      return;
-    }
-    const ok = isWithinLevelThreshold(raw.pitch, raw.roll, this.threshold());
-    if (ok && !this.wasLevelOk && typeof navigator.vibrate === 'function') {
-      navigator.vibrate(40);
-    }
-    this.wasLevelOk = ok;
   }
 
   private ensureManualSample(): void {
     const current = this.liveSample();
-    if (this.hasUsefulSample(current) && current) {
-      this.liveSample.set({
-        heading: current.heading ?? 0,
-        pitch: current.pitch ?? 0,
-        roll: current.roll ?? 0,
-        incline: current.incline ?? 0,
-      });
-      return;
-    }
     this.liveSample.set({
-      heading: 0,
-      pitch: 0,
-      roll: 0,
-      incline: 0,
+      heading: current?.heading ?? 0,
+      pitch: current?.pitch ?? 0,
+      roll: current?.roll ?? 0,
+      incline: current?.incline ?? 0,
+      absolute: false,
     });
   }
 
   private hasUsefulSample(sample: OrientationSample | null): boolean {
-    if (!sample) {
-      return false;
-    }
-    return sample.heading != null || sample.pitch != null || sample.roll != null;
+    return sample != null && (sample.heading != null || sample.pitch != null || sample.roll != null);
   }
 
   private buildReturnParams(

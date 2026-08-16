@@ -15,8 +15,7 @@ Live: https://return.purified.app/orient/ · `/orient/home` · `/orient/demo-cal
 ## As a tool
 
 - Live readout with Hold (freeze), Copy, and Incline **Tare**
-- Level turns green + short vibrate when within threshold
-- Screen wake lock while sensors are active (when supported)
+- Level turns green when within threshold
 - Desktop / no-sensor fallback: mode-specific manual sliders
 - iOS: tap **Enable sensors** (permission requires a user gesture)
 
