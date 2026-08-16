@@ -18,9 +18,18 @@ export {
   type ReturnUrlValidation,
   type ValidateReturnUrlOptions,
 } from './lib/core/return-url.validator';
+export {
+  copyText,
+  downloadBlob,
+  downloadDataUrl,
+  downloadText,
+  svgDataUrlToPngBlob,
+  type ResultDownload,
+} from './lib/core/result-actions';
 
 export { RbDemoCaller } from './lib/ui/demo-caller';
 export { RbHomeDocs } from './lib/ui/home-docs';
 export { RbMetaList } from './lib/ui/meta-list';
 export { RbPanel } from './lib/ui/panel';
 export { RbPage, type RbPageVariant } from './lib/ui/page';
+export { RbResultActions } from './lib/ui/result-actions';

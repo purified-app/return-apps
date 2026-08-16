@@ -3,13 +3,14 @@ import {
   ElementRef,
   OnDestroy,
   afterNextRender,
+  computed,
   inject,
   signal,
   viewChild,
 } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import * as L from 'leaflet';
-import { ReturnUrlValidator, RbPanel, type ReturnDelivery } from 'shared-ui';
+import { ReturnUrlValidator, RbPanel, RbResultActions, type ReturnDelivery } from 'shared-ui';
 
 type MapStatus = 'ready' | 'invalid-return-url' | 'empty' | 'done' | 'redirecting';
 
@@ -37,7 +38,7 @@ function leafletAsset(file: string): string {
 
 @Component({
   selector: 'mp-map-page',
-  imports: [RouterLink, RbPanel],
+  imports: [RouterLink, RbPanel, RbResultActions],
   templateUrl: './map.page.html',
   styleUrl: './map.page.css',
   host: { class: 'rb-page rb-page--plain' },
@@ -52,6 +53,11 @@ export class MapPage implements OnDestroy {
   readonly status = signal<MapStatus>('ready');
   readonly errorDetail = signal<string | null>(null);
   readonly pick = signal<MapPick | null>(null);
+
+  readonly copyValue = computed(() => {
+    const p = this.pick();
+    return p ? `${p.lat},${p.lng}` : null;
+  });
 
   private returnUrl: URL | null = null;
   private state: string | null = null;

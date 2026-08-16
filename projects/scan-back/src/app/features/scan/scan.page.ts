@@ -8,13 +8,13 @@ import {
   viewChild,
 } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { ReturnUrlValidator, RbPanel, type ReturnDelivery } from 'shared-ui';
+import { ReturnUrlValidator, RbPanel, RbResultActions, type ReturnDelivery } from 'shared-ui';
 import { ScanPageStatus, ScanResult } from '../../core/scan-result.model';
 import { ScannerService } from './scanner';
 
 @Component({
   selector: 'sb-scan-page',
-  imports: [RouterLink, RbPanel],
+  imports: [RouterLink, RbPanel, RbResultActions],
   templateUrl: './scan.page.html',
   styleUrl: './scan.page.css',
   host: { class: 'rb-page rb-page--plain' },
@@ -32,7 +32,6 @@ export class ScanPage implements OnDestroy {
   readonly result = signal<ScanResult | null>(null);
   readonly errorDetail = signal<string | null>(null);
   readonly deviceCount = signal(0);
-  readonly copied = signal(false);
   readonly zoom = signal(1);
   readonly zoomMin = signal(1);
   readonly zoomMax = signal(4);
@@ -89,22 +88,8 @@ export class ScanPage implements OnDestroy {
   async onScanAgain(): Promise<void> {
     this.handled = false;
     this.result.set(null);
-    this.copied.set(false);
     this.status.set('starting');
     queueMicrotask(() => void this.startScanner());
-  }
-
-  async onCopy(): Promise<void> {
-    const scanValue = this.result()?.scanValue;
-    if (!scanValue) {
-      return;
-    }
-    try {
-      await navigator.clipboard.writeText(scanValue);
-      this.copied.set(true);
-    } catch {
-      this.copied.set(false);
-    }
   }
 
   async onZoomOut(): Promise<void> {

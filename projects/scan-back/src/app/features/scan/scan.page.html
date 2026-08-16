@@ -16,12 +16,10 @@
     <rb-panel title="Result">
       <p class="scan-value">{{ result()?.scanValue }}</p>
       <p class="result-format">Format: {{ result()?.format }}</p>
-      <div class="actions">
-        <button type="button" class="btn" (click)="onCopy()">
-          {{ copied() ? 'Copied!' : 'Copy' }}
-        </button>
+      <rb-result-actions [copyValue]="result()?.scanValue ?? null">
         <button type="button" class="btn btn-ghost" (click)="onScanAgain()">Scan again</button>
-      </div>
+        <a href="/" class="btn btn-ghost">All tools</a>
+      </rb-result-actions>
     </rb-panel>
   } @else {
     <div

@@ -1,6 +1,6 @@
-import { Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
+import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { ReturnUrlValidator, RbPanel, type ReturnDelivery } from 'shared-ui';
+import { ReturnUrlValidator, RbPanel, RbResultActions, type ReturnDelivery } from 'shared-ui';
 
 type NfcStatus =
   | 'idle'
@@ -43,7 +43,7 @@ declare global {
 
 @Component({
   selector: 'nb-nfc-page',
-  imports: [RouterLink, RbPanel],
+  imports: [RouterLink, RbPanel, RbResultActions],
   templateUrl: './nfc.page.html',
   styleUrl: './nfc.page.css',
   host: { class: 'rb-page rb-page--plain' },
@@ -56,6 +56,8 @@ export class NfcPage implements OnInit, OnDestroy {
   readonly status = signal<NfcStatus>('idle');
   readonly errorDetail = signal<string | null>(null);
   readonly reading = signal<NfcReading | null>(null);
+
+  readonly copyValue = computed(() => this.reading()?.nfcValue ?? null);
 
   private returnUrl: URL | null = null;
   private state: string | null = null;

@@ -3,12 +3,20 @@ import {
   ElementRef,
   OnDestroy,
   afterNextRender,
+  computed,
   inject,
   signal,
   viewChild,
 } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { ReturnUrlValidator, RbPanel, type ReturnDelivery } from 'shared-ui';
+import {
+  ReturnUrlValidator,
+  RbPanel,
+  RbResultActions,
+  svgDataUrlToPngBlob,
+  type ResultDownload,
+  type ReturnDelivery,
+} from 'shared-ui';
 import { SignaturePadService } from './signature-pad';
 
 type SignStatus =
@@ -23,7 +31,7 @@ const MAX_SIGNATURE_CHARS = 7000;
 
 @Component({
   selector: 'sb-sign-page',
-  imports: [RouterLink, RbPanel],
+  imports: [RouterLink, RbPanel, RbResultActions],
   templateUrl: './sign.page.html',
   styleUrl: './sign.page.css',
   host: { class: 'rb-page rb-page--plain' },
@@ -39,6 +47,22 @@ export class SignPage implements OnDestroy {
   readonly status = signal<SignStatus>('ready');
   readonly errorDetail = signal<string | null>(null);
   readonly previewUrl = signal<string | null>(null);
+
+  readonly downloads = computed((): ResultDownload[] => {
+    const url = this.previewUrl();
+    if (!url) {
+      return [];
+    }
+    return [
+      { label: 'Download SVG', filename: 'signature.svg', kind: 'dataUrl', dataUrl: url },
+      {
+        label: 'Download PNG',
+        filename: 'signature.png',
+        kind: 'blob',
+        getBlob: () => svgDataUrlToPngBlob(url),
+      },
+    ];
+  });
 
   private returnUrl: URL | null = null;
   private state: string | null = null;

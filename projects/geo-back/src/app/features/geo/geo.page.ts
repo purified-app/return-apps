@@ -1,6 +1,6 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { ReturnUrlValidator, RbPanel, type ReturnDelivery } from 'shared-ui';
+import { ReturnUrlValidator, RbPanel, RbResultActions, type ReturnDelivery } from 'shared-ui';
 
 type GeoStatus =
   | 'idle'
@@ -25,7 +25,7 @@ export type GeoReading = {
 
 @Component({
   selector: 'gb-geo-page',
-  imports: [RouterLink, RbPanel],
+  imports: [RouterLink, RbPanel, RbResultActions],
   templateUrl: './geo.page.html',
   styleUrl: './geo.page.css',
   host: { class: 'rb-page rb-page--plain' },
@@ -38,6 +38,11 @@ export class GeoPage implements OnInit {
   readonly status = signal<GeoStatus>('idle');
   readonly errorDetail = signal<string | null>(null);
   readonly reading = signal<GeoReading | null>(null);
+
+  readonly copyValue = computed(() => {
+    const r = this.reading();
+    return r ? `${r.lat},${r.lng}` : null;
+  });
 
   private returnUrl: URL | null = null;
   private state: string | null = null;

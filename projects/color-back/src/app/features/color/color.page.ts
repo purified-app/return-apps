@@ -3,12 +3,13 @@ import {
   ElementRef,
   OnDestroy,
   afterNextRender,
+  computed,
   inject,
   signal,
   viewChild,
 } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { ReturnUrlValidator, RbPanel, type ReturnDelivery } from 'shared-ui';
+import { ReturnUrlValidator, RbPanel, RbResultActions, type ReturnDelivery } from 'shared-ui';
 
 type ColorStatus =
   | 'starting'
@@ -28,7 +29,7 @@ type SampledColor = {
 
 @Component({
   selector: 'cb-color-page',
-  imports: [RouterLink, RbPanel],
+  imports: [RouterLink, RbPanel, RbResultActions],
   templateUrl: './color.page.html',
   styleUrl: './color.page.css',
   host: { class: 'rb-page rb-page--plain' },
@@ -45,6 +46,8 @@ export class ColorPage implements OnDestroy {
   readonly errorDetail = signal<string | null>(null);
   readonly liveColor = signal<SampledColor | null>(null);
   readonly captured = signal<SampledColor | null>(null);
+
+  readonly copyValue = computed(() => this.captured()?.hex ?? null);
 
   private returnUrl: URL | null = null;
   private state: string | null = null;
