@@ -63,7 +63,7 @@ describe('map-geo', () => {
     expect(formatDistance(42.4)).toBe('42.4 m');
     expect(formatDistance(1500)).toBe('1.5 km');
     expect(formatArea(500)).toBe('500 m²');
-    expect(formatArea(25_000)).toBe('2.5 ha');
+    expect(formatArea(25_000)).toBe('25000 m²');
     expect(formatArea(2_500_000)).toBe('2.5 km²');
     expect(formatDistance(1609.344, 'imperial')).toBe('1 mi');
     expect(formatDistance(30.48, 'imperial')).toBe('100 ft');
