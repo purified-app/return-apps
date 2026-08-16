@@ -159,13 +159,16 @@ export class MapPage implements OnDestroy {
   private delivery: ReturnDelivery = 'query';
   private map: L.Map | null = null;
   private pickMarker: L.Marker | null = null;
-  private drawLayer: L.LayerGroup | null = null;
+  private pathLayer: L.LayerGroup | null = null;
+  private vertexLayer: L.LayerGroup | null = null;
   private initialCenter: L.LatLngExpression = DEFAULT_CENTER;
   private initialZoom = DEFAULT_ZOOM;
   private hasQueryCenter = false;
   private ready = false;
   private resizeObserver: ResizeObserver | null = null;
   private pickIcon: L.Icon | null = null;
+  /** Suppress the map click that often follows a vertex drag on touch devices. */
+  private suppressMapClick = false;
 
   constructor() {
     afterNextRender(() => {
@@ -378,9 +381,14 @@ export class MapPage implements OnDestroy {
       maxZoom: 19,
     }).addTo(this.map);
 
-    this.drawLayer = L.layerGroup().addTo(this.map);
+    this.pathLayer = L.layerGroup().addTo(this.map);
+    this.vertexLayer = L.layerGroup().addTo(this.map);
 
     this.map.on('click', (event: L.LeafletMouseEvent) => {
+      if (this.suppressMapClick) {
+        this.suppressMapClick = false;
+        return;
+      }
       this.onMapClick(event.latlng.lat, event.latlng.lng);
     });
 
@@ -498,10 +506,15 @@ export class MapPage implements OnDestroy {
   }
 
   private syncDrawLayer(): void {
-    if (!this.map || !this.drawLayer) {
+    this.syncPathLayer();
+    this.syncVertexMarkers();
+  }
+
+  private syncPathLayer(): void {
+    if (!this.map || !this.pathLayer) {
       return;
     }
-    this.drawLayer.clearLayers();
+    this.pathLayer.clearLayers();
 
     if (this.mode() === 'pick') {
       return;
@@ -515,39 +528,83 @@ export class MapPage implements OnDestroy {
     const latLngs: L.LatLngExpression[] = pts.map((p) => [p.lat, p.lng]);
 
     if (this.mode() === 'measure' && pts.length >= 2) {
-      L.polyline(latLngs, LINE_STYLE).addTo(this.drawLayer);
+      L.polyline(latLngs, LINE_STYLE).addTo(this.pathLayer);
       this.addSegmentLabels(pts);
     }
 
     if (this.mode() === 'area' && pts.length >= 2) {
       if (pts.length >= 3) {
-        L.polygon(latLngs, AREA_STYLE).addTo(this.drawLayer);
+        L.polygon(latLngs, AREA_STYLE).addTo(this.pathLayer);
         this.addAreaCenterLabel(pts);
       } else {
-        L.polyline(latLngs, LINE_STYLE).addTo(this.drawLayer);
+        L.polyline(latLngs, LINE_STYLE).addTo(this.pathLayer);
       }
     }
+  }
 
+  private syncVertexMarkers(): void {
+    if (!this.map || !this.vertexLayer) {
+      return;
+    }
+    this.vertexLayer.clearLayers();
+
+    if (this.mode() === 'pick') {
+      return;
+    }
+
+    const pts = this.points();
     pts.forEach((p, index) => {
-      L.circleMarker([p.lat, p.lng], {
-        radius: 7,
-        color: '#10151a',
-        weight: 2,
-        fillColor: '#e8edf2',
-        fillOpacity: 1,
-      })
-        .bindTooltip(String(index + 1), {
-          permanent: true,
-          direction: 'top',
-          offset: [0, -10],
-          className: 'mp-vertex-label',
-        })
-        .addTo(this.drawLayer!);
+      const marker = L.marker([p.lat, p.lng], {
+        icon: vertexDivIcon(index),
+        draggable: true,
+        autoPan: true,
+        keyboard: true,
+        title: `Point ${index + 1} (drag to move)`,
+        alt: `Point ${index + 1}`,
+        zIndexOffset: 500,
+      }).addTo(this.vertexLayer!);
+
+      marker.on('dragstart', () => {
+        this.suppressMapClick = true;
+        this.map?.dragging.disable();
+      });
+
+      marker.on('drag', () => {
+        const pos = marker.getLatLng();
+        this.movePoint(index, pos.lat, pos.lng);
+      });
+
+      marker.on('dragend', () => {
+        this.map?.dragging.enable();
+        const pos = marker.getLatLng();
+        this.movePoint(index, pos.lat, pos.lng);
+        // Touch browsers often emit a map click after dragend.
+        this.suppressMapClick = true;
+        window.setTimeout(() => {
+          this.suppressMapClick = false;
+        }, 300);
+      });
+
+      marker.on('click', (event: L.LeafletMouseEvent) => {
+        L.DomEvent.stopPropagation(event);
+      });
     });
   }
 
+  private movePoint(index: number, lat: number, lng: number): void {
+    this.points.update((pts) => {
+      if (index < 0 || index >= pts.length) {
+        return pts;
+      }
+      const next = pts.slice();
+      next[index] = { lat, lng };
+      return next;
+    });
+    this.syncPathLayer();
+  }
+
   private addSegmentLabels(pts: readonly LatLngPoint[]): void {
-    if (!this.drawLayer) {
+    if (!this.pathLayer) {
       return;
     }
     const units = this.units();
@@ -563,12 +620,12 @@ export class MapPage implements OnDestroy {
       })
         .setContent(formatDistance(lengths[i]!, units))
         .setLatLng(mid)
-        .addTo(this.drawLayer);
+        .addTo(this.pathLayer);
     }
   }
 
   private addAreaCenterLabel(pts: readonly LatLngPoint[]): void {
-    if (!this.drawLayer) {
+    if (!this.pathLayer) {
       return;
     }
     const center = polygonLabelPoint(pts);
@@ -584,7 +641,7 @@ export class MapPage implements OnDestroy {
     })
       .setContent(areaText)
       .setLatLng([center.lat, center.lng])
-      .addTo(this.drawLayer);
+      .addTo(this.pathLayer);
   }
 
   private clearGeometry(): void {
@@ -592,7 +649,8 @@ export class MapPage implements OnDestroy {
     this.pickMarker = null;
     this.pick.set(null);
     this.points.set([]);
-    this.drawLayer?.clearLayers();
+    this.pathLayer?.clearLayers();
+    this.vertexLayer?.clearLayers();
   }
 
   private buildResult(mode: MapMode): CapturedResult | null {
@@ -677,9 +735,23 @@ export class MapPage implements OnDestroy {
     this.resizeObserver = null;
     this.pickMarker?.remove();
     this.pickMarker = null;
-    this.drawLayer?.clearLayers();
-    this.drawLayer = null;
+    this.pathLayer?.clearLayers();
+    this.pathLayer = null;
+    this.vertexLayer?.clearLayers();
+    this.vertexLayer = null;
     this.map?.remove();
     this.map = null;
   }
+}
+
+function vertexDivIcon(index: number): L.DivIcon {
+  return L.divIcon({
+    className: 'mp-vertex',
+    html:
+      `<span class="mp-vertex__hit" aria-hidden="true"></span>` +
+      `<span class="mp-vertex__dot" aria-hidden="true"></span>` +
+      `<span class="mp-vertex__n">${index + 1}</span>`,
+    iconSize: [44, 44],
+    iconAnchor: [22, 22],
+  });
 }
