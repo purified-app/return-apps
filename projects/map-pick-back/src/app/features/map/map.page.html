@@ -151,9 +151,9 @@
             type="button"
             class="btn btn-ghost"
             (click)="onSaveImage()"
-            [disabled]="!canSaveImage()"
+            [disabled]="!canSaveImage() || savingImage()"
           >
-            Save image
+            {{ savingImage() ? 'Saving…' : 'Save image' }}
           </button>
         }
         <button type="button" class="btn btn-ghost" (click)="onClear()">Clear</button>

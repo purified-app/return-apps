@@ -32,7 +32,7 @@ import {
   type MapMode,
   type UnitSystem,
 } from './map-geo';
-import { buildMeasurementSvg, downloadSvg } from './map-snapshot';
+import { captureMapPng, downloadBlob } from './map-snapshot';
 
 type MapStatus = 'ready' | 'invalid-return-url' | 'empty' | 'done' | 'redirecting';
 
@@ -104,6 +104,7 @@ export class MapPage implements OnDestroy {
   readonly pick = signal<MapPick | null>(null);
   readonly points = signal<LatLngPoint[]>([]);
   readonly captured = signal<CapturedResult | null>(null);
+  readonly savingImage = signal(false);
 
   readonly modeTitle = modeTitle;
   readonly unitsTitle = unitsTitle;
@@ -272,17 +273,28 @@ export class MapPage implements OnDestroy {
     this.status.set('done');
   }
 
-  onSaveImage(): void {
+  async onSaveImage(): Promise<void> {
     const mode = this.mode();
-    if (mode === 'pick' || !this.canSaveImage()) {
+    const map = this.map;
+    if (mode === 'pick' || !this.canSaveImage() || !map || this.savingImage()) {
       return;
     }
-    const svg = buildMeasurementSvg(mode, this.points(), {
-      title: mode === 'measure' ? 'Distance measurement' : 'Area measurement',
-      units: this.units(),
-    });
-    const stamp = new Date().toISOString().slice(0, 19).replaceAll(':', '');
-    downloadSvg(`map-${mode}-${stamp}.svg`, svg);
+
+    this.savingImage.set(true);
+    this.errorDetail.set(null);
+    try {
+      const blob = await captureMapPng(map, mode, this.points(), {
+        title: mode === 'measure' ? 'Distance measurement' : 'Area measurement',
+        units: this.units(),
+      });
+      const stamp = new Date().toISOString().slice(0, 19).replaceAll(':', '');
+      downloadBlob(`map-${mode}-${stamp}.png`, blob);
+    } catch {
+      this.errorDetail.set('Could not save the map image. Try again when tiles have finished loading.');
+      this.status.set('empty');
+    } finally {
+      this.savingImage.set(false);
+    }
   }
 
   pickAgain(): void {
@@ -376,9 +388,11 @@ export class MapPage implements OnDestroy {
       zoomControl: true,
     });
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; OpenStreetMap contributors',
-      maxZoom: 19,
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+      maxZoom: 20,
+      // Required so Save image can composite tiles onto a canvas (OSM tiles lack CORS).
+      crossOrigin: true,
     }).addTo(this.map);
 
     this.pathLayer = L.layerGroup().addTo(this.map);

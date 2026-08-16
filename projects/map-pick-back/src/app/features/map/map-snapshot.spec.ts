@@ -1,25 +1,16 @@
 import { describe, expect, it } from 'vitest';
-import { buildMeasurementSvg } from './map-snapshot';
+import { parseCssTranslate } from './map-snapshot';
 
 describe('map-snapshot', () => {
-  it('builds SVG for measure and area', () => {
-    const points = [
-      { lat: 59.91, lng: 10.75 },
-      { lat: 59.92, lng: 10.76 },
-      { lat: 59.915, lng: 10.77 },
-    ];
-    const measure = buildMeasurementSvg('measure', points);
-    expect(measure).toContain('<svg');
-    expect(measure).toContain('Distance measurement');
-    expect(measure).toContain('Length');
+  it('parses CSS translate values used by Leaflet tiles', () => {
+    const el = document.createElement('div');
+    el.style.transform = 'translate3d(10px, 20px, 0px)';
+    expect(parseCssTranslate(el)).toEqual({ x: 10, y: 20 });
 
-    const area = buildMeasurementSvg('area', points);
-    expect(area).toContain('Area measurement');
-    expect(area).toContain('fill="rgba(74,163,199,0.28)"');
-  });
+    el.style.transform = 'translate(5px, 7px)';
+    expect(parseCssTranslate(el)).toEqual({ x: 5, y: 7 });
 
-  it('handles empty points', () => {
-    const empty = buildMeasurementSvg('measure', []);
-    expect(empty).toContain('No points yet');
+    el.style.transform = 'matrix(1, 0, 0, 1, 12, 34)';
+    expect(parseCssTranslate(el)).toEqual({ x: 12, y: 34 });
   });
 });

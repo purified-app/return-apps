@@ -107,7 +107,7 @@ Live docs + demo caller per app: `https://return.purified.app/<id>/home` and `�
   - pick (`map.point`): `lat`, `lng`, `zoom`
   - measure (`map.distance`): `mode`, `meters`, `points` (`lat,lng;…`), `pointCount`
   - area (`map.area`): `mode`, `squareMeters`, `perimeterMeters`, `points`, `pointCount`
-- Notes: Measure/Area draw paths/polygons with live stats (area label centered on polygon); **Save image** downloads an SVG snapshot; return values stay SI (meters / m²)
+- Notes: Measure/Area draw paths/polygons with live stats (area label centered on polygon); **Save image** exports a PNG of the map view (tiles + overlays); return values stay SI (meters / m²)
 
 ### pin
 - Open: `length` (3–12, default 4), `mask` (`false`/`0` = show digits)
