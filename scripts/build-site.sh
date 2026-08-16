@@ -37,6 +37,8 @@ cp site/sw.js "$SITE_DIR/sw.js"
 mkdir -p "$SITE_DIR/icons"
 cp site/icons/icon-192.png "$SITE_DIR/icons/icon-192.png"
 cp site/icons/icon-512.png "$SITE_DIR/icons/icon-512.png"
+cp site/icons/icon-512-maskable.png "$SITE_DIR/icons/icon-512-maskable.png"
+cp site/icons/toolbox.svg "$SITE_DIR/icons/toolbox.svg"
 mkdir -p "$SITE_DIR/sdk"
 cp site/sdk/return-apps.mjs "$SITE_DIR/sdk/return-apps.mjs"
 if [[ -f site/CNAME ]]; then

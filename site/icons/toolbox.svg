@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Return Apps toolbox">
+  <rect width="512" height="512" rx="96" fill="#0f1418"/>
+  <ellipse cx="256" cy="458" rx="148" ry="16" fill="#000" opacity=".28"/>
+  <rect x="78" y="218" width="356" height="214" rx="30" fill="#244860"/>
+  <path d="M78 330h356v70a30 30 0 0 1-30 30H108a30 30 0 0 1-30-30z" fill="#183446"/>
+  <path d="M118 268h276M118 300h276" stroke="#122836" stroke-width="5" stroke-linecap="round"/>
+  <rect x="68" y="164" width="376" height="74" rx="26" fill="#386c84"/>
+  <path d="M96 186h320" stroke="#78a8bc" stroke-width="8" stroke-linecap="round"/>
+  <path d="M176 145c0-58 160-58 160 0" fill="none" stroke="#e8edf2" stroke-width="24" stroke-linecap="round"/>
+  <path d="M176 145c0-50 160-50 160 0" fill="none" stroke="#b7c2cc" stroke-width="7" stroke-linecap="round"/>
+  <rect x="218" y="186" width="76" height="86" rx="14" fill="#e8edf2"/>
+  <circle cx="256" cy="238" r="14" fill="#78bea0"/>
+  <path d="M126 338l96 66" stroke="#b7c2cc" stroke-width="18" stroke-linecap="round"/>
+  <path d="M198 372a26 26 0 1 1 40 30" fill="none" stroke="#e8edf2" stroke-width="16" stroke-linecap="round"/>
+  <path d="M298 348l88 64" stroke="#b7c2cc" stroke-width="14" stroke-linecap="round"/>
+  <rect x="362" y="392" width="40" height="30" rx="7" fill="#78bea0" transform="rotate(36 382 407)"/>
+</svg>

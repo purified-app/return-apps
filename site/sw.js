@@ -1,11 +1,13 @@
 /* Return Apps hub service worker — installability + light shell cache. */
-const CACHE = 'return-apps-hub-v1';
+const CACHE = 'return-apps-hub-v2';
 const PRECACHE = [
   './',
   './index.html',
   './manifest.webmanifest',
   './icons/icon-192.png',
   './icons/icon-512.png',
+  './icons/icon-512-maskable.png',
+  './icons/toolbox.svg',
   './apps.json',
 ];
 

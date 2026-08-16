@@ -13,7 +13,8 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="Return Apps" />
     <link rel="manifest" href="./manifest.webmanifest" />
-    <link rel="icon" href="./icons/icon-192.png" type="image/png" />
+    <link rel="icon" href="./icons/toolbox.svg" type="image/svg+xml" />
+    <link rel="icon" href="./icons/icon-192.png" type="image/png" sizes="192x192" />
     <link rel="apple-touch-icon" href="./icons/icon-192.png" />
     <style>
       :root {
@@ -44,8 +45,21 @@
         margin: 0 auto;
         padding: 2.5rem 1.25rem 3rem;
       }
-      .brand {
+      .brand-row {
+        display: flex;
+        align-items: center;
+        gap: 0.85rem;
         margin: 0 0 0.75rem;
+      }
+      .brand-mark {
+        width: clamp(2.75rem, 12vw, 3.5rem);
+        height: clamp(2.75rem, 12vw, 3.5rem);
+        flex: 0 0 auto;
+        border-radius: 22%;
+        box-shadow: 0 0 0 1px rgb(255 255 255 / 10%);
+      }
+      .brand {
+        margin: 0;
         font-size: clamp(1.75rem, 7vw, 2.75rem);
         font-weight: 750;
         letter-spacing: -0.03em;
@@ -156,7 +170,17 @@
   </head>
   <body>
     <main>
-      <p class="brand">Return Apps</p>
+      <div class="brand-row">
+        <img
+          class="brand-mark"
+          src="./icons/toolbox.svg"
+          width="56"
+          height="56"
+          alt=""
+          decoding="async"
+        />
+        <p class="brand">Return Apps</p>
+      </div>
       <h1>Toolbox you can install — or call with returnUrl</h1>
       <p class="lead">
         Open a tool to capture something, then download or copy the result.
