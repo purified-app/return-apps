@@ -143,13 +143,7 @@ export class OrientPage implements OnInit, OnDestroy {
 
     if (!this.deviceOrientationSupported()) {
       this.status.set('manual');
-      this.sample.set({
-        heading: 0,
-        pitch: 0,
-        roll: 0,
-        incline: 0,
-        absolute: false,
-      });
+      this.ensureManualSample();
       return;
     }
 
@@ -191,18 +185,13 @@ export class OrientPage implements OnInit, OnDestroy {
     this.listening = true;
     this.status.set('listening');
 
-    // If nothing arrives shortly, fall back to manual controls (desktop / no sensor).
+    // If nothing useful arrives shortly, fall back to manual controls (desktop / no sensor).
     window.setTimeout(() => {
-      if (this.status() === 'listening' && !this.sample()) {
-        this.stopSensors();
-        this.status.set('manual');
-        this.sample.set({
-          heading: 0,
-          pitch: 0,
-          roll: 0,
-          incline: 0,
-          absolute: false,
-        });
+      if (this.status() !== 'listening') {
+        return;
+      }
+      if (!this.hasUsefulSample(this.sample())) {
+        this.useManual();
       }
     }, 1500);
   }
@@ -210,15 +199,7 @@ export class OrientPage implements OnInit, OnDestroy {
   useManual(): void {
     this.stopSensors();
     this.status.set('manual');
-    if (!this.sample()) {
-      this.sample.set({
-        heading: 0,
-        pitch: 0,
-        roll: 0,
-        incline: 0,
-        absolute: false,
-      });
-    }
+    this.ensureManualSample();
   }
 
   onManualHeading(event: Event): void {
@@ -328,15 +309,46 @@ export class OrientPage implements OnInit, OnDestroy {
   private handleOrientation(event: DeviceOrientationEvent): void {
     const webkitHeading = (event as DeviceOrientationEvent & { webkitCompassHeading?: number })
       .webkitCompassHeading;
-    this.sample.set(
-      sampleFromDeviceOrientation({
-        alpha: event.alpha,
-        beta: event.beta,
-        gamma: event.gamma,
-        absolute: event.absolute,
-        webkitCompassHeading: webkitHeading,
-      }),
-    );
+    const next = sampleFromDeviceOrientation({
+      alpha: event.alpha,
+      beta: event.beta,
+      gamma: event.gamma,
+      absolute: event.absolute,
+      webkitCompassHeading: webkitHeading,
+    });
+    // Ignore empty events (common on desktop) so we can fall back to manual.
+    if (!this.hasUsefulSample(next)) {
+      return;
+    }
+    this.sample.set(next);
+  }
+
+  private ensureManualSample(): void {
+    const current = this.sample();
+    if (this.hasUsefulSample(current) && current) {
+      this.sample.set({
+        heading: current.heading ?? 0,
+        pitch: current.pitch ?? 0,
+        roll: current.roll ?? 0,
+        incline: current.incline ?? 0,
+        absolute: false,
+      });
+      return;
+    }
+    this.sample.set({
+      heading: 0,
+      pitch: 0,
+      roll: 0,
+      incline: 0,
+      absolute: false,
+    });
+  }
+
+  private hasUsefulSample(sample: OrientationSample | null): boolean {
+    if (!sample) {
+      return false;
+    }
+    return sample.heading != null || sample.pitch != null || sample.roll != null;
   }
 
   private buildReturnParams(
