@@ -12,10 +12,14 @@
     max(1rem, env(safe-area-inset-right))
     var(--rb-space-page-bottom)
     max(1rem, env(safe-area-inset-left));
-  display: grid;
-  grid-template-rows: auto auto 1fr auto auto;
+  display: flex;
+  flex-direction: column;
   gap: 1rem;
-  align-content: start;
+}
+
+.toolbar {
+  margin-top: auto;
+  align-items: center;
 }
 
 .top h1 {

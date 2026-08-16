@@ -20,7 +20,9 @@ Live: https://return.purified.app/geo/ · `/geo/home` · `/geo/demo-caller`
 
 ## Return extras
 
-`lat`, `lng`, `accuracy`, `timestamp`, optional `altitude`, `altitudeAccuracy`, `heading`, `speed`, `label` (reverse-geocoded address when Nominatim responds)
+`lat`, `lng`, `accuracy`, `timestamp`, optional `altitude`, `altitudeAccuracy`, `heading`, `speed`, `label` (street address when reverse geocode succeeds)
+
+`label` comes from the public [Nominatim](https://nominatim.org/release-docs/latest/api/Reverse/) API (OpenStreetMap). It is best-effort: Geo waits up to ~2.5s, then returns coordinates even if there is no address. The request runs **in the user’s browser** (their IP), not from our servers. Nominatim is free; policy is roughly **1 request/second per client IP**. Abuse can get that IP (or the app referer) temporarily blocked — not a paid quota on `return.purified.app`.
 
 ## Open / return
 
