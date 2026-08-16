@@ -218,10 +218,11 @@ export class MapPage implements OnDestroy {
 
     const center = this.map.getCenter();
     if (this.hasQueryCenter) {
+      // Caller sent lat/lng — place the initial pin on those coordinates.
       this.placePin(center.lat, center.lng, icon);
     } else {
-      // No lat/lng from the caller — start on the device location when available.
-      this.centerOnUserLocation();
+      // No lat/lng from the caller — center and pin on the device location when available.
+      this.centerOnUserLocation({ placePin: true });
     }
 
     // Leaflet needs a size pass after layout, and whenever the shell resizes.
