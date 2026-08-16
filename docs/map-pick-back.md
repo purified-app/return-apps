@@ -22,7 +22,7 @@ Live: https://return.purified.app/map/ · `/map/home` · `/map/demo-caller`
 
 Pass `mode=pick|measure|area` to lock the tab (same pattern as OrientBack).
 
-Measure/Area also support **draggable vertices** (press and drag a numbered point — same on mouse and touch), **Undo**, **Add my location**, **Metric / Imperial** display units, and **Save image**. Area mode shows the area value in the polygon center.
+Measure/Area also support **draggable vertices** (press and drag a numbered point — same on mouse and touch), **Undo**, **Add my location**, **Metric / Imperial** display units, and **Save image** (PNG of the current map view including tiles + measurements). Area mode shows the area value in the polygon center.
 
 ## Open params
 
