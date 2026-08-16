@@ -2,6 +2,7 @@
 export const EARTH_RADIUS_M = 6_371_008.8;
 
 export type MapMode = 'pick' | 'measure' | 'area';
+export type UnitSystem = 'metric' | 'imperial';
 
 export type LatLngPoint = {
   lat: number;
@@ -9,6 +10,13 @@ export type LatLngPoint = {
 };
 
 export const MAP_MODES: readonly MapMode[] = ['pick', 'measure', 'area'] as const;
+export const UNIT_SYSTEMS: readonly UnitSystem[] = ['metric', 'imperial'] as const;
+
+const METERS_PER_FOOT = 0.3048;
+const METERS_PER_MILE = 1609.344;
+const SQ_METERS_PER_SQ_FOOT = METERS_PER_FOOT * METERS_PER_FOOT;
+const SQ_METERS_PER_ACRE = 4046.8564224;
+const SQ_METERS_PER_SQ_MILE = METERS_PER_MILE * METERS_PER_MILE;
 
 export function parseMapMode(raw: string | null | undefined): MapMode | null {
   if (raw == null) {
@@ -16,6 +24,20 @@ export function parseMapMode(raw: string | null | undefined): MapMode | null {
   }
   const value = raw.trim().toLowerCase();
   return MAP_MODES.includes(value as MapMode) ? (value as MapMode) : null;
+}
+
+export function parseUnitSystem(raw: string | null | undefined): UnitSystem | null {
+  if (raw == null) {
+    return null;
+  }
+  const value = raw.trim().toLowerCase();
+  if (value === 'metric' || value === 'm' || value === 'si') {
+    return 'metric';
+  }
+  if (value === 'imperial' || value === 'us' || value === 'ft' || value === 'imperial-us') {
+    return 'imperial';
+  }
+  return null;
 }
 
 export function formatForMode(mode: MapMode): string {
@@ -111,10 +133,18 @@ export function roundCoord(n: number, digits = 6): number {
   return Math.round(n * f) / f;
 }
 
-/** Human-readable distance: m under 1 km, else km with adaptive precision. */
-export function formatDistance(meters: number): string {
+/** Human-readable distance for the active unit system. */
+export function formatDistance(meters: number, units: UnitSystem = 'metric'): string {
   if (!Number.isFinite(meters) || meters < 0) {
     return '—';
+  }
+  if (units === 'imperial') {
+    const feet = meters / METERS_PER_FOOT;
+    if (feet < 5280) {
+      return `${trimNumber(feet, feet < 100 ? 1 : 0)} ft`;
+    }
+    const miles = meters / METERS_PER_MILE;
+    return `${trimNumber(miles, miles < 10 ? 2 : miles < 100 ? 1 : 0)} mi`;
   }
   if (meters < 1000) {
     return `${trimNumber(meters, meters < 100 ? 1 : 0)} m`;
@@ -123,10 +153,22 @@ export function formatDistance(meters: number): string {
   return `${trimNumber(km, km < 10 ? 2 : km < 100 ? 1 : 0)} km`;
 }
 
-/** Human-readable area: m², then ha, then km². */
-export function formatArea(squareMeters: number): string {
+/** Human-readable area for the active unit system. */
+export function formatArea(squareMeters: number, units: UnitSystem = 'metric'): string {
   if (!Number.isFinite(squareMeters) || squareMeters < 0) {
     return '—';
+  }
+  if (units === 'imperial') {
+    const sqFt = squareMeters / SQ_METERS_PER_SQ_FOOT;
+    if (sqFt < 43_560) {
+      return `${trimNumber(sqFt, sqFt < 100 ? 1 : 0)} ft²`;
+    }
+    const acres = squareMeters / SQ_METERS_PER_ACRE;
+    if (acres < 640) {
+      return `${trimNumber(acres, acres < 10 ? 2 : 1)} ac`;
+    }
+    const sqMi = squareMeters / SQ_METERS_PER_SQ_MILE;
+    return `${trimNumber(sqMi, sqMi < 10 ? 2 : 1)} mi²`;
   }
   if (squareMeters < 10_000) {
     return `${trimNumber(squareMeters, squareMeters < 100 ? 1 : 0)} m²`;
@@ -137,6 +179,23 @@ export function formatArea(squareMeters: number): string {
   }
   const km2 = squareMeters / 1_000_000;
   return `${trimNumber(km2, km2 < 10 ? 2 : 1)} km²`;
+}
+
+/**
+ * Simple vertex-average centroid (good for convex / near-convex user polygons).
+ * Returns null when there are no points.
+ */
+export function polygonLabelPoint(points: readonly LatLngPoint[]): LatLngPoint | null {
+  if (points.length === 0) {
+    return null;
+  }
+  let lat = 0;
+  let lng = 0;
+  for (const p of points) {
+    lat += p.lat;
+    lng += p.lng;
+  }
+  return { lat: lat / points.length, lng: lng / points.length };
 }
 
 function trimNumber(n: number, digits: number): string {
@@ -152,4 +211,8 @@ export function modeTitle(mode: MapMode): string {
     case 'area':
       return 'Area';
   }
+}
+
+export function unitsTitle(units: UnitSystem): string {
+  return units === 'metric' ? 'Metric' : 'Imperial';
 }

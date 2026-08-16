@@ -22,7 +22,7 @@ Live: https://return.purified.app/map/ · `/map/home` · `/map/demo-caller`
 
 Pass `mode=pick|measure|area` to lock the tab (same pattern as OrientBack).
 
-Measure/Area also support **Undo**, **Add my location** (appends GPS as a vertex), and **Save image** (downloads an SVG snapshot of the geometry + stats).
+Measure/Area also support **Undo**, **Add my location** (appends GPS as a vertex), **Metric / Imperial** display units, and **Save image** (downloads an SVG snapshot of the geometry + stats). Area mode shows the area value in the polygon center.
 
 ## Open params
 
@@ -30,6 +30,7 @@ Measure/Area also support **Undo**, **Add my location** (appends GPS as a vertex
 |-------|-------------|
 | `lat`, `lng`, `zoom` | Optional initial map view |
 | `mode` | Optional: `pick` \| `measure` \| `area` (locks UI) |
+| `units` | Optional display units: `metric` (default) \| `imperial` |
 
 ## Return extras
 

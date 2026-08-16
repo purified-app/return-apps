@@ -53,24 +53,45 @@
         </p>
       </header>
 
-      @if (!modeLocked()) {
-        <div class="mode-tabs" role="tablist" aria-label="Map mode">
-          @for (m of modes; track m) {
-            <button
-              type="button"
-              role="tab"
-              class="mode-tab"
-              [class.mode-tab--active]="mode() === m"
-              [attr.aria-selected]="mode() === m"
-              (click)="setMode(m)"
-            >
-              {{ modeTitle(m) }}
-            </button>
-          }
-        </div>
-      } @else {
-        <p class="mode-locked" role="status">Mode locked: {{ modeTitle(mode()) }}</p>
-      }
+      <div class="controls">
+        @if (!modeLocked()) {
+          <div class="mode-tabs" role="tablist" aria-label="Map mode">
+            @for (m of modes; track m) {
+              <button
+                type="button"
+                role="tab"
+                class="mode-tab"
+                [class.mode-tab--active]="mode() === m"
+                [attr.aria-selected]="mode() === m"
+                (click)="setMode(m)"
+              >
+                {{ modeTitle(m) }}
+              </button>
+            }
+          </div>
+        } @else {
+          <p class="mode-locked" role="status">Mode locked: {{ modeTitle(mode()) }}</p>
+        }
+
+        @if (mode() !== 'pick') {
+          <div class="units-row" role="group" aria-label="Units">
+            <span class="units-row__label">Units</span>
+            <div class="units-tabs">
+              @for (u of unitSystems; track u) {
+                <button
+                  type="button"
+                  class="units-tab"
+                  [class.units-tab--active]="units() === u"
+                  [attr.aria-pressed]="units() === u"
+                  (click)="setUnits(u)"
+                >
+                  {{ unitsTitle(u) }}
+                </button>
+              }
+            </div>
+          </div>
+        }
+      </div>
 
       <div
         #map

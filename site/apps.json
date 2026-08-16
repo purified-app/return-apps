@@ -73,7 +73,8 @@
         { "name": "lat", "description": "Initial center latitude." },
         { "name": "lng", "description": "Initial center longitude." },
         { "name": "zoom", "description": "Initial zoom." },
-        { "name": "mode", "description": "pick | measure | area (optional; locks UI when set)." }
+        { "name": "mode", "description": "pick | measure | area (optional; locks UI when set)." },
+        { "name": "units", "description": "metric | imperial (optional display units; return values stay SI)." }
       ],
       "returnExtras": [
         "lat?",

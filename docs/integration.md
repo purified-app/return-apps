@@ -102,12 +102,12 @@ Live docs + demo caller per app: `https://return.purified.app/<id>/home` and `�
 - Notes: with `returnUrl` set, success auto-returns
 
 ### map
-- Open: optional `lat`, `lng`, `zoom` (initial view), `mode` (`pick` \| `measure` \| `area` — locks UI when set)
+- Open: optional `lat`, `lng`, `zoom` (initial view), `mode` (`pick` \| `measure` \| `area` — locks UI when set), `units` (`metric` \| `imperial` — display only)
 - Return extras:
   - pick (`map.point`): `lat`, `lng`, `zoom`
   - measure (`map.distance`): `mode`, `meters`, `points` (`lat,lng;…`), `pointCount`
   - area (`map.area`): `mode`, `squareMeters`, `perimeterMeters`, `points`, `pointCount`
-- Notes: Measure/Area draw paths/polygons with live stats; **Save image** downloads an SVG snapshot
+- Notes: Measure/Area draw paths/polygons with live stats (area label centered on polygon); **Save image** downloads an SVG snapshot; return values stay SI (meters / m²)
 
 ### pin
 - Open: `length` (3–12, default 4), `mask` (`false`/`0` = show digits)

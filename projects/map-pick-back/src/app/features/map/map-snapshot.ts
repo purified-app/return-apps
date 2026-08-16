@@ -4,6 +4,8 @@ import {
   type LatLngPoint,
   pathLengthMeters,
   polygonAreaSquareMeters,
+  polygonLabelPoint,
+  type UnitSystem,
 } from './map-geo';
 
 export type SnapshotKind = 'measure' | 'area';
@@ -15,11 +17,12 @@ export type SnapshotKind = 'measure' | 'area';
 export function buildMeasurementSvg(
   kind: SnapshotKind,
   points: readonly LatLngPoint[],
-  options?: { title?: string; width?: number; height?: number },
+  options?: { title?: string; width?: number; height?: number; units?: UnitSystem },
 ): string {
   const width = options?.width ?? 720;
   const height = options?.height ?? 480;
   const pad = 48;
+  const units = options?.units ?? 'metric';
   const title =
     options?.title ?? (kind === 'measure' ? 'Distance measurement' : 'Area measurement');
 
@@ -68,10 +71,11 @@ export function buildMeasurementSvg(
       ? `${pathD} L${projected[0]!.x.toFixed(1)} ${projected[0]!.y.toFixed(1)} Z`
       : pathD;
 
+  const areaText = formatArea(polygonAreaSquareMeters(points), units);
   const stats =
     kind === 'measure'
-      ? `Length ${formatDistance(pathLengthMeters(points))} · ${points.length} points`
-      : `Area ${formatArea(polygonAreaSquareMeters(points))} · ${points.length} vertices`;
+      ? `Length ${formatDistance(pathLengthMeters(points), units)} · ${points.length} points`
+      : `Area ${areaText} · ${points.length} vertices`;
 
   const markers = projected
     .map(
@@ -86,6 +90,16 @@ export function buildMeasurementSvg(
       ? `<path d="${closed}" fill="rgba(74,163,199,0.28)" stroke="#4aa3c7" stroke-width="3" stroke-linejoin="round"/>`
       : `<path d="${closed}" fill="none" stroke="#4aa3c7" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>`;
 
+  let centerLabel = '';
+  if (kind === 'area' && points.length >= 3) {
+    const center = polygonLabelPoint(points);
+    if (center) {
+      const c = project(center);
+      centerLabel = `<rect x="${(c.x - 48).toFixed(1)}" y="${(c.y - 14).toFixed(1)}" width="96" height="28" rx="8" fill="rgba(16,21,26,0.88)" stroke="rgba(255,255,255,0.14)"/>
+  <text x="${c.x.toFixed(1)}" y="${(c.y + 5).toFixed(1)}" text-anchor="middle" font-size="13" font-weight="700" fill="#eef2f5" font-family="Segoe UI, Helvetica, Arial, sans-serif">${escapeXml(areaText)}</text>`;
+    }
+  }
+
   return `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img">
   <title>${escapeXml(title)}</title>
@@ -94,6 +108,7 @@ export function buildMeasurementSvg(
   <text x="${pad}" y="${height - 18}" fill="#b7c2cc" font-size="14" font-family="Segoe UI, Helvetica, Arial, sans-serif">${escapeXml(stats)}</text>
   ${fill}
   ${markers}
+  ${centerLabel}
 </svg>`;
 }
 

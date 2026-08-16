@@ -6,8 +6,10 @@ import {
   formatForMode,
   haversineMeters,
   parseMapMode,
+  parseUnitSystem,
   pathLengthMeters,
   polygonAreaSquareMeters,
+  polygonLabelPoint,
   polygonPerimeterMeters,
   segmentLengthsMeters,
 } from './map-geo';
@@ -63,6 +65,23 @@ describe('map-geo', () => {
     expect(formatArea(500)).toBe('500 m²');
     expect(formatArea(25_000)).toBe('2.5 ha');
     expect(formatArea(2_500_000)).toBe('2.5 km²');
+    expect(formatDistance(1609.344, 'imperial')).toBe('1 mi');
+    expect(formatDistance(30.48, 'imperial')).toBe('100 ft');
+    expect(formatArea(4046.8564224, 'imperial')).toBe('1 ac');
     expect(encodePoints([{ lat: 59.9139123, lng: 10.7522123 }])).toBe('59.913912,10.752212');
+  });
+
+  it('parses units and finds polygon label point', () => {
+    expect(parseUnitSystem('imperial')).toBe('imperial');
+    expect(parseUnitSystem('ft')).toBe('imperial');
+    expect(parseUnitSystem('metric')).toBe('metric');
+    expect(parseUnitSystem('nope')).toBeNull();
+    expect(polygonLabelPoint([])).toBeNull();
+    expect(polygonLabelPoint([
+      { lat: 0, lng: 0 },
+      { lat: 0, lng: 2 },
+      { lat: 2, lng: 2 },
+      { lat: 2, lng: 0 },
+    ])).toEqual({ lat: 1, lng: 1 });
   });
 });

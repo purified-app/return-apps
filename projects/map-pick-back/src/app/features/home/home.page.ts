@@ -11,7 +11,7 @@ import { RbHomeDocs } from 'shared-ui';
       lead="Leaflet map with Pick / Measure / Area tabs. Returns map.point, map.distance (meters), or map.area (m²)."
       ctaLabel="Open map"
       format="map.point"
-      [openParamDocs]="['lat', 'lng', 'zoom', 'mode']"
+      [openParamDocs]="['lat', 'lng', 'zoom', 'mode', 'units']"
       demoValue="59.9139,10.7522"
       [returnExtras]="{ lat: '59.9139', lng: '10.7522', zoom: '14' }"
     />

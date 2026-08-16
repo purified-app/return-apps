@@ -13,19 +13,24 @@ import * as L from 'leaflet';
 import { ReturnUrlValidator, RbPanel, RbResultActions, type ReturnDelivery } from 'shared-ui';
 import {
   MAP_MODES,
+  UNIT_SYSTEMS,
   encodePoints,
   formatArea,
   formatDistance,
   formatForMode,
   modeTitle,
   parseMapMode,
+  parseUnitSystem,
   pathLengthMeters,
   polygonAreaSquareMeters,
+  polygonLabelPoint,
   polygonPerimeterMeters,
   roundCoord,
   segmentLengthsMeters,
+  unitsTitle,
   type LatLngPoint,
   type MapMode,
+  type UnitSystem,
 } from './map-geo';
 import { buildMeasurementSvg, downloadSvg } from './map-snapshot';
 
@@ -90,7 +95,9 @@ export class MapPage implements OnDestroy {
   private readonly mapEl = viewChild<ElementRef<HTMLDivElement>>('map');
 
   readonly modes = MAP_MODES;
+  readonly unitSystems = UNIT_SYSTEMS;
   readonly mode = signal<MapMode>('pick');
+  readonly units = signal<UnitSystem>('metric');
   readonly modeLocked = signal(false);
   readonly status = signal<MapStatus>('ready');
   readonly errorDetail = signal<string | null>(null);
@@ -99,6 +106,7 @@ export class MapPage implements OnDestroy {
   readonly captured = signal<CapturedResult | null>(null);
 
   readonly modeTitle = modeTitle;
+  readonly unitsTitle = unitsTitle;
 
   readonly pathMeters = computed(() => pathLengthMeters(this.points()));
   readonly areaSqMeters = computed(() => polygonAreaSquareMeters(this.points()));
@@ -106,23 +114,25 @@ export class MapPage implements OnDestroy {
 
   readonly measureLabel = computed(() => {
     const pts = this.points();
+    const units = this.units();
     if (pts.length === 0) {
       return 'Tap the map to add points, or start from your location.';
     }
     if (pts.length === 1) {
       return '1 point · tap to add the next';
     }
-    return `${formatDistance(this.pathMeters())} · ${pts.length} points`;
+    return `${formatDistance(this.pathMeters(), units)} · ${pts.length} points`;
   });
 
   readonly areaLabel = computed(() => {
     const pts = this.points();
+    const units = this.units();
     if (pts.length < 3) {
       return pts.length === 0
         ? 'Tap to place vertices (need 3+ for an area).'
         : `${pts.length} vertices · need ${3 - pts.length} more`;
     }
-    return `${formatArea(this.areaSqMeters())} · perimeter ${formatDistance(this.perimeterMeters())}`;
+    return `${formatArea(this.areaSqMeters(), units)} · perimeter ${formatDistance(this.perimeterMeters(), units)}`;
   });
 
   readonly copyValue = computed(() => this.captured()?.value ?? this.pickCoords() ?? null);
@@ -178,6 +188,14 @@ export class MapPage implements OnDestroy {
     if (this.status() === 'empty') {
       this.status.set('ready');
     }
+    this.syncDrawLayer();
+  }
+
+  setUnits(next: UnitSystem): void {
+    if (this.units() === next) {
+      return;
+    }
+    this.units.set(next);
     this.syncDrawLayer();
   }
 
@@ -258,6 +276,7 @@ export class MapPage implements OnDestroy {
     }
     const svg = buildMeasurementSvg(mode, this.points(), {
       title: mode === 'measure' ? 'Distance measurement' : 'Area measurement',
+      units: this.units(),
     });
     const stamp = new Date().toISOString().slice(0, 19).replaceAll(':', '');
     downloadSvg(`map-${mode}-${stamp}.svg`, svg);
@@ -294,6 +313,11 @@ export class MapPage implements OnDestroy {
     if (locked) {
       this.mode.set(locked);
       this.modeLocked.set(true);
+    }
+
+    const units = parseUnitSystem(params.get('units'));
+    if (units) {
+      this.units.set(units);
     }
 
     const lat = parseOptionalNumber(params.get('lat'));
@@ -498,6 +522,7 @@ export class MapPage implements OnDestroy {
     if (this.mode() === 'area' && pts.length >= 2) {
       if (pts.length >= 3) {
         L.polygon(latLngs, AREA_STYLE).addTo(this.drawLayer);
+        this.addAreaCenterLabel(pts);
       } else {
         L.polyline(latLngs, LINE_STYLE).addTo(this.drawLayer);
       }
@@ -525,6 +550,7 @@ export class MapPage implements OnDestroy {
     if (!this.drawLayer) {
       return;
     }
+    const units = this.units();
     const lengths = segmentLengthsMeters(pts);
     for (let i = 0; i < lengths.length; i++) {
       const a = pts[i]!;
@@ -535,10 +561,30 @@ export class MapPage implements OnDestroy {
         direction: 'center',
         className: 'mp-segment-label',
       })
-        .setContent(formatDistance(lengths[i]!))
+        .setContent(formatDistance(lengths[i]!, units))
         .setLatLng(mid)
         .addTo(this.drawLayer);
     }
+  }
+
+  private addAreaCenterLabel(pts: readonly LatLngPoint[]): void {
+    if (!this.drawLayer) {
+      return;
+    }
+    const center = polygonLabelPoint(pts);
+    if (!center) {
+      return;
+    }
+    const units = this.units();
+    const areaText = formatArea(polygonAreaSquareMeters(pts), units);
+    L.tooltip({
+      permanent: true,
+      direction: 'center',
+      className: 'mp-area-label',
+    })
+      .setContent(areaText)
+      .setLatLng([center.lat, center.lng])
+      .addTo(this.drawLayer);
   }
 
   private clearGeometry(): void {
@@ -580,7 +626,7 @@ export class MapPage implements OnDestroy {
         mode,
         value,
         format: formatForMode(mode),
-        summary: formatDistance(meters),
+        summary: formatDistance(meters, this.units()),
         extras: {
           mode,
           meters: value,
@@ -599,7 +645,7 @@ export class MapPage implements OnDestroy {
       mode,
       value,
       format: formatForMode(mode),
-      summary: formatArea(area),
+      summary: formatArea(area, this.units()),
       extras: {
         mode,
         squareMeters: value,

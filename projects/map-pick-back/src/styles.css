@@ -26,9 +26,10 @@
   max-width: min(70vw, 18rem);
 }
 
-/* Vertex numbers / segment lengths drawn by measure & area modes */
+/* Vertex numbers / segment lengths / area center label */
 .leaflet-tooltip.mp-vertex-label,
-.leaflet-tooltip.mp-segment-label {
+.leaflet-tooltip.mp-segment-label,
+.leaflet-tooltip.mp-area-label {
   background: rgb(16 21 26 / 88%);
   border: 1px solid rgb(255 255 255 / 14%);
   border-radius: 999px;
@@ -39,7 +40,14 @@
   padding: 0.15rem 0.45rem;
 }
 
+.leaflet-tooltip.mp-area-label {
+  font-size: 0.9rem;
+  padding: 0.35rem 0.7rem;
+  border-radius: 0.75rem;
+}
+
 .leaflet-tooltip.mp-vertex-label::before,
-.leaflet-tooltip.mp-segment-label::before {
+.leaflet-tooltip.mp-segment-label::before,
+.leaflet-tooltip.mp-area-label::before {
   display: none;
 }
