@@ -4,7 +4,7 @@
       <p>{{ errorDetail() }}</p>
       <a routerLink="/home" class="btn">Back to home</a>
     </rb-panel>
-  } @else if (status() === 'unsupported' || status() === 'denied') {
+  } @else if (status() === 'denied') {
     <rb-panel title="Orientation unavailable">
       <p>{{ errorDetail() }}</p>
       <div class="actions">
@@ -27,7 +27,7 @@
           </div>
           <div>
             <dt>Format</dt>
-            <dd>{{ 'orient.' + c.mode }}</dd>
+            <dd>{{ c.format }}</dd>
           </div>
         </dl>
       }
@@ -70,7 +70,7 @@
               Live heading. Hold to freeze, copy anytime.
             }
             @case ('level') {
-              Lay flat — green when within ±{{ thresholdLabel() }}°.
+              Lay flat — green when within ±{{ threshold() }}°.
             }
             @case ('incline') {
               Angle from horizontal. Tare to zero on the current slope.
@@ -80,13 +80,13 @@
       </header>
 
       @if (!modeLocked()) {
-        <div class="mode-tabs" role="tablist" aria-label="Measurement mode">
+        <div class="rb-seg rb-seg--3" role="tablist" aria-label="Measurement mode">
           @for (m of modes; track m) {
             <button
               type="button"
               role="tab"
-              class="mode-tab"
-              [class.mode-tab--active]="mode() === m"
+              class="rb-seg__btn"
+              [class.rb-seg__btn--active]="mode() === m"
               [attr.aria-selected]="mode() === m"
               (click)="setMode(m)"
             >
@@ -95,7 +95,7 @@
           }
         </div>
       } @else {
-        <p class="mode-locked" role="status">Mode locked: {{ modeTitle(mode()) }}</p>
+        <p class="rb-seg-locked" role="status">Mode locked: {{ modeTitle(mode()) }}</p>
       }
 
       <div

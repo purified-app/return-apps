@@ -55,13 +55,13 @@
 
       <div class="controls">
         @if (!modeLocked()) {
-          <div class="mode-tabs" role="tablist" aria-label="Map mode">
+          <div class="rb-seg rb-seg--3" role="tablist" aria-label="Map mode">
             @for (m of modes; track m) {
               <button
                 type="button"
                 role="tab"
-                class="mode-tab"
-                [class.mode-tab--active]="mode() === m"
+                class="rb-seg__btn"
+                [class.rb-seg__btn--active]="mode() === m"
                 [attr.aria-selected]="mode() === m"
                 (click)="setMode(m)"
               >
@@ -70,18 +70,18 @@
             }
           </div>
         } @else {
-          <p class="mode-locked" role="status">Mode locked: {{ modeTitle(mode()) }}</p>
+          <p class="rb-seg-locked" role="status">Mode locked: {{ modeTitle(mode()) }}</p>
         }
 
         @if (mode() !== 'pick') {
           <div class="units-row" role="group" aria-label="Units">
             <span class="units-row__label">Units</span>
-            <div class="units-tabs">
+            <div class="rb-seg rb-seg--2 rb-seg--inline">
               @for (u of unitSystems; track u) {
                 <button
                   type="button"
-                  class="units-tab"
-                  [class.units-tab--active]="units() === u"
+                  class="rb-seg__btn"
+                  [class.rb-seg__btn--active]="units() === u"
                   [attr.aria-pressed]="units() === u"
                   (click)="setUnits(u)"
                 >
@@ -126,7 +126,7 @@
         }
       </div>
 
-      @if (status() === 'empty') {
+      @if (status() === 'incomplete') {
         <p class="error" role="alert">{{ errorDetail() }}</p>
       }
       @if (status() === 'redirecting') {

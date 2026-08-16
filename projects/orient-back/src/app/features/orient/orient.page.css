@@ -57,45 +57,6 @@
   color: #f0c14a;
 }
 
-.mode-tabs {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.4rem;
-  padding: 0.3rem;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--rb-fg) 8%, transparent);
-}
-
-.mode-tab {
-  appearance: none;
-  border: 0;
-  border-radius: 999px;
-  min-height: 2.4rem;
-  padding: 0.45rem 0.6rem;
-  background: transparent;
-  color: var(--rb-muted);
-  font: inherit;
-  font-weight: 650;
-  cursor: pointer;
-}
-
-.mode-tab--active {
-  background: var(--rb-fg);
-  color: var(--rb-bg);
-}
-
-.mode-tab:focus-visible,
-.tool-btn:focus-visible {
-  outline: 2px solid var(--rb-fg);
-  outline-offset: 2px;
-}
-
-.mode-locked {
-  margin: 0;
-  color: var(--rb-muted);
-  font-size: 0.95rem;
-}
-
 .stage {
   display: grid;
   justify-items: center;
@@ -326,6 +287,11 @@
   color: #f0c14a;
 }
 
+.tool-btn:focus-visible {
+  outline: 2px solid var(--rb-fg);
+  outline-offset: 2px;
+}
+
 .start-card {
   display: grid;
   gap: 0.75rem;
@@ -376,7 +342,7 @@
 }
 
 .status--error {
-  color: #e35d5d;
+  color: var(--rb-error);
 }
 
 .toolbar,

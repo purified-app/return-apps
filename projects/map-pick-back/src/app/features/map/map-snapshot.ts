@@ -1,5 +1,6 @@
 import type * as L from 'leaflet';
 import {
+  MAP_STROKE,
   formatArea,
   formatDistance,
   type LatLngPoint,
@@ -66,19 +67,6 @@ export async function captureMapPng(
     throw new Error('PNG encode failed');
   }
   return blob;
-}
-
-/** Trigger a browser download for a Blob. */
-export function downloadBlob(filename: string, blob: Blob): void {
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = filename;
-  a.rel = 'noopener';
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  URL.revokeObjectURL(url);
 }
 
 export function parseCssTranslate(el: HTMLElement): { x: number; y: number } {
@@ -178,7 +166,7 @@ function drawOverlays(
     ctx.closePath();
     ctx.fillStyle = 'rgba(74, 163, 199, 0.28)';
     ctx.fill();
-    ctx.strokeStyle = '#4aa3c7';
+    ctx.strokeStyle = MAP_STROKE;
     ctx.lineWidth = 3;
     ctx.lineJoin = 'round';
     ctx.stroke();
@@ -191,7 +179,7 @@ function drawOverlays(
   } else if (screen.length >= 2) {
     ctx.beginPath();
     screen.forEach((p, i) => (i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y)));
-    ctx.strokeStyle = '#4aa3c7';
+    ctx.strokeStyle = MAP_STROKE;
     ctx.lineWidth = 3;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';

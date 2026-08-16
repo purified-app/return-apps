@@ -1,5 +1,4 @@
 import {
-  applyInclineTare,
   cardinalLabel,
   compassHeadingFromEvent,
   formatForMode,
@@ -38,10 +37,8 @@ describe('orient-math', () => {
   });
 
   it('prefers webkit compass heading', () => {
-    expect(
-      compassHeadingFromEvent({ alpha: 10, webkitCompassHeading: 42, absolute: true }),
-    ).toBe(42);
-    expect(compassHeadingFromEvent({ alpha: 90, absolute: true })).toBe(270);
+    expect(compassHeadingFromEvent({ alpha: 10, webkitCompassHeading: 42 })).toBe(42);
+    expect(compassHeadingFromEvent({ alpha: 90 })).toBe(270);
   });
 
   it('computes incline, level threshold, deviation, and tare', () => {
@@ -50,11 +47,7 @@ describe('orient-math', () => {
     expect(isWithinLevelThreshold(0.5, -0.5, 2)).toBe(true);
     expect(isWithinLevelThreshold(3, 0, 2)).toBe(false);
     expect(levelDeviation(-1.5, 0.5)).toBe(1.5);
-    expect(applyInclineTare(20, 5)).toBe(15);
-    expect(withInclineTare(
-      { heading: null, pitch: 10, roll: 0, incline: 20, absolute: false },
-      5,
-    ).incline).toBe(15);
+    expect(withInclineTare({ heading: null, pitch: 10, roll: 0, incline: 20 }, 5).incline).toBe(15);
   });
 
   it('builds sample values per mode', () => {
@@ -62,7 +55,6 @@ describe('orient-math', () => {
       alpha: 90,
       beta: 1,
       gamma: -2,
-      absolute: true,
     });
     expect(formatForMode('compass')).toBe('orient.compass');
     expect(valueForMode('compass', sample)).toBe('270');
