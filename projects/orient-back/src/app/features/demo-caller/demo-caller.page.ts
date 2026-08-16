@@ -13,10 +13,6 @@ import { RbDemoCaller } from 'shared-ui';
     >
       @if (demo.result().value) {
         <dl class="meta" rbResult>
-          <div>
-            <dt>Value</dt>
-            <dd>{{ demo.result().value }}</dd>
-          </div>
           @if (demo.result().extras['mode']; as mode) {
             <div>
               <dt>Mode</dt>
