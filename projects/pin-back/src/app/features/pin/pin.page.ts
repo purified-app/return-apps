@@ -1,6 +1,6 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { ReturnUrlValidator, RbPanel, type ReturnDelivery } from 'shared-ui';
+import { ReturnUrlValidator, RbPanel, RbResultActions, type ReturnDelivery } from 'shared-ui';
 
 type PinStatus = 'ready' | 'invalid-return-url' | 'incomplete' | 'done' | 'redirecting';
 
@@ -8,7 +8,7 @@ const KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '', '0', 'back'] as c
 
 @Component({
   selector: 'pb-pin-page',
-  imports: [RouterLink, RbPanel],
+  imports: [RouterLink, RbPanel, RbResultActions],
   templateUrl: './pin.page.html',
   styleUrl: './pin.page.css',
   host: { class: 'rb-page rb-page--plain' },

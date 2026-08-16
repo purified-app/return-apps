@@ -2,12 +2,19 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <title>return-apps</title>
+    <title>Return Apps</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta
       name="description"
-      content="returnUrl helper apps — capture something and redirect it back to the caller."
+      content="Installable toolbox of returnUrl helper apps — sign, scan, map, geo, pin, NFC, color. Use standalone or return results to a caller."
     />
+    <meta name="theme-color" content="#0f1418" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Return Apps" />
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="icon" href="./icons/icon-192.png" type="image/png" />
+    <link rel="apple-touch-icon" href="./icons/icon-192.png" />
     <style>
       :root {
         color-scheme: dark;
@@ -16,6 +23,8 @@
         --muted: #b7c2cc;
         --card: rgb(255 255 255 / 6%);
         --line: rgb(255 255 255 / 10%);
+        --btn: #eef2f5;
+        --btn-fg: #0f1418;
       }
       * {
         box-sizing: border-box;
@@ -52,6 +61,33 @@
         color: var(--muted);
         line-height: 1.55;
       }
+      .cta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        margin-top: 1.25rem;
+      }
+      .btn {
+        appearance: none;
+        border: 0;
+        border-radius: 999px;
+        min-height: 2.75rem;
+        padding: 0.75rem 1.25rem;
+        background: var(--btn);
+        color: var(--btn-fg);
+        font: inherit;
+        font-weight: 650;
+        text-decoration: none;
+        cursor: pointer;
+      }
+      .btn-ghost {
+        background: rgb(255 255 255 / 12%);
+        color: var(--fg);
+      }
+      .btn:focus-visible {
+        outline: 2px solid var(--fg);
+        outline-offset: 2px;
+      }
       .meta {
         margin: 1rem 0 0;
         color: var(--muted);
@@ -60,7 +96,13 @@
       .meta a {
         color: inherit;
       }
-      ul {
+      .install-hint {
+        margin: 0.85rem 0 0;
+        color: var(--muted);
+        font-size: 0.9rem;
+        line-height: 1.45;
+      }
+      ul.tools {
         list-style: none;
         margin: 2rem 0 0;
         padding: 0;
@@ -107,15 +149,26 @@
         color: var(--fg);
         font-size: 0.8rem;
       }
+      [hidden] {
+        display: none !important;
+      }
     </style>
   </head>
   <body>
     <main>
-      <p class="brand">return.purified.app</p>
-      <h1>Helper apps that capture something and return via URL</h1>
+      <p class="brand">Return Apps</p>
+      <h1>Toolbox you can install — or call with returnUrl</h1>
       <p class="lead">
-        Open with <code>returnUrl</code>. Result comes back as <code>value</code> +
-        <code>format</code> (contract v1). Pin/sign default to <code>delivery=hash</code>.
+        Open a tool to capture something, then download or copy the result.
+        Calling apps can still open any tool with <code>returnUrl</code> (contract v1).
+      </p>
+      <div class="cta">
+        <button type="button" class="btn" id="install-btn" hidden>Install app</button>
+        <a class="btn btn-ghost" href="./sign/">Start with Sign</a>
+      </div>
+      <p class="install-hint" id="install-hint" hidden>
+        Use your browser’s <strong>Install</strong> / <strong>Add to Home Screen</strong> to keep
+        this toolbox one tap away.
       </p>
       <p class="meta">
         <a href="./apps.json">apps.json</a> ·
@@ -123,53 +176,53 @@
         <a href="./llms.txt">llms.txt</a> ·
         <a href="https://github.com/purified-app/return-apps/blob/main/docs/integration.md">integration guide</a>
       </p>
-      <ul>
+      <ul class="tools">
         <li>
           <a class="app" href="./sign/">
             <strong>SignBack</strong>
-            <span>/sign — signature → SVG · hash</span>
+            <span>Draw a signature → download SVG/PNG</span>
           </a>
         </li>
         <li>
           <a class="app" href="./scan/">
             <strong>ScanBack</strong>
-            <span>/scan — QR / barcode</span>
+            <span>QR / barcode → copy value</span>
           </a>
         </li>
         <li>
           <a class="app" href="./geo/">
             <strong>GeoBack</strong>
-            <span>/geo — GPS coordinates</span>
+            <span>GPS → copy coordinates</span>
           </a>
         </li>
         <li>
           <a class="app" href="./map/">
             <strong>MapPickBack</strong>
-            <span>/map — map pin</span>
+            <span>Map pin → copy coordinates</span>
           </a>
         </li>
         <li>
           <a class="app" href="./pin/">
             <strong>PinBack</strong>
-            <span>/pin — numeric PIN · hash</span>
+            <span>Numeric PIN → copy digits</span>
           </a>
         </li>
         <li>
           <a class="app" href="./nfc/">
             <strong>NfcBack</strong>
-            <span>/nfc — Web NFC</span>
+            <span>Web NFC → copy payload</span>
           </a>
         </li>
         <li>
           <a class="app" href="./color/">
             <strong>ColorBack</strong>
-            <span>/color — color eyedropper</span>
+            <span>Eyedropper → copy hex</span>
           </a>
         </li>
       </ul>
       <section class="contract">
         <p>
-          Always pass <code>returnUrl</code> + <code>allowedOrigins</code>. Success →
+          Integrators: pass <code>returnUrl</code> + <code>allowedOrigins</code>. Success →
           <code>value</code> + <code>format</code>. Pin/sign use <code>delivery=hash</code>
           (parse the fragment, or use the SDK). Full guide:
           <a href="https://github.com/purified-app/return-apps/blob/main/docs/integration.md">integration.md</a>.
@@ -185,5 +238,52 @@ location.href = openReturnApp('pin', {
 const { value, format, error } = parseReturnResult(location);</pre>
       </section>
     </main>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('./sw.js').catch(() => {});
+        });
+      }
+
+      let deferredPrompt = null;
+      const installBtn = document.getElementById('install-btn');
+      const installHint = document.getElementById('install-hint');
+
+      window.addEventListener('beforeinstallprompt', (event) => {
+        event.preventDefault();
+        deferredPrompt = event;
+        installBtn.hidden = false;
+        installHint.hidden = true;
+      });
+
+      installBtn.addEventListener('click', async () => {
+        if (!deferredPrompt) {
+          return;
+        }
+        deferredPrompt.prompt();
+        await deferredPrompt.userChoice;
+        deferredPrompt = null;
+        installBtn.hidden = true;
+      });
+
+      window.addEventListener('appinstalled', () => {
+        deferredPrompt = null;
+        installBtn.hidden = true;
+        installHint.hidden = true;
+      });
+
+      // iOS / browsers without beforeinstallprompt still get a gentle hint.
+      const isStandalone =
+        window.matchMedia('(display-mode: standalone)').matches ||
+        window.navigator.standalone === true;
+      if (!isStandalone && !deferredPrompt) {
+        // Show hint after a tick so Chromium can fire beforeinstallprompt first.
+        setTimeout(() => {
+          if (!deferredPrompt && installBtn.hidden) {
+            installHint.hidden = false;
+          }
+        }, 1500);
+      }
+    </script>
   </body>
 </html>

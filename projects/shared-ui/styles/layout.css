@@ -273,3 +273,9 @@
     width: 100%;
   }
 }
+
+.error {
+  margin: 0;
+  color: #ffb4b4;
+  line-height: 1.45;
+}

@@ -26,10 +26,11 @@
           </div>
         </dl>
       }
-      <div class="actions">
+      <rb-result-actions [copyValue]="copyValue()">
         <button type="button" class="btn btn-ghost" (click)="startScan()">Scan again</button>
-        <a routerLink="/home" class="btn">Back to home</a>
-      </div>
+        <a routerLink="/home" class="btn btn-ghost">Back to home</a>
+        <a href="/" class="btn btn-ghost">All tools</a>
+      </rb-result-actions>
     </rb-panel>
   } @else {
     <section class="shell">
