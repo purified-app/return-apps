@@ -153,7 +153,7 @@ export function formatDistance(meters: number, units: UnitSystem = 'metric'): st
   return `${trimNumber(km, km < 10 ? 2 : km < 100 ? 1 : 0)} km`;
 }
 
-/** Human-readable area for the active unit system. */
+/** Human-readable area for the active unit system (metric: m² / km²). */
 export function formatArea(squareMeters: number, units: UnitSystem = 'metric'): string {
   if (!Number.isFinite(squareMeters) || squareMeters < 0) {
     return '—';
@@ -170,15 +170,11 @@ export function formatArea(squareMeters: number, units: UnitSystem = 'metric'): 
     const sqMi = squareMeters / SQ_METERS_PER_SQ_MILE;
     return `${trimNumber(sqMi, sqMi < 10 ? 2 : 1)} mi²`;
   }
-  if (squareMeters < 10_000) {
+  if (squareMeters < 1_000_000) {
     return `${trimNumber(squareMeters, squareMeters < 100 ? 1 : 0)} m²`;
   }
-  if (squareMeters < 1_000_000) {
-    const ha = squareMeters / 10_000;
-    return `${trimNumber(ha, ha < 10 ? 2 : 1)} ha`;
-  }
   const km2 = squareMeters / 1_000_000;
-  return `${trimNumber(km2, km2 < 10 ? 2 : 1)} km²`;
+  return `${trimNumber(km2, km2 < 10 ? 2 : km2 < 100 ? 1 : 0)} km²`;
 }
 
 /**
