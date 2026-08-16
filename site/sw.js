@@ -1,5 +1,5 @@
 /* Return Apps hub service worker — installability + light shell cache. */
-const CACHE = 'return-apps-hub-v4';
+const CACHE = 'return-apps-hub-v5';
 const PRECACHE = [
   './',
   './index.html',
@@ -9,6 +9,8 @@ const PRECACHE = [
   './icons/icon-512-maskable.png',
   './icons/toolbox.svg',
   './apps.json',
+  './developers/',
+  './developers/index.html',
 ];
 
 self.addEventListener('install', (event) => {
@@ -44,7 +46,8 @@ self.addEventListener('fetch', (event) => {
           (url.pathname === '/' ||
             url.pathname.endsWith('/index.html') ||
             url.pathname.endsWith('/manifest.webmanifest') ||
-            url.pathname.includes('/icons/'))
+            url.pathname.includes('/icons/') ||
+            url.pathname.includes('/developers'))
         ) {
           void caches.open(CACHE).then((cache) => cache.put(request, copy));
         }
