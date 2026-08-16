@@ -7,11 +7,11 @@ import { RbHomeDocs } from 'shared-ui';
   template: `
     <rb-home-docs
       brand="OrientBack"
-      title="Capture compass, spirit level, or incline and return it to the app you came from"
-      lead="Device orientation helper. Modes: compass (heading°), level (pitch,roll), incline (degrees from horizontal)."
+      title="Compass, spirit level, and incline — use as a tool or return a reading"
+      lead="Live measuring tool with Hold, Copy, and Incline Tare. Modes: compass (heading°), level (pitch,roll), incline (degrees from horizontal)."
       ctaLabel="Open OrientBack"
       format="orient.compass"
-      [openParamDocs]="['mode', 'threshold']"
+      [openParamDocs]="['mode', 'threshold', 'requireLevel']"
       demoValue="42.5"
       [returnExtras]="{ mode: 'compass', heading: '42.5' }"
     />

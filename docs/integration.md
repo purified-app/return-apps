@@ -120,9 +120,9 @@ Live docs + demo caller per app: `https://return.purified.app/<id>/home` and `�
 - Notes: needs camera permission
 
 ### orient
-- Open: `mode` (`compass` \| `level` \| `incline`), `threshold` (level tolerance°, default 2)
-- Return extras: `mode`, optional `heading`, `pitch`, `roll`, `incline`; level adds `withinThreshold`, `threshold`
-- Notes: uses DeviceOrientation; manual sliders when sensors are unavailable
+- Open: `mode` (`compass` \| `level` \| `incline`), `threshold` (level tolerance°, default 2), `requireLevel` (`true`/`1` to require level before confirm)
+- Return extras: `mode`, optional `heading`, `pitch`, `roll`, `incline`, `tare`; level adds `withinThreshold`, `threshold`, `deviation`
+- Notes: measuring tool with Hold / Copy / Incline Tare; DeviceOrientation with manual fallback; iOS needs a tap to enable sensors
 
 ---
 
