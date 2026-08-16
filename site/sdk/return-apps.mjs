@@ -12,7 +12,7 @@
 export const CONTRACT_VERSION = 1;
 export const DEFAULT_BASE_URL = 'https://return.purified.app';
 
-/** @param {'sign'|'scan'|'geo'|'map'|'pin'|'nfc'|'color'} app */
+/** @param {'sign'|'scan'|'geo'|'map'|'pin'|'nfc'|'color'|'orient'} app */
 export function openReturnApp(app, options) {
   const base = (options.baseUrl ?? DEFAULT_BASE_URL).replace(/\/$/, '');
   const url = new URL(`${base}/${app}/`);

@@ -21,7 +21,7 @@ https://return.purified.app/<app>?returnUrl=<url>&allowedOrigins=<origins>&state
 | Param | Description |
 |-------|-------------|
 | `value` | Primary payload — **always use this** |
-| `format` | `sign.svg` · `pin.digits` · `geo.point` · `map.point` · `color.hex` · `scan.*` · `nfc.*` |
+| `format` | `sign.svg` · `pin.digits` · `geo.point` · `map.point` · `color.hex` · `orient.compass` · `orient.level` · `orient.incline` · `scan.*` · `nfc.*` |
 | `error` | `cancelled` on cancel |
 | `state` | Echo |
 

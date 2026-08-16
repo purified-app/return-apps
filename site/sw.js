@@ -1,5 +1,5 @@
 /* Return Apps hub service worker — installability + light shell cache. */
-const CACHE = 'return-apps-hub-v5';
+const CACHE = 'return-apps-hub-v6';
 const PRECACHE = [
   './',
   './index.html',

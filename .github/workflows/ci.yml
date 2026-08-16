@@ -22,6 +22,7 @@ jobs:
             pin-back,
             nfc-back,
             color-back,
+            orient-back,
           ]
     steps:
       - uses: actions/checkout@v4
