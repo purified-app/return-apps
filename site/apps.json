@@ -128,13 +128,14 @@
       "demo": "/orient/demo-caller",
       "format": "orient.compass | orient.level | orient.incline",
       "delivery": "query",
-      "blurb": "Compass, spirit level, or incline",
+      "blurb": "Compass / level / incline measuring tool",
       "value": "Heading°, pitch,roll, or incline°",
       "openParams": [
         { "name": "mode", "description": "compass | level | incline (optional; locks UI when set)." },
-        { "name": "threshold", "description": "Level mode tolerance in degrees (default 2)." }
+        { "name": "threshold", "description": "Level mode tolerance in degrees (default 2)." },
+        { "name": "requireLevel", "description": "If true/1, confirm only when within level threshold." }
       ],
-      "returnExtras": ["mode", "heading?", "pitch?", "roll?", "incline?", "withinThreshold?", "threshold?"],
+      "returnExtras": ["mode", "heading?", "pitch?", "roll?", "incline?", "withinThreshold?", "threshold?", "deviation?", "tare?"],
       "requirements": ["Device orientation sensors (manual fallback on desktop)"]
     }
   ]

@@ -1,0 +1,20 @@
+- generic [ref=f2e5]:
+  - generic [ref=f2e6]:
+    - heading "OrientBack" [level=1] [ref=f2e7]
+    - paragraph [ref=f2e8]: Point the device and confirm heading (0–360°).
+  - tablist "Measurement mode" [ref=f2e9]:
+    - tab "Compass" [selected] [ref=f2e10] [cursor=pointer]
+    - tab "Level" [ref=f2e11] [cursor=pointer]
+    - tab "Incline" [ref=f2e12] [cursor=pointer]
+  - generic [ref=f2e14]:
+    - generic [ref=f2e15]:
+      - generic [ref=f2e16]: "N"
+      - generic [ref=f2e17]: E
+      - generic [ref=f2e18]: S
+      - generic [ref=f2e19]: W
+    - paragraph [ref=f2e21]: —
+  - status [ref=f2e22]: Listening for sensors…
+  - generic [ref=f2e23]:
+    - button "Cancel" [ref=f2e24] [cursor=pointer]
+    - button "Manual" [ref=f2e25] [cursor=pointer]
+    - button "Use reading" [disabled]

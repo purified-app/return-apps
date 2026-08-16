@@ -35,6 +35,14 @@ export function parseThreshold(raw: string | null | undefined, fallback = 2): nu
   return Math.min(45, n);
 }
 
+export function parseFlag(raw: string | null | undefined): boolean {
+  if (raw == null || raw === '') {
+    return false;
+  }
+  const v = raw.trim().toLowerCase();
+  return v === '1' || v === 'true' || v === 'yes';
+}
+
 /** Normalize degrees into [0, 360). */
 export function normalizeHeading(degrees: number): number {
   const mod = degrees % 360;
@@ -87,6 +95,16 @@ export function isWithinLevelThreshold(
   return Math.abs(pitch) <= threshold && Math.abs(roll) <= threshold;
 }
 
+/** Max absolute pitch/roll deviation — useful tool readout. */
+export function levelDeviation(pitch: number, roll: number): number {
+  return Math.max(Math.abs(pitch), Math.abs(roll));
+}
+
+/** Apply incline tare: reported = raw − offset, clamped to sensible range. */
+export function applyInclineTare(rawIncline: number, tareOffset: number): number {
+  return rawIncline - tareOffset;
+}
+
 export function sampleFromDeviceOrientation(event: {
   alpha: number | null;
   beta: number | null;
@@ -104,6 +122,20 @@ export function sampleFromDeviceOrientation(event: {
     roll,
     incline,
     absolute: Boolean(event.absolute) || typeof event.webkitCompassHeading === 'number',
+  };
+}
+
+/** Sample used for display/return after incline tare. */
+export function withInclineTare(
+  sample: OrientationSample,
+  tareOffset: number,
+): OrientationSample {
+  if (sample.incline == null || tareOffset === 0) {
+    return sample;
+  }
+  return {
+    ...sample,
+    incline: applyInclineTare(sample.incline, tareOffset),
   };
 }
 
@@ -136,4 +168,15 @@ export function cardinalLabel(heading: number): string {
   const dirs = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'] as const;
   const idx = Math.round(normalizeHeading(heading) / 45) % 8;
   return dirs[idx] ?? 'N';
+}
+
+export function modeTitle(mode: OrientMode): string {
+  switch (mode) {
+    case 'compass':
+      return 'Compass';
+    case 'level':
+      return 'Level';
+    case 'incline':
+      return 'Incline';
+  }
 }

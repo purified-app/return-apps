@@ -9,7 +9,7 @@
       <p>{{ errorDetail() }}</p>
       <div class="actions">
         <button type="button" class="btn btn-ghost" (click)="onCancel()">Cancel</button>
-        <button type="button" class="btn btn-ghost" (click)="useManual()">Adjust manually</button>
+        <button type="button" class="btn btn-ghost" (click)="useManual()">Use as manual tool</button>
         <button type="button" class="btn" (click)="retry()">Try again</button>
       </div>
     </rb-panel>
@@ -37,20 +37,43 @@
         <a href="/" class="btn btn-ghost">All tools</a>
       </rb-result-actions>
     </rb-panel>
+  } @else if (status() === 'need-gesture') {
+    <section class="shell shell--start">
+      <header class="top">
+        <h1>OrientBack</h1>
+        <p>Compass, spirit level, and incline — enable motion sensors to measure.</p>
+      </header>
+      <div class="start-card">
+        <p>Sensors need a tap on this device (iOS / some browsers).</p>
+        <button type="button" class="btn" (click)="enableSensors()">Enable sensors</button>
+        <button type="button" class="btn btn-ghost" (click)="useManual()">Use without sensors</button>
+      </div>
+      <div class="toolbar">
+        <button type="button" class="btn btn-ghost" (click)="onCancel()">Cancel</button>
+      </div>
+    </section>
   } @else {
     <section class="shell">
       <header class="top">
-        <h1>OrientBack</h1>
+        <div class="top__row">
+          <h1>OrientBack</h1>
+          @if (held()) {
+            <span class="pill pill--hold" role="status">Held</span>
+          }
+          @if (status() === 'manual') {
+            <span class="pill" role="status">Manual</span>
+          }
+        </div>
         <p>
           @switch (mode()) {
             @case ('compass') {
-              Point the device and confirm heading (0–360°).
+              Live heading. Hold to freeze, copy anytime.
             }
             @case ('level') {
-              Lay the device flat and center the bubble, then confirm pitch,roll.
+              Lay flat — green when within ±{{ thresholdLabel() }}°.
             }
             @case ('incline') {
-              Tilt the device and confirm the angle from horizontal.
+              Angle from horizontal. Tare to zero on the current slope.
             }
           }
         </p>
@@ -75,97 +98,141 @@
         <p class="mode-locked" role="status">Mode locked: {{ modeTitle(mode()) }}</p>
       }
 
-      <div class="stage" aria-live="polite">
+      <div
+        class="stage"
+        [class.stage--ok]="mode() === 'level' && levelOk()"
+        aria-live="polite"
+      >
+        <p class="primary" [class.primary--ok]="mode() === 'level' && levelOk()">
+          {{ primaryReadout() }}
+        </p>
+        <p class="secondary">{{ secondaryReadout() }}</p>
+
         @switch (mode()) {
           @case ('compass') {
-            <div class="compass" [style.--heading]="compassRotation() + 'deg'">
-              <div class="compass__ring" aria-hidden="true">
+            <div class="compass" [style.--heading]="compassRotation() + 'deg'" aria-hidden="true">
+              <div class="compass__ring">
                 <span class="compass__mark compass__mark--n">N</span>
                 <span class="compass__mark compass__mark--e">E</span>
                 <span class="compass__mark compass__mark--s">S</span>
                 <span class="compass__mark compass__mark--w">W</span>
                 <div class="compass__needle"></div>
+                <div class="compass__hub"></div>
               </div>
-              <p class="readout">{{ headingLabel() }}</p>
             </div>
           }
           @case ('level') {
-            <div class="level" [class.level--ok]="levelOk()">
-              <div class="level__plate" aria-hidden="true">
+            <div class="level" [class.level--ok]="levelOk()" aria-hidden="true">
+              <div class="level__plate">
+                <div class="level__target"></div>
                 <div class="level__cross"></div>
                 <div
                   class="level__bubble"
                   [style.transform]="'translate(' + bubbleX() + '%, ' + bubbleY() + '%)'"
                 ></div>
               </div>
-              <p class="readout">
-                Pitch {{ pitchLabel() }} · Roll {{ rollLabel() }}
-                @if (levelOk()) {
-                  <span class="ok"> · Level</span>
-                }
-              </p>
             </div>
           }
           @case ('incline') {
-            <div class="incline">
-              <div class="incline__gauge" aria-hidden="true">
+            <div class="incline" aria-hidden="true">
+              <div class="incline__gauge">
                 <div class="incline__arc"></div>
+                <div class="incline__ticks">
+                  <span style="--t: -60deg">60</span>
+                  <span style="--t: -30deg">30</span>
+                  <span style="--t: 0deg">0</span>
+                  <span style="--t: 30deg">30</span>
+                  <span style="--t: 60deg">60</span>
+                </div>
                 <div
                   class="incline__needle"
                   [style.transform]="'rotate(' + inclineNeedle() + 'deg)'"
                 ></div>
                 <div class="incline__hub"></div>
               </div>
-              <p class="readout">{{ inclineLabel() }} from horizontal</p>
             </div>
           }
         }
       </div>
 
+      <div class="tool-bar" role="toolbar" aria-label="Tool actions">
+        <button
+          type="button"
+          class="tool-btn"
+          [class.tool-btn--active]="held()"
+          (click)="toggleHold()"
+          [disabled]="liveValue() == null && !held()"
+        >
+          {{ held() ? 'Resume' : 'Hold' }}
+        </button>
+        @if (mode() === 'incline') {
+          <button
+            type="button"
+            class="tool-btn"
+            (click)="tareIncline()"
+            [disabled]="sample()?.incline == null"
+          >
+            Tare
+          </button>
+          @if (tareOffset() !== 0) {
+            <button type="button" class="tool-btn" (click)="clearTare()">Clear tare</button>
+          }
+        }
+        <button
+          type="button"
+          class="tool-btn"
+          (click)="copyLive()"
+          [disabled]="liveValue() == null"
+        >
+          {{ copyFlash() ? 'Copied' : 'Copy' }}
+        </button>
+      </div>
+
       @if (status() === 'manual') {
         <div class="manual">
-          <p class="manual__hint">No live sensor — adjust values manually.</p>
+          <p class="manual__hint">No live sensor — simulate with sliders.</p>
           <div class="manual__grid">
-            <label>
-              Heading
-              <input
-                type="range"
-                min="0"
-                max="359"
-                step="1"
-                [value]="sample()?.heading ?? 0"
-                (input)="onManualHeading($event)"
-              />
-            </label>
-            <label>
-              Pitch
-              <input
-                type="range"
-                min="-90"
-                max="90"
-                step="0.5"
-                [value]="sample()?.pitch ?? 0"
-                (input)="onManualPitch($event)"
-              />
-            </label>
-            <label>
-              Roll
-              <input
-                type="range"
-                min="-90"
-                max="90"
-                step="0.5"
-                [value]="sample()?.roll ?? 0"
-                (input)="onManualRoll($event)"
-              />
-            </label>
+            @if (mode() === 'compass') {
+              <label>
+                Heading {{ sample()?.heading ?? 0 }}°
+                <input
+                  type="range"
+                  min="0"
+                  max="359"
+                  step="1"
+                  [value]="sample()?.heading ?? 0"
+                  (input)="onManualHeading($event)"
+                />
+              </label>
+            }
+            @if (mode() === 'level' || mode() === 'incline') {
+              <label>
+                Pitch {{ sample()?.pitch ?? 0 }}°
+                <input
+                  type="range"
+                  min="-90"
+                  max="90"
+                  step="0.5"
+                  [value]="sample()?.pitch ?? 0"
+                  (input)="onManualPitch($event)"
+                />
+              </label>
+              <label>
+                Roll {{ sample()?.roll ?? 0 }}°
+                <input
+                  type="range"
+                  min="-90"
+                  max="90"
+                  step="0.5"
+                  [value]="sample()?.roll ?? 0"
+                  (input)="onManualRoll($event)"
+                />
+              </label>
+            }
           </div>
         </div>
       }
 
-      @if (status() === 'need-permission') {
-        <p class="status" role="status">Waiting for orientation permission…</p>
-      }
       @if (status() === 'listening' && !sample()) {
         <p class="status" role="status">Listening for sensors…</p>
       }
@@ -178,8 +245,11 @@
 
       <div class="toolbar">
         <button type="button" class="btn btn-ghost" (click)="onCancel()">Cancel</button>
-        @if (status() === 'need-permission' || status() === 'listening') {
+        @if (status() === 'listening') {
           <button type="button" class="btn btn-ghost" (click)="useManual()">Manual</button>
+        }
+        @if (status() === 'manual') {
+          <button type="button" class="btn btn-ghost" (click)="enableSensors()">Sensors</button>
         }
         <button
           type="button"
@@ -187,7 +257,7 @@
           (click)="onConfirm()"
           [disabled]="!canConfirm() || status() === 'redirecting'"
         >
-          Use reading
+          {{ confirmLabel() }}
         </button>
       </div>
     </section>
