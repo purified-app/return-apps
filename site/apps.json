@@ -65,16 +65,28 @@
       "path": "/map/",
       "home": "/map/home",
       "demo": "/map/demo-caller",
-      "format": "map.point",
+      "format": "map.point | map.distance | map.area",
       "delivery": "query",
-      "blurb": "Map pin picker",
-      "value": "lat,lng",
+      "blurb": "Map pin picker, path distance, or polygon area",
+      "value": "lat,lng · meters · square meters",
       "openParams": [
         { "name": "lat", "description": "Initial center latitude." },
         { "name": "lng", "description": "Initial center longitude." },
-        { "name": "zoom", "description": "Initial zoom." }
+        { "name": "zoom", "description": "Initial zoom." },
+        { "name": "mode", "description": "pick | measure | area (optional; locks UI when set)." },
+        { "name": "units", "description": "metric | imperial (optional display units; return values stay SI)." }
       ],
-      "returnExtras": ["lat", "lng", "zoom"]
+      "returnExtras": [
+        "lat?",
+        "lng?",
+        "zoom?",
+        "mode?",
+        "meters?",
+        "squareMeters?",
+        "perimeterMeters?",
+        "points?",
+        "pointCount?"
+      ]
     },
     {
       "id": "pin",

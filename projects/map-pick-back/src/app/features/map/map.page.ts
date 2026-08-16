@@ -11,6 +11,28 @@ import {
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import * as L from 'leaflet';
 import { ReturnUrlValidator, RbPanel, RbResultActions, type ReturnDelivery } from 'shared-ui';
+import {
+  MAP_MODES,
+  UNIT_SYSTEMS,
+  encodePoints,
+  formatArea,
+  formatDistance,
+  formatForMode,
+  modeTitle,
+  parseMapMode,
+  parseUnitSystem,
+  pathLengthMeters,
+  polygonAreaSquareMeters,
+  polygonLabelPoint,
+  polygonPerimeterMeters,
+  roundCoord,
+  segmentLengthsMeters,
+  unitsTitle,
+  type LatLngPoint,
+  type MapMode,
+  type UnitSystem,
+} from './map-geo';
+import { buildMeasurementSvg, downloadSvg } from './map-snapshot';
 
 type MapStatus = 'ready' | 'invalid-return-url' | 'empty' | 'done' | 'redirecting';
 
@@ -20,8 +42,30 @@ type MapPick = {
   zoom: number;
 };
 
+type CapturedResult = {
+  mode: MapMode;
+  value: string;
+  format: string;
+  summary: string;
+  extras: Record<string, string>;
+};
+
 const DEFAULT_CENTER: L.LatLngExpression = [59.9139, 10.7522];
 const DEFAULT_ZOOM = 12;
+
+const LINE_STYLE: L.PolylineOptions = {
+  color: '#4aa3c7',
+  weight: 3,
+  opacity: 0.95,
+  lineCap: 'round',
+  lineJoin: 'round',
+};
+
+const AREA_STYLE: L.PolylineOptions = {
+  ...LINE_STYLE,
+  fillColor: '#4aa3c7',
+  fillOpacity: 0.22,
+};
 
 /** Parse a query param as a number; missing/blank → NaN (unlike Number(null) === 0). */
 function parseOptionalNumber(raw: string | null): number {
@@ -50,25 +94,78 @@ export class MapPage implements OnDestroy {
 
   private readonly mapEl = viewChild<ElementRef<HTMLDivElement>>('map');
 
+  readonly modes = MAP_MODES;
+  readonly unitSystems = UNIT_SYSTEMS;
+  readonly mode = signal<MapMode>('pick');
+  readonly units = signal<UnitSystem>('metric');
+  readonly modeLocked = signal(false);
   readonly status = signal<MapStatus>('ready');
   readonly errorDetail = signal<string | null>(null);
   readonly pick = signal<MapPick | null>(null);
+  readonly points = signal<LatLngPoint[]>([]);
+  readonly captured = signal<CapturedResult | null>(null);
 
-  readonly copyValue = computed(() => {
-    const p = this.pick();
-    return p ? `${p.lat},${p.lng}` : null;
+  readonly modeTitle = modeTitle;
+  readonly unitsTitle = unitsTitle;
+
+  readonly pathMeters = computed(() => pathLengthMeters(this.points()));
+  readonly areaSqMeters = computed(() => polygonAreaSquareMeters(this.points()));
+  readonly perimeterMeters = computed(() => polygonPerimeterMeters(this.points()));
+
+  readonly measureLabel = computed(() => {
+    const pts = this.points();
+    const units = this.units();
+    if (pts.length === 0) {
+      return 'Tap the map to add points, or start from your location.';
+    }
+    if (pts.length === 1) {
+      return '1 point · tap to add the next';
+    }
+    return `${formatDistance(this.pathMeters(), units)} · ${pts.length} points`;
+  });
+
+  readonly areaLabel = computed(() => {
+    const pts = this.points();
+    const units = this.units();
+    if (pts.length < 3) {
+      return pts.length === 0
+        ? 'Tap to place vertices (need 3+ for an area).'
+        : `${pts.length} vertices · need ${3 - pts.length} more`;
+    }
+    return `${formatArea(this.areaSqMeters(), units)} · perimeter ${formatDistance(this.perimeterMeters(), units)}`;
+  });
+
+  readonly copyValue = computed(() => this.captured()?.value ?? this.pickCoords() ?? null);
+
+  readonly canSaveImage = computed(() => {
+    const mode = this.mode();
+    const n = this.points().length;
+    return (mode === 'measure' && n >= 2) || (mode === 'area' && n >= 3);
+  });
+
+  readonly canDone = computed(() => {
+    switch (this.mode()) {
+      case 'pick':
+        return this.pick() != null;
+      case 'measure':
+        return this.points().length >= 2;
+      case 'area':
+        return this.points().length >= 3;
+    }
   });
 
   private returnUrl: URL | null = null;
   private state: string | null = null;
   private delivery: ReturnDelivery = 'query';
   private map: L.Map | null = null;
-  private marker: L.Marker | null = null;
+  private pickMarker: L.Marker | null = null;
+  private drawLayer: L.LayerGroup | null = null;
   private initialCenter: L.LatLngExpression = DEFAULT_CENTER;
   private initialZoom = DEFAULT_ZOOM;
   private hasQueryCenter = false;
   private ready = false;
   private resizeObserver: ResizeObserver | null = null;
+  private pickIcon: L.Icon | null = null;
 
   constructor() {
     afterNextRender(() => {
@@ -79,6 +176,27 @@ export class MapPage implements OnDestroy {
 
   ngOnDestroy(): void {
     this.teardownMap();
+  }
+
+  setMode(next: MapMode): void {
+    if (this.modeLocked() || this.mode() === next) {
+      return;
+    }
+    this.clearGeometry();
+    this.mode.set(next);
+    this.errorDetail.set(null);
+    if (this.status() === 'empty') {
+      this.status.set('ready');
+    }
+    this.syncDrawLayer();
+  }
+
+  setUnits(next: UnitSystem): void {
+    if (this.units() === next) {
+      return;
+    }
+    this.units.set(next);
+    this.syncDrawLayer();
   }
 
   onCancel(): void {
@@ -99,20 +217,39 @@ export class MapPage implements OnDestroy {
   }
 
   onClear(): void {
-    this.marker?.remove();
-    this.marker = null;
-    this.pick.set(null);
+    this.clearGeometry();
+    this.syncDrawLayer();
     if (this.status() === 'empty' || this.status() === 'done') {
       this.status.set('ready');
       this.errorDetail.set(null);
     }
   }
 
+  onUndo(): void {
+    if (this.mode() === 'pick') {
+      this.onClear();
+      return;
+    }
+    this.points.update((pts) => pts.slice(0, -1));
+    this.syncDrawLayer();
+    if (this.status() === 'empty') {
+      this.status.set('ready');
+      this.errorDetail.set(null);
+    }
+  }
+
   onDone(): void {
-    const pick = this.pick();
-    if (!pick) {
+    const mode = this.mode();
+    if (!this.canDone()) {
       this.status.set('empty');
-      this.errorDetail.set('Tap the map to place a pin first.');
+      this.errorDetail.set(this.doneHint(mode));
+      return;
+    }
+
+    const result = this.buildResult(mode);
+    if (!result) {
+      this.status.set('empty');
+      this.errorDetail.set(this.doneHint(mode));
       return;
     }
 
@@ -121,31 +258,49 @@ export class MapPage implements OnDestroy {
       this.teardownMap();
       location.href = this.returnUrlValidator.buildRedirectUrl(
         this.returnUrl,
-        {
-          value: `${pick.lat},${pick.lng}`,
-          format: 'map.point',
-          state: this.state,
-          lat: String(pick.lat),
-          lng: String(pick.lng),
-          zoom: String(pick.zoom),
-        },
+        { ...result.extras, value: result.value, format: result.format, state: this.state },
         this.delivery,
       );
       return;
     }
 
     this.teardownMap();
+    this.captured.set(result);
     this.status.set('done');
   }
 
+  onSaveImage(): void {
+    const mode = this.mode();
+    if (mode === 'pick' || !this.canSaveImage()) {
+      return;
+    }
+    const svg = buildMeasurementSvg(mode, this.points(), {
+      title: mode === 'measure' ? 'Distance measurement' : 'Area measurement',
+      units: this.units(),
+    });
+    const stamp = new Date().toISOString().slice(0, 19).replaceAll(':', '');
+    downloadSvg(`map-${mode}-${stamp}.svg`, svg);
+  }
+
   pickAgain(): void {
+    this.captured.set(null);
     this.status.set('ready');
     this.errorDetail.set(null);
     requestAnimationFrame(() => this.initMap());
   }
 
   useMyLocation(): void {
-    this.centerOnUserLocation({ placePin: true, reportErrors: true });
+    const mode = this.mode();
+    if (mode === 'pick') {
+      this.centerOnUserLocation({ placePin: true, reportErrors: true });
+      return;
+    }
+    this.centerOnUserLocation({
+      reportErrors: true,
+      onSuccess: (lat, lng) => {
+        this.appendPoint(lat, lng);
+      },
+    });
   }
 
   private bootstrap(): void {
@@ -153,6 +308,17 @@ export class MapPage implements OnDestroy {
 
     this.state = params.get('state');
     this.delivery = this.returnUrlValidator.parseDelivery(params.get('delivery'), 'query');
+
+    const locked = parseMapMode(params.get('mode'));
+    if (locked) {
+      this.mode.set(locked);
+      this.modeLocked.set(true);
+    }
+
+    const units = parseUnitSystem(params.get('units'));
+    if (units) {
+      this.units.set(units);
+    }
 
     const lat = parseOptionalNumber(params.get('lat'));
     const lng = parseOptionalNumber(params.get('lng'));
@@ -191,7 +357,7 @@ export class MapPage implements OnDestroy {
       return;
     }
 
-    const icon = L.icon({
+    this.pickIcon = L.icon({
       iconUrl: leafletAsset('marker-icon.png'),
       iconRetinaUrl: leafletAsset('marker-icon-2x.png'),
       shadowUrl: leafletAsset('marker-shadow.png'),
@@ -212,20 +378,26 @@ export class MapPage implements OnDestroy {
       maxZoom: 19,
     }).addTo(this.map);
 
+    this.drawLayer = L.layerGroup().addTo(this.map);
+
     this.map.on('click', (event: L.LeafletMouseEvent) => {
-      this.placePin(event.latlng.lat, event.latlng.lng, icon);
+      this.onMapClick(event.latlng.lat, event.latlng.lng);
     });
 
     const center = this.map.getCenter();
-    if (this.hasQueryCenter) {
-      // Caller sent lat/lng — place the initial pin on those coordinates.
-      this.placePin(center.lat, center.lng, icon);
+    if (this.mode() === 'pick') {
+      if (this.hasQueryCenter) {
+        this.placePickPin(center.lat, center.lng);
+      } else {
+        this.centerOnUserLocation({ placePin: true });
+      }
+    } else if (this.hasQueryCenter) {
+      // Non-pick modes: use lat/lng only as view center, not a vertex.
+      this.map.setView([center.lat, center.lng], this.map.getZoom());
     } else {
-      // No lat/lng from the caller — center and pin on the device location when available.
-      this.centerOnUserLocation({ placePin: true });
+      this.centerOnUserLocation();
     }
 
-    // Leaflet needs a size pass after layout, and whenever the shell resizes.
     requestAnimationFrame(() => this.map?.invalidateSize());
     if (typeof ResizeObserver !== 'undefined') {
       this.resizeObserver?.disconnect();
@@ -234,9 +406,30 @@ export class MapPage implements OnDestroy {
     }
   }
 
+  private onMapClick(lat: number, lng: number): void {
+    if (this.status() === 'redirecting') {
+      return;
+    }
+    if (this.mode() === 'pick') {
+      this.placePickPin(lat, lng);
+      return;
+    }
+    this.appendPoint(lat, lng);
+  }
+
+  private appendPoint(lat: number, lng: number): void {
+    this.points.update((pts) => [...pts, { lat, lng }]);
+    if (this.status() === 'empty') {
+      this.status.set('ready');
+      this.errorDetail.set(null);
+    }
+    this.syncDrawLayer();
+  }
+
   private centerOnUserLocation(options?: {
     placePin?: boolean;
     reportErrors?: boolean;
+    onSuccess?: (lat: number, lng: number) => void;
   }): void {
     if (!('geolocation' in navigator) || !this.map) {
       if (options?.reportErrors) {
@@ -254,8 +447,9 @@ export class MapPage implements OnDestroy {
         const { latitude, longitude } = position.coords;
         this.map.setView([latitude, longitude], Math.max(this.map.getZoom(), 14));
         if (options?.placePin) {
-          this.placePin(latitude, longitude);
+          this.placePickPin(latitude, longitude);
         }
+        options?.onSuccess?.(latitude, longitude);
       },
       () => {
         if (options?.reportErrors) {
@@ -267,28 +461,20 @@ export class MapPage implements OnDestroy {
     );
   }
 
-  private placePin(lat: number, lng: number, icon?: L.Icon): void {
-    if (!this.map) {
+  private placePickPin(lat: number, lng: number): void {
+    if (!this.map || !this.pickIcon) {
       return;
     }
-    const markerIcon =
-      icon ??
-      L.icon({
-        iconUrl: leafletAsset('marker-icon.png'),
-        iconRetinaUrl: leafletAsset('marker-icon-2x.png'),
-        shadowUrl: leafletAsset('marker-shadow.png'),
-        iconSize: [25, 41],
-        iconAnchor: [12, 41],
-        popupAnchor: [1, -34],
-        shadowSize: [41, 41],
-      });
 
-    if (this.marker) {
-      this.marker.setLatLng([lat, lng]);
+    if (this.pickMarker) {
+      this.pickMarker.setLatLng([lat, lng]);
     } else {
-      this.marker = L.marker([lat, lng], { icon: markerIcon, draggable: true }).addTo(this.map);
-      this.marker.on('dragend', () => {
-        const pos = this.marker?.getLatLng();
+      this.pickMarker = L.marker([lat, lng], {
+        icon: this.pickIcon,
+        draggable: true,
+      }).addTo(this.map);
+      this.pickMarker.on('dragend', () => {
+        const pos = this.pickMarker?.getLatLng();
         if (!pos || !this.map) {
           return;
         }
@@ -311,11 +497,188 @@ export class MapPage implements OnDestroy {
     }
   }
 
+  private syncDrawLayer(): void {
+    if (!this.map || !this.drawLayer) {
+      return;
+    }
+    this.drawLayer.clearLayers();
+
+    if (this.mode() === 'pick') {
+      return;
+    }
+
+    const pts = this.points();
+    if (pts.length === 0) {
+      return;
+    }
+
+    const latLngs: L.LatLngExpression[] = pts.map((p) => [p.lat, p.lng]);
+
+    if (this.mode() === 'measure' && pts.length >= 2) {
+      L.polyline(latLngs, LINE_STYLE).addTo(this.drawLayer);
+      this.addSegmentLabels(pts);
+    }
+
+    if (this.mode() === 'area' && pts.length >= 2) {
+      if (pts.length >= 3) {
+        L.polygon(latLngs, AREA_STYLE).addTo(this.drawLayer);
+        this.addAreaCenterLabel(pts);
+      } else {
+        L.polyline(latLngs, LINE_STYLE).addTo(this.drawLayer);
+      }
+    }
+
+    pts.forEach((p, index) => {
+      L.circleMarker([p.lat, p.lng], {
+        radius: 7,
+        color: '#10151a',
+        weight: 2,
+        fillColor: '#e8edf2',
+        fillOpacity: 1,
+      })
+        .bindTooltip(String(index + 1), {
+          permanent: true,
+          direction: 'top',
+          offset: [0, -10],
+          className: 'mp-vertex-label',
+        })
+        .addTo(this.drawLayer!);
+    });
+  }
+
+  private addSegmentLabels(pts: readonly LatLngPoint[]): void {
+    if (!this.drawLayer) {
+      return;
+    }
+    const units = this.units();
+    const lengths = segmentLengthsMeters(pts);
+    for (let i = 0; i < lengths.length; i++) {
+      const a = pts[i]!;
+      const b = pts[i + 1]!;
+      const mid: L.LatLngExpression = [(a.lat + b.lat) / 2, (a.lng + b.lng) / 2];
+      L.tooltip({
+        permanent: true,
+        direction: 'center',
+        className: 'mp-segment-label',
+      })
+        .setContent(formatDistance(lengths[i]!, units))
+        .setLatLng(mid)
+        .addTo(this.drawLayer);
+    }
+  }
+
+  private addAreaCenterLabel(pts: readonly LatLngPoint[]): void {
+    if (!this.drawLayer) {
+      return;
+    }
+    const center = polygonLabelPoint(pts);
+    if (!center) {
+      return;
+    }
+    const units = this.units();
+    const areaText = formatArea(polygonAreaSquareMeters(pts), units);
+    L.tooltip({
+      permanent: true,
+      direction: 'center',
+      className: 'mp-area-label',
+    })
+      .setContent(areaText)
+      .setLatLng([center.lat, center.lng])
+      .addTo(this.drawLayer);
+  }
+
+  private clearGeometry(): void {
+    this.pickMarker?.remove();
+    this.pickMarker = null;
+    this.pick.set(null);
+    this.points.set([]);
+    this.drawLayer?.clearLayers();
+  }
+
+  private buildResult(mode: MapMode): CapturedResult | null {
+    if (mode === 'pick') {
+      const pick = this.pick();
+      if (!pick) {
+        return null;
+      }
+      const value = `${pick.lat},${pick.lng}`;
+      return {
+        mode,
+        value,
+        format: formatForMode(mode),
+        summary: `${roundCoord(pick.lat)}, ${roundCoord(pick.lng)} · zoom ${pick.zoom}`,
+        extras: {
+          lat: String(pick.lat),
+          lng: String(pick.lng),
+          zoom: String(pick.zoom),
+        },
+      };
+    }
+
+    const pts = this.points();
+    if (mode === 'measure') {
+      if (pts.length < 2) {
+        return null;
+      }
+      const meters = pathLengthMeters(pts);
+      const value = String(roundCoord(meters, 2));
+      return {
+        mode,
+        value,
+        format: formatForMode(mode),
+        summary: formatDistance(meters, this.units()),
+        extras: {
+          mode,
+          meters: value,
+          points: encodePoints(pts),
+          pointCount: String(pts.length),
+        },
+      };
+    }
+
+    if (pts.length < 3) {
+      return null;
+    }
+    const area = polygonAreaSquareMeters(pts);
+    const value = String(roundCoord(area, 2));
+    return {
+      mode,
+      value,
+      format: formatForMode(mode),
+      summary: formatArea(area, this.units()),
+      extras: {
+        mode,
+        squareMeters: value,
+        perimeterMeters: String(roundCoord(polygonPerimeterMeters(pts), 2)),
+        points: encodePoints(pts),
+        pointCount: String(pts.length),
+      },
+    };
+  }
+
+  private doneHint(mode: MapMode): string {
+    switch (mode) {
+      case 'pick':
+        return 'Tap the map to place a pin first.';
+      case 'measure':
+        return 'Add at least two points to measure a distance.';
+      case 'area':
+        return 'Add at least three points to measure an area.';
+    }
+  }
+
+  private pickCoords(): string | null {
+    const p = this.pick();
+    return p ? `${p.lat},${p.lng}` : null;
+  }
+
   private teardownMap(): void {
     this.resizeObserver?.disconnect();
     this.resizeObserver = null;
-    this.marker?.remove();
-    this.marker = null;
+    this.pickMarker?.remove();
+    this.pickMarker = null;
+    this.drawLayer?.clearLayers();
+    this.drawLayer = null;
     this.map?.remove();
     this.map = null;
   }

@@ -28,7 +28,7 @@ const { value, format, error } = parseReturnResult(location);
 - sign — /sign/ — hash — format=sign.svg — value=SVG data URL
 - scan — /scan/ — query — format=scan.* — value=payload — open: formats?
 - geo — /geo/ — query — format=geo.point — value=lat,lng — extras: lat,lng,accuracy,timestamp,… — open: highAccuracy?
-- map — /map/ — query — format=map.point — value=lat,lng — extras: lat,lng,zoom — open: lat,lng,zoom?
+- map — /map/ — query — format=map.point|map.distance|map.area — value=lat,lng or meters or m² — extras: lat,lng,zoom or meters,points,… — open: lat,lng,zoom?,mode?,units?
 - pin — /pin/ — hash — format=pin.digits — value=digits — open: length?,mask?
 - nfc — /nfc/ — query — format=nfc.* — value=payload — extras: recordType — Chrome/Android HTTPS
 - color — /color/ — query — format=color.hex — value=#rrggbb — extras: rgb

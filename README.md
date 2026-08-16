@@ -92,6 +92,6 @@ One workflow: [`.github/workflows/deploy-pages.yml`](.github/workflows/deploy-pa
 - Angular 22 (standalone, signals)
 - SignBack: canvas → SVG data URL
 - ScanBack: Barcode Detection API + `barcode-detector` ponyfill
-- MapPickBack: Leaflet + OpenStreetMap
+- MapPickBack: Leaflet + OpenStreetMap (pick / measure / area)
 - GeoBack / PinBack / NfcBack / ColorBack / OrientBack: Geolocation, keypad, Web NFC, `getUserMedia`, DeviceOrientation
 - GitHub Pages (single site, short path per app)

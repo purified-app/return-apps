@@ -7,11 +7,11 @@ import { RbHomeDocs } from 'shared-ui';
   template: `
     <rb-home-docs
       brand="MapPickBack"
-      title="Pick a map point and return it to the app you came from"
-      lead="Leaflet map pin picker. Returns value as lat,lng with format=map.point plus zoom."
+      title="Pick a point, measure a path, or draw an area on the map"
+      lead="Leaflet map with Pick / Measure / Area tabs. Returns map.point, map.distance (meters), or map.area (m²)."
       ctaLabel="Open map"
       format="map.point"
-      [openParamDocs]="['lat', 'lng', 'zoom']"
+      [openParamDocs]="['lat', 'lng', 'zoom', 'mode', 'units']"
       demoValue="59.9139,10.7522"
       [returnExtras]="{ lat: '59.9139', lng: '10.7522', zoom: '14' }"
     />
