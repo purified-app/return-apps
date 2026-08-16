@@ -1,35 +1,37 @@
 <div class="pin">
   @if (status() === 'invalid-return-url') {
-    <rb-panel title="Invalid returnUrl">
+    <rb-panel [title]="'common.invalidReturnUrl' | translate">
       <p>{{ errorDetail() }}</p>
-      <a routerLink="/home" class="btn">Back to home</a>
+      <a routerLink="/home" class="btn">{{ 'common.backHome' | translate }}</a>
     </rb-panel>
   } @else if (status() === 'done') {
-    <rb-panel title="PIN captured">
+    <rb-panel [title]="'pin.captured' | translate">
       <p class="pin-result">{{ digits() }}</p>
-      <rb-result-actions [copyValue]="digits()" copyLabel="Copy PIN">
+      <rb-result-actions [copyValue]="digits()" [copyLabel]="'pin.copyPin' | translate">
         <button type="button" class="btn btn-ghost" (click)="onClear(); status.set('ready')">
-          Enter again
+          {{ 'pin.enterAgain' | translate }}
         </button>
-        <a routerLink="/home" class="btn btn-ghost">Back to home</a>
-        <a href="/" class="btn btn-ghost">All tools</a>
+        <a routerLink="/home" class="btn btn-ghost">{{ 'common.backHome' | translate }}</a>
+        <a href="/" class="btn btn-ghost">{{ 'common.allTools' | translate }}</a>
       </rb-result-actions>
     </rb-panel>
   } @else {
     <section class="shell">
       <header class="top">
-        <h1>Enter PIN</h1>
-        <p>{{ length() }}-digit code</p>
+        <h1>{{ 'pin.title' | translate }}</h1>
+        <p>{{ 'pin.digitCode' | translate: { length: length() } }}</p>
       </header>
 
-      <p class="display" aria-live="polite" aria-label="PIN entry">{{ display() }}</p>
+      <p class="display" aria-live="polite" [attr.aria-label]="'pin.entryLabel' | translate">
+        {{ display() }}
+      </p>
 
-      <div class="pad" role="group" aria-label="Number pad">
+      <div class="pad" role="group" [attr.aria-label]="'pin.padLabel' | translate">
         @for (key of keys; track $index) {
           @if (key === '') {
             <span class="pad-spacer" aria-hidden="true"></span>
           } @else if (key === 'back') {
-            <button type="button" class="pad-key" (click)="onKey('back')" aria-label="Delete">
+            <button type="button" class="pad-key" (click)="onKey('back')" [attr.aria-label]="'pin.delete' | translate">
               ⌫
             </button>
           } @else {
@@ -42,13 +44,17 @@
         <p class="error" role="alert">{{ errorDetail() }}</p>
       }
       @if (status() === 'redirecting') {
-        <p class="status" role="status">Returning…</p>
+        <p class="status" role="status">{{ 'common.returning' | translate }}</p>
       }
 
       <div class="toolbar">
-        <button type="button" class="btn btn-ghost" (click)="onCancel()">Cancel</button>
-        <button type="button" class="btn btn-ghost" (click)="onClear()">Clear</button>
-        <button type="button" class="btn" (click)="onDone()">Done</button>
+        <button type="button" class="btn btn-ghost" (click)="onCancel()">
+          {{ 'common.cancel' | translate }}
+        </button>
+        <button type="button" class="btn btn-ghost" (click)="onClear()">
+          {{ 'pin.clear' | translate }}
+        </button>
+        <button type="button" class="btn" (click)="onDone()">{{ 'pin.done' | translate }}</button>
       </div>
     </section>
   }

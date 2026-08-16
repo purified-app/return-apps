@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta
       name="description"
-      content="Installable toolbox — sign, scan, map, geo, pin, NFC, color, level. Capture something, then download or copy the result."
+      content="Installable toolbox — sign, scan, map, geo, pin, NFC, color, level, QR, compass. Capture something, then download or copy the result."
     />
     <meta name="theme-color" content="#0f1418" />
     <meta name="mobile-web-app-capable" content="yes" />
@@ -203,7 +203,34 @@
         line-height: 1.6;
       }
       .links a { color: inherit; }
-      [hidden] { display: none !important; }
+      .lang {
+        margin-left: auto;
+        display: flex;
+        gap: 0.25rem;
+      }
+      .lang-btn {
+        appearance: none;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        min-height: 2rem;
+        min-width: 2.4rem;
+        padding: 0.2rem 0.55rem;
+        background: transparent;
+        color: var(--muted);
+        font: inherit;
+        font-size: 0.75rem;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      .lang-btn[aria-pressed="true"] {
+        background: var(--btn);
+        color: var(--btn-fg);
+        border-color: transparent;
+      }
+      .lang-btn:focus-visible {
+        outline: 2px solid var(--fg);
+        outline-offset: 2px;
+      }
 
     </style>
   </head>
@@ -218,10 +245,14 @@
           alt=""
           decoding="async"
         />
-        <p class="brand">Return Apps</p>
+        <p class="brand" data-i18n="brand">Return Apps</p>
+        <div class="lang" role="group" aria-label="Language">
+          <button type="button" class="lang-btn" data-lang="en" aria-pressed="true">EN</button>
+          <button type="button" class="lang-btn" data-lang="nb" aria-pressed="false">NB</button>
+        </div>
       </div>
-      <h1>Toolbox you can install</h1>
-      <p class="lead">
+      <h1 data-i18n="title">Toolbox you can install</h1>
+      <p class="lead" data-i18n="lead">
         Open a tool to capture something, then download or copy the result.
       </p>
       <div class="cta">
@@ -277,16 +308,75 @@
         <li>
           <a class="app" href="./level/">
             <strong>Level</strong>
-            <span>Compass / spirit level / incline measuring tool</span>
+            <span data-i18n="level">Spirit level / incline measuring tool</span>
+          </a>
+        </li>
+        <li>
+          <a class="app" href="./qr/">
+            <strong>QR</strong>
+            <span data-i18n="qr">Text → QR SVG</span>
+          </a>
+        </li>
+        <li>
+          <a class="app" href="./compass/">
+            <strong>Compass</strong>
+            <span data-i18n="compass">Heading → copy degrees</span>
           </a>
         </li>
       </ul>
       <footer class="footer">
-        <a class="dev-link" href="./developers/">For developers →</a>
-        <span> · integrate via <code>returnUrl</code></span>
+        <a class="dev-link" href="./developers/" data-i18n="devs">For developers →</a>
+        <span data-i18n="devsHint"> · integrate via <code>returnUrl</code></span>
       </footer>
     </main>
     <script>
+      const I18N = {
+        en: {
+          brand: 'Return Apps',
+          title: 'Toolbox you can install',
+          lead: 'Open a tool to capture something, then download or copy the result.',
+          level: 'Spirit level / incline measuring tool',
+          qr: 'Text → QR SVG',
+          compass: 'Heading → copy degrees',
+          devs: 'For developers →',
+          devsHint: ' · integrate via returnUrl',
+        },
+        nb: {
+          brand: 'Return Apps',
+          title: 'Verktøykasse du kan installere',
+          lead: 'Åpne et verktøy for å fange noe, og last ned eller kopier resultatet.',
+          level: 'Vater / helning',
+          qr: 'Tekst → QR SVG',
+          compass: 'Retning → kopier grader',
+          devs: 'For utviklere →',
+          devsHint: ' · integrer via returnUrl',
+        },
+      };
+      const langBtns = [...document.querySelectorAll('.lang-btn')];
+      function applyLang(lang) {
+        const dict = I18N[lang] || I18N.en;
+        document.documentElement.lang = lang;
+        document.querySelectorAll('[data-i18n]').forEach((el) => {
+          const key = el.getAttribute('data-i18n');
+          if (dict[key]) el.textContent = dict[key];
+        });
+        langBtns.forEach((btn) => {
+          btn.setAttribute('aria-pressed', String(btn.getAttribute('data-lang') === lang));
+        });
+        try { localStorage.setItem('return-apps-lang', lang); } catch {}
+      }
+      langBtns.forEach((btn) => {
+        btn.addEventListener('click', () => applyLang(btn.getAttribute('data-lang')));
+      });
+      const saved = (() => { try { return localStorage.getItem('return-apps-lang'); } catch { return null; } })();
+      const initial = saved === 'nb' || saved === 'en'
+        ? saved
+        : (navigator.language || '').toLowerCase().startsWith('nb') ||
+            (navigator.language || '').toLowerCase().startsWith('no')
+          ? 'nb'
+          : 'en';
+      applyLang(initial);
+
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
           navigator.serviceWorker.register('./sw.js').catch(() => {});

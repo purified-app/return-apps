@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { RbHomeDocs } from 'shared-ui';
 
 @Component({
-  selector: 'sb-home-page',
+  selector: 'sc-home-page',
   imports: [RbHomeDocs],
   template: `
     <rb-home-docs
@@ -11,7 +11,7 @@ import { RbHomeDocs } from 'shared-ui';
       lead="Camera barcode scanner. After a successful scan, the value is returned via value + format=scan.* (query by default)."
       ctaLabel="Start scanning"
       format="scan.qr_code"
-      [openParamDocs]="['formats']"
+      [openParamDocs]="['formats', 'batch']"
       demoValue="ABC-123"
     />
   `,

@@ -1,0 +1,161 @@
+<div class="compass-app">
+  @if (status() === 'invalid-return-url') {
+    <rb-panel [title]="'common.invalidReturnUrl' | translate">
+      <p>{{ errorDetail() }}</p>
+      <a routerLink="/home" class="btn">{{ 'common.backHome' | translate }}</a>
+    </rb-panel>
+  } @else if (status() === 'unsupported' || status() === 'denied') {
+    <rb-panel [title]="'level.unavailable' | translate">
+      <p>{{ errorDetail() }}</p>
+      <div class="actions">
+        <button type="button" class="btn btn-ghost" (click)="onCancel()">
+          {{ 'common.cancel' | translate }}
+        </button>
+        <button type="button" class="btn btn-ghost" (click)="useManual()">
+          {{ 'level.manualTool' | translate }}
+        </button>
+        <button type="button" class="btn" (click)="retry()">{{ 'common.tryAgain' | translate }}</button>
+      </div>
+    </rb-panel>
+  } @else if (status() === 'done') {
+    <rb-panel [title]="'compass.captured' | translate">
+      <dl class="meta">
+        <div>
+          <dt>{{ 'common.value' | translate }}</dt>
+          <dd>{{ captured() }}</dd>
+        </div>
+        <div>
+          <dt>{{ 'common.format' | translate }}</dt>
+          <dd>compass.heading</dd>
+        </div>
+      </dl>
+      <rb-result-actions [copyValue]="copyValue()" [copyLabel]="'level.copyValue' | translate">
+        <button type="button" class="btn btn-ghost" (click)="retry()">
+          {{ 'level.measureAgain' | translate }}
+        </button>
+        <a routerLink="/home" class="btn btn-ghost">{{ 'common.backHome' | translate }}</a>
+        <a href="/" class="btn btn-ghost">{{ 'common.allTools' | translate }}</a>
+      </rb-result-actions>
+    </rb-panel>
+  } @else if (status() === 'need-gesture') {
+    <section class="shell shell--start">
+      <header class="top">
+        <h1>{{ 'compass.title' | translate }}</h1>
+        <p>{{ 'compass.leadStart' | translate }}</p>
+      </header>
+      <div class="start-card">
+        <p>{{ 'level.needTap' | translate }}</p>
+        <button type="button" class="btn" (click)="enableSensors()">{{ 'level.enable' | translate }}</button>
+        <button type="button" class="btn btn-ghost" (click)="useManual()">
+          {{ 'level.without' | translate }}
+        </button>
+      </div>
+      <div class="toolbar">
+        <button type="button" class="btn btn-ghost" (click)="onCancel()">
+          {{ 'common.cancel' | translate }}
+        </button>
+      </div>
+    </section>
+  } @else {
+    <section class="shell">
+      <header class="top">
+        <div class="top__row">
+          <h1>{{ 'compass.title' | translate }}</h1>
+          @if (held()) {
+            <span class="pill pill--hold" role="status">{{ 'level.held' | translate }}</span>
+          }
+          @if (status() === 'manual') {
+            <span class="pill" role="status">{{ 'level.manual' | translate }}</span>
+          }
+        </div>
+        <p>{{ 'compass.lead' | translate }}</p>
+      </header>
+
+      <div class="stage" aria-live="polite">
+        <p class="primary">{{ primaryReadout() }}</p>
+        <p class="secondary">{{ secondaryReadout() }}</p>
+        <div class="compass" [style.--heading]="compassRotation() + 'deg'" aria-hidden="true">
+          <div class="compass__ring">
+            <span class="compass__mark compass__mark--n">N</span>
+            <span class="compass__mark compass__mark--e">E</span>
+            <span class="compass__mark compass__mark--s">S</span>
+            <span class="compass__mark compass__mark--w">W</span>
+            <div class="compass__needle"></div>
+            <div class="compass__hub"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tool-bar" role="toolbar" aria-label="Tool actions">
+        <button
+          type="button"
+          class="tool-btn"
+          [class.tool-btn--active]="held()"
+          (click)="toggleHold()"
+          [disabled]="liveValue() == null && !held()"
+        >
+          {{ held() ? ('level.resume' | translate) : ('level.hold' | translate) }}
+        </button>
+        <button
+          type="button"
+          class="tool-btn"
+          (click)="copyLive()"
+          [disabled]="liveValue() == null"
+        >
+          {{ copyFlash() ? ('common.copied' | translate) : ('common.copy' | translate) }}
+        </button>
+      </div>
+
+      @if (status() === 'manual') {
+        <div class="manual">
+          <p class="manual__hint">{{ 'level.manualHint' | translate }}</p>
+          <label>
+            Heading {{ sample()?.heading ?? 0 }}°
+            <input
+              type="range"
+              min="0"
+              max="359"
+              step="1"
+              [value]="sample()?.heading ?? 0"
+              (input)="onManualHeading($event)"
+            />
+          </label>
+        </div>
+      }
+
+      @if (status() === 'listening' && !sample()) {
+        <p class="status" role="status">{{ 'level.listening' | translate }}</p>
+      }
+      @if (status() === 'redirecting') {
+        <p class="status" role="status">{{ 'common.returning' | translate }}</p>
+      }
+      @if (errorDetail()) {
+        <p class="status status--error" role="alert">{{ errorDetail() }}</p>
+      }
+
+      <div class="toolbar">
+        <button type="button" class="btn btn-ghost" (click)="onCancel()">
+          {{ 'common.cancel' | translate }}
+        </button>
+        @if (status() === 'listening') {
+          <button type="button" class="btn btn-ghost" (click)="useManual()">
+            {{ 'level.manual' | translate }}
+          </button>
+        }
+        @if (status() === 'manual') {
+          <button type="button" class="btn btn-ghost" (click)="enableSensors()">
+            {{ 'level.sensors' | translate }}
+          </button>
+        }
+        <button
+          type="button"
+          class="btn"
+          (click)="onConfirm()"
+          [disabled]="liveValue() == null || status() === 'redirecting'"
+        >
+          {{ confirmLabel() }}
+        </button>
+      </div>
+    </section>
+  }
+</div>

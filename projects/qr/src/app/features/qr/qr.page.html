@@ -1,0 +1,57 @@
+<div class="qr">
+  @if (status() === 'invalid-return-url') {
+    <rb-panel [title]="'common.invalidReturnUrl' | translate">
+      <p>{{ errorDetail() }}</p>
+      <a routerLink="/home" class="btn">{{ 'common.backHome' | translate }}</a>
+    </rb-panel>
+  } @else if (status() === 'done') {
+    <rb-panel [title]="'qr.generated' | translate">
+      @if (preview(); as markup) {
+        <div class="preview" [innerHTML]="markup" aria-hidden="true"></div>
+      }
+      <rb-result-actions
+        [copyValue]="svg()"
+        [copyLabel]="'qr.copySvg' | translate"
+        [downloads]="downloads()"
+      >
+        <button type="button" class="btn btn-ghost" (click)="reset()">
+          {{ 'qr.again' | translate }}
+        </button>
+        <a routerLink="/home" class="btn btn-ghost">{{ 'common.backHome' | translate }}</a>
+        <a href="/" class="btn btn-ghost">{{ 'common.allTools' | translate }}</a>
+      </rb-result-actions>
+    </rb-panel>
+  } @else {
+    <section class="shell">
+      <header class="top">
+        <h1>{{ 'qr.title' | translate }}</h1>
+        <p>{{ 'qr.lead' | translate }}</p>
+      </header>
+
+      <label class="field">
+        <span>{{ 'qr.textLabel' | translate }}</span>
+        <textarea rows="5" [value]="text()" (input)="onInput($event)"></textarea>
+      </label>
+
+      @if (preview(); as markup) {
+        <div class="preview" [innerHTML]="markup" aria-hidden="true"></div>
+      }
+      @if (errorDetail()) {
+        <p class="error" role="alert">{{ errorDetail() }}</p>
+      }
+      @if (status() === 'redirecting') {
+        <p class="status" role="status">{{ 'common.returning' | translate }}</p>
+      }
+
+      <div class="toolbar">
+        <button type="button" class="btn btn-ghost" (click)="onCancel()">
+          {{ 'common.cancel' | translate }}
+        </button>
+        <button type="button" class="btn btn-ghost" (click)="generate()">
+          {{ 'qr.generate' | translate }}
+        </button>
+        <button type="button" class="btn" (click)="onDone()">{{ 'common.done' | translate }}</button>
+      </div>
+    </section>
+  }
+</div>

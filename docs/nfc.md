@@ -1,6 +1,6 @@
 # NFC
 
-Web NFC reader. Contract **v1**: `value` + `format=nfc.<recordType>` + `recordType`. Default delivery: **query**.
+Web NFC reader **and writer**. Contract **v1**: `value` + `format=nfc.<recordType>` + `recordType` (write success uses `nfc.written`). Default delivery: **query**.
 
 See **[integration.md](./integration.md)**.
 
@@ -15,6 +15,13 @@ Live: https://return.purified.app/nfc/ · `/nfc/home` · `/nfc/demo-caller`
 ## Requirements
 
 Chrome on **Android**, **HTTPS**.
+
+## Open params
+
+| Param | Description |
+|-------|-------------|
+| `mode` | `read` \| `write` — locks the UI when set |
+| `text` | Payload to write in write mode |
 
 ## Open / return
 

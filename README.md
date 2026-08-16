@@ -21,6 +21,8 @@ Angular workspace for **returnUrl** helper apps — small client-side tools that
 | NFC | https://return.purified.app/nfc/ | query |
 | Color | https://return.purified.app/color/ | query |
 | Level | https://return.purified.app/level/ | query |
+| QR | https://return.purified.app/qr/ | query |
+| Compass | https://return.purified.app/compass/ | query |
 
 Caller entry is the app root, e.g. `https://return.purified.app/sign?returnUrl=…&allowedOrigins=…`. Docs UI lives at `/home` inside each app.
 
@@ -36,6 +38,8 @@ Caller entry is the app root, e.g. `https://return.purified.app/sign?returnUrl=�
 | **NFC** | `projects/nfc` | `bun run start:nfc` → :4205 |
 | **Color** | `projects/color` | `bun run start:color` → :4206 |
 | **Level** | `projects/level` | `bun run start:level` → :4207 |
+| **QR** | `projects/qr` | `bun run start:qr` → :4208 |
+| **Compass** | `projects/compass` | `bun run start:compass` → :4209 |
 
 Shared library: **`shared-ui`** — styles, `ReturnUrlValidator`, `RbHomeDocs`, `RbDemoCaller`, `RbPanel`.  
 SDK: **`site/sdk/return-apps.mjs`**. Catalog: **`site/apps.json`**.
@@ -58,11 +62,12 @@ bun run start:geo   # or any start:* script above
 
 | Script | Description |
 |--------|-------------|
-| `bun run start:<app>` | Serve one app (ports 4200–4207) |
+| `bun run start:<app>` | Serve one app (ports 4200–4209) |
 | `bun run build` / `build:site` | Build all apps into `dist/site/` for Pages |
 | `bun run build:shared-ui` | Build the shared library |
 | `bun run build:<app>` | Single-app production build (CI) |
-| `bun run test` | Unit tests for lib + all apps |
+| `bun run test` | Unit tests for lib + all apps + SDK |
+| `bun run test:e2e` | Playwright (Pin returnUrl + axe) |
 
 ## Workspace layout
 
@@ -71,7 +76,7 @@ return-apps/
   projects/
     shared-ui/
     sign/ scan/ geo/ map/
-    pin/ nfc/ color/ level/
+    pin/ nfc/ color/ level/ qr/ compass/
   site/                 # hub + apps.json + sdk + CNAME
   scripts/build-site.sh
   docs/

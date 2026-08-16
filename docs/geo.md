@@ -20,7 +20,7 @@ Live: https://return.purified.app/geo/ · `/geo/home` · `/geo/demo-caller`
 
 ## Return extras
 
-`lat`, `lng`, `accuracy`, `timestamp`, optional `altitude`, `altitudeAccuracy`, `heading`, `speed`
+`lat`, `lng`, `accuracy`, `timestamp`, optional `altitude`, `altitudeAccuracy`, `heading`, `speed`, `label` (reverse-geocoded address when Nominatim responds)
 
 ## Open / return
 

@@ -21,11 +21,11 @@ https://return.purified.app/<app>?returnUrl=<url>&allowedOrigins=<origins>&state
 | Param | Description |
 |-------|-------------|
 | `value` | Primary payload — **always use this** |
-| `format` | `sign.svg` · `pin.digits` · `geo.point` · `map.point` · `map.distance` · `map.area` · `color.hex` · `level.compass` · `level.level` · `level.incline` · `scan.*` · `nfc.*` |
-
-`level.*` formats were previously `orient.*`. `openReturnApp('orient', …)` still opens Level.
+| `format` | `sign.svg` · `pin.digits` · `geo.point` · `map.point` · `map.distance` · `map.area` · `color.hex` · `level.level` · `level.incline` · `compass.heading` · `qr.svg` · `scan.*` · `nfc.*` |
 | `error` | `cancelled` on cancel |
 | `state` | Echo |
+
+`mode=compass` on Level redirects to the Compass app (`format=compass.heading`). `openReturnApp('orient', …)` still opens Level.
 
 Hash delivery puts params in the URL fragment. **Pin/sign → parse hash** (or use the SDK).
 

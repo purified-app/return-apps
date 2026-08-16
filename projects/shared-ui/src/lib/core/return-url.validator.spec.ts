@@ -25,6 +25,33 @@ describe('ReturnUrlValidator', () => {
     );
     expect(hash).toContain('#value=1234&format=pin.digits');
   });
+
+  it('rejects non-https remote URLs and empty returnUrl', () => {
+    expect(validator.validate('').ok).toBe(false);
+    expect(validator.validate('not-a-url').ok).toBe(false);
+    expect(validator.validate('http://example.com/cb').ok).toBe(false);
+    expect(validator.validate('https://app.example/cb').ok).toBe(true);
+  });
+
+  it('parses allowedOrigins and delivery', () => {
+    expect(validator.parseAllowedOrigins('https://app.example, https://other.example')).toEqual([
+      'https://app.example',
+      'https://other.example',
+    ]);
+    expect(validator.parseAllowedOrigins('')).toBeNull();
+    expect(validator.parseDelivery('hash', 'query')).toBe('hash');
+    expect(validator.parseDelivery('nope', 'query')).toBe('query');
+  });
+
+  it('puts params in the hash query for hash-router return URLs', () => {
+    const url = new URL('https://app.example/app#/callback');
+    const redirect = validator.buildRedirectUrl(
+      url,
+      { value: 'x', format: 'pin.digits' },
+      'query',
+    );
+    expect(redirect).toContain('#/callback?value=x&format=pin.digits');
+  });
 });
 
 describe('return helpers', () => {

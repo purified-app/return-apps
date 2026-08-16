@@ -1,10 +1,11 @@
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { RbLangSwitch } from 'shared-ui';
 
 @Component({
   selector: 'gb-root',
-  imports: [RouterOutlet],
-  template: `<router-outlet />`,
+  imports: [RouterOutlet, RbLangSwitch],
+  template: `<rb-lang-switch /><router-outlet />`,
   styles: `
     :host {
       display: block;

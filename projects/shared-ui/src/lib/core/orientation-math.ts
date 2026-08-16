@@ -1,6 +1,7 @@
 /** Orientation helpers for compass / spirit level / incline. */
 
 export type OrientMode = 'compass' | 'level' | 'incline';
+export type LevelMode = 'level' | 'incline';
 
 export type OrientationSample = {
   /** Compass heading 0–360 (deg), null when unavailable. */
@@ -15,6 +16,7 @@ export type OrientationSample = {
 };
 
 export const ORIENT_MODES: readonly OrientMode[] = ['compass', 'level', 'incline'];
+export const LEVEL_MODES: readonly LevelMode[] = ['level', 'incline'];
 
 export function parseOrientMode(raw: string | null | undefined): OrientMode | null {
   if (!raw) {
@@ -22,6 +24,11 @@ export function parseOrientMode(raw: string | null | undefined): OrientMode | nu
   }
   const normalized = raw.trim().toLowerCase();
   return ORIENT_MODES.includes(normalized as OrientMode) ? (normalized as OrientMode) : null;
+}
+
+export function parseLevelMode(raw: string | null | undefined): LevelMode | null {
+  const mode = parseOrientMode(raw);
+  return mode === 'level' || mode === 'incline' ? mode : null;
 }
 
 export function parseThreshold(raw: string | null | undefined, fallback = 2): number {
@@ -33,14 +40,6 @@ export function parseThreshold(raw: string | null | undefined, fallback = 2): nu
     return fallback;
   }
   return Math.min(45, n);
-}
-
-export function parseFlag(raw: string | null | undefined): boolean {
-  if (raw == null || raw === '') {
-    return false;
-  }
-  const v = raw.trim().toLowerCase();
-  return v === '1' || v === 'true' || v === 'yes';
 }
 
 /** Normalize degrees into [0, 360). */
@@ -81,8 +80,7 @@ export function compassHeadingFromEvent(event: {
 export function inclineFromPitchRoll(pitch: number, roll: number): number {
   const beta = (pitch * Math.PI) / 180;
   const gamma = (roll * Math.PI) / 180;
-  const sinSq =
-    Math.sin(beta) ** 2 + Math.sin(gamma) ** 2 * Math.cos(beta) ** 2;
+  const sinSq = Math.sin(beta) ** 2 + Math.sin(gamma) ** 2 * Math.cos(beta) ** 2;
   const clamped = Math.min(1, Math.max(0, sinSq));
   return (Math.asin(Math.sqrt(clamped)) * 180) / Math.PI;
 }
@@ -114,8 +112,7 @@ export function sampleFromDeviceOrientation(event: {
 }): OrientationSample {
   const pitch = event.beta != null && Number.isFinite(event.beta) ? event.beta : null;
   const roll = event.gamma != null && Number.isFinite(event.gamma) ? event.gamma : null;
-  const incline =
-    pitch != null && roll != null ? inclineFromPitchRoll(pitch, roll) : null;
+  const incline = pitch != null && roll != null ? inclineFromPitchRoll(pitch, roll) : null;
   return {
     heading: compassHeadingFromEvent(event),
     pitch,
@@ -142,7 +139,7 @@ export function withInclineTare(
 export function formatForMode(mode: OrientMode): string {
   switch (mode) {
     case 'compass':
-      return 'level.compass';
+      return 'compass.heading';
     case 'level':
       return 'level.level';
     case 'incline':

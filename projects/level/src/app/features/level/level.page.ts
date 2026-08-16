@@ -7,24 +7,27 @@ import {
   signal,
 } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { ReturnUrlValidator, RbPanel, RbResultActions, type ReturnDelivery } from 'shared-ui';
+import { TranslatePipe } from '@angular-libs/translate';
 import {
-  ORIENT_MODES,
-  type OrientMode,
-  type OrientationSample,
-  cardinalLabel,
+  LEVEL_MODES,
+  RbPanel,
+  RbResultActions,
+  ReturnUrlValidator,
   formatForMode,
   isWithinLevelThreshold,
   levelDeviation,
-  modeTitle,
   parseFlag,
+  parseLevelMode,
   parseOrientMode,
   parseThreshold,
   roundOrient,
   sampleFromDeviceOrientation,
   valueForMode,
   withInclineTare,
-} from './level-math';
+  type LevelMode,
+  type OrientationSample,
+  type ReturnDelivery,
+} from 'shared-ui';
 
 type OrientStatus =
   | 'need-gesture'
@@ -44,7 +47,7 @@ type WakeLockSentinelLike = { release: () => Promise<void> };
 
 @Component({
   selector: 'lv-level-page',
-  imports: [RouterLink, RbPanel, RbResultActions],
+  imports: [RouterLink, RbPanel, RbResultActions, TranslatePipe],
   templateUrl: './level.page.html',
   styleUrl: './level.page.css',
   host: { class: 'rb-page rb-page--plain' },
@@ -54,11 +57,10 @@ export class LevelPage implements OnInit, OnDestroy {
   private readonly router = inject(Router);
   private readonly returnUrlValidator = inject(ReturnUrlValidator);
 
-  readonly modes = ORIENT_MODES;
-  readonly modeTitle = modeTitle;
+  readonly modes = LEVEL_MODES;
   readonly status = signal<OrientStatus>('need-gesture');
   readonly errorDetail = signal<string | null>(null);
-  readonly mode = signal<OrientMode>('compass');
+  readonly mode = signal<LevelMode>('level');
   readonly modeLocked = signal(false);
   readonly held = signal(false);
   readonly copyFlash = signal(false);
@@ -79,7 +81,7 @@ export class LevelPage implements OnInit, OnDestroy {
     return withInclineTare(raw, this.tareOffset());
   });
 
-  readonly captured = signal<{ mode: OrientMode; value: string; sample: OrientationSample } | null>(
+  readonly captured = signal<{ mode: LevelMode; value: string; sample: OrientationSample } | null>(
     null,
   );
 
@@ -97,8 +99,6 @@ export class LevelPage implements OnInit, OnDestroy {
       return '—';
     }
     switch (mode) {
-      case 'compass':
-        return s.heading == null ? '—' : `${roundOrient(s.heading, 0)}°`;
       case 'level': {
         if (s.pitch == null || s.roll == null) {
           return '—';
@@ -117,8 +117,6 @@ export class LevelPage implements OnInit, OnDestroy {
       return '';
     }
     switch (mode) {
-      case 'compass':
-        return s.heading == null ? '' : cardinalLabel(s.heading);
       case 'level':
         if (s.pitch == null || s.roll == null) {
           return '';
@@ -135,11 +133,6 @@ export class LevelPage implements OnInit, OnDestroy {
       return false;
     }
     return isWithinLevelThreshold(s.pitch, s.roll, this.threshold);
-  });
-
-  readonly compassRotation = computed(() => {
-    const heading = this.sample()?.heading;
-    return heading == null ? 0 : -heading;
   });
 
   readonly bubbleX = computed(() => {
@@ -196,8 +189,15 @@ export class LevelPage implements OnInit, OnDestroy {
     this.requireLevel = parseFlag(params.get('requireLevel'));
 
     const locked = parseOrientMode(params.get('mode'));
-    if (locked) {
-      this.mode.set(locked);
+    if (locked === 'compass' && location.pathname.includes('/level')) {
+      const next = new URL(location.href.replace(/\/level(\/|$)/, '/compass$1'));
+      next.searchParams.delete('mode');
+      location.replace(next.toString());
+      return;
+    }
+    const levelMode = parseLevelMode(params.get('mode'));
+    if (levelMode) {
+      this.mode.set(levelMode);
       this.modeLocked.set(true);
     }
 
@@ -241,7 +241,7 @@ export class LevelPage implements OnInit, OnDestroy {
     }
   }
 
-  setMode(next: OrientMode): void {
+  setMode(next: LevelMode): void {
     if (this.modeLocked()) {
       return;
     }
@@ -517,7 +517,7 @@ export class LevelPage implements OnInit, OnDestroy {
   }
 
   private buildReturnParams(
-    mode: OrientMode,
+    mode: LevelMode,
     value: string,
     sample: OrientationSample,
   ): Record<string, string | null | undefined> {

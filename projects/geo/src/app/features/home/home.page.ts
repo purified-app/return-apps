@@ -13,7 +13,7 @@ import { RbHomeDocs } from 'shared-ui';
       format="geo.point"
       [openParamDocs]="['highAccuracy']"
       demoValue="59.9139,10.7522"
-      [returnExtras]="{ lat: '59.9139', lng: '10.7522', accuracy: '12.5', timestamp: '0' }"
+      [returnExtras]="{ lat: '59.9139', lng: '10.7522', accuracy: '12.5', timestamp: '0', label: 'Oslo' }"
     />
   `,
   host: { class: 'rb-page rb-page--home' },

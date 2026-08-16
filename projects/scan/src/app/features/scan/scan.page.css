@@ -136,6 +136,27 @@ video {
   color: var(--rb-fg) !important;
 }
 
+.batch-list {
+  position: absolute;
+  top: calc(3.5rem + env(safe-area-inset-top));
+  left: max(1rem, env(safe-area-inset-left));
+  right: max(1rem, env(safe-area-inset-right));
+  margin: 0;
+  padding: 0.55rem 0.75rem;
+  max-height: 30vh;
+  overflow: auto;
+  list-style: none;
+  border-radius: 12px;
+  background: rgb(0 0 0 / 55%);
+  font-size: 0.85rem;
+}
+
+.batch-list li {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .result-format {
   font-size: 0.9rem;
 }

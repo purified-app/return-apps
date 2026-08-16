@@ -1,78 +1,98 @@
 <div class="geo">
   @if (status() === 'invalid-return-url') {
-    <rb-panel title="Invalid returnUrl">
+    <rb-panel [title]="'common.invalidReturnUrl' | translate">
       <p>{{ errorDetail() }}</p>
-      <a routerLink="/home" class="btn">Back to home</a>
+      <a routerLink="/home" class="btn">{{ 'common.backHome' | translate }}</a>
     </rb-panel>
   } @else if (status() === 'unsupported' || status() === 'denied' || status() === 'error') {
-    <rb-panel title="Location unavailable">
+    <rb-panel [title]="'geo.unavailable' | translate">
       <p>{{ errorDetail() }}</p>
       <div class="actions">
-        <button type="button" class="btn btn-ghost" (click)="onCancel()">Cancel</button>
-        <button type="button" class="btn" (click)="locate()">Try again</button>
+        <button type="button" class="btn btn-ghost" (click)="onCancel()">
+          {{ 'common.cancel' | translate }}
+        </button>
+        <button type="button" class="btn" (click)="locate()">{{ 'common.tryAgain' | translate }}</button>
       </div>
     </rb-panel>
   } @else if (status() === 'done') {
-    <rb-panel title="Location captured">
+    <rb-panel [title]="'geo.captured' | translate">
       @if (reading(); as r) {
         <dl class="meta">
           <div>
-            <dt>Latitude</dt>
+            <dt>{{ 'geo.lat' | translate }}</dt>
             <dd>{{ r.lat }}</dd>
           </div>
           <div>
-            <dt>Longitude</dt>
+            <dt>{{ 'geo.lng' | translate }}</dt>
             <dd>{{ r.lng }}</dd>
           </div>
           <div>
-            <dt>Accuracy</dt>
+            <dt>{{ 'geo.accuracy' | translate }}</dt>
             <dd>{{ r.accuracy }} m</dd>
           </div>
+          @if (r.label) {
+            <div>
+              <dt>{{ 'geo.address' | translate }}</dt>
+              <dd>{{ r.label }}</dd>
+            </div>
+          }
         </dl>
       }
-      <rb-result-actions [copyValue]="copyValue()" copyLabel="Copy coordinates">
-        <button type="button" class="btn btn-ghost" (click)="locate()">Locate again</button>
-        <a routerLink="/home" class="btn btn-ghost">Back to home</a>
-        <a href="/" class="btn btn-ghost">All tools</a>
+      <rb-result-actions [copyValue]="copyValue()" [copyLabel]="'geo.copyCoords' | translate">
+        <button type="button" class="btn btn-ghost" (click)="locate()">
+          {{ 'geo.locateAgain' | translate }}
+        </button>
+        <a routerLink="/home" class="btn btn-ghost">{{ 'common.backHome' | translate }}</a>
+        <a href="/" class="btn btn-ghost">{{ 'common.allTools' | translate }}</a>
       </rb-result-actions>
     </rb-panel>
   } @else {
     <section class="shell">
       <header class="top">
-        <h1>Your location</h1>
-        <p>Allow location access so Geo can read GPS coordinates.</p>
+        <h1>{{ 'geo.title' | translate }}</h1>
+        <p>{{ 'geo.lead' | translate }}</p>
       </header>
 
       @if (status() === 'locating') {
-        <p class="status" role="status">Locating…</p>
+        <p class="status" role="status">{{ 'geo.locating' | translate }}</p>
       }
       @if (status() === 'redirecting') {
-        <p class="status" role="status">Returning…</p>
+        <p class="status" role="status">{{ 'common.returning' | translate }}</p>
       }
       @if (reading(); as r) {
         <dl class="meta">
           <div>
-            <dt>Latitude</dt>
+            <dt>{{ 'geo.lat' | translate }}</dt>
             <dd>{{ r.lat }}</dd>
           </div>
           <div>
-            <dt>Longitude</dt>
+            <dt>{{ 'geo.lng' | translate }}</dt>
             <dd>{{ r.lng }}</dd>
           </div>
           <div>
-            <dt>Accuracy</dt>
+            <dt>{{ 'geo.accuracy' | translate }}</dt>
             <dd>{{ r.accuracy }} m</dd>
           </div>
+          @if (r.label) {
+            <div>
+              <dt>{{ 'geo.address' | translate }}</dt>
+              <dd>{{ r.label }}</dd>
+            </div>
+          }
         </dl>
       }
 
       <div class="toolbar">
-        <button type="button" class="btn btn-ghost" (click)="onCancel()">Cancel</button>
+        <button type="button" class="btn btn-ghost" (click)="onCancel()">
+          {{ 'common.cancel' | translate }}
+        </button>
         @if (reading()) {
-          <button type="button" class="btn" (click)="onUseReading()">Use location</button>
+          <button type="button" class="btn" (click)="onUseReading()">
+            {{ 'geo.useLocation' | translate }}
+          </button>
         } @else {
           <button type="button" class="btn" (click)="locate()" [disabled]="status() === 'locating'">
-            Locate
+            {{ 'geo.locate' | translate }}
           </button>
         }
       </div>

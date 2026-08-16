@@ -26,14 +26,16 @@ const { value, format, error } = parseReturnResult(location);
 ## Apps
 
 - sign — /sign/ — hash — format=sign.svg — value=SVG data URL
-- scan — /scan/ — query — format=scan.* — value=payload — open: formats?
-- geo — /geo/ — query — format=geo.point — value=lat,lng — extras: lat,lng,accuracy,timestamp,… — open: highAccuracy?
+- scan — /scan/ — query — format=scan.* — value=payload — open: formats?,batch? — batch returns format=scan.batch + count
+- geo — /geo/ — query — format=geo.point — value=lat,lng — extras: lat,lng,accuracy,timestamp,label?,… — open: highAccuracy?
 - map — /map/ — query — format=map.point|map.distance|map.area — value=lat,lng or meters or m² — extras: lat,lng,zoom or meters,points,… — open: lat,lng,zoom?,mode?,units?
 - pin — /pin/ — hash — format=pin.digits — value=digits — open: length?,mask?
-- nfc — /nfc/ — query — format=nfc.* — value=payload — extras: recordType — Chrome/Android HTTPS
-- color — /color/ — query — format=color.hex — value=#rrggbb — extras: rgb
-- level — /level/ — query — format=level.compass|level.level|level.incline — value=heading° or pitch,roll or incline° — open: mode?,threshold?,requireLevel? — extras: mode,heading?,pitch?,roll?,incline?,withinThreshold?,deviation?,tare? — tool: Hold/Copy/Tare
-- orient is an alias of level (`openReturnApp('orient')` → `/level/`; old `orient.*` formats are now `level.*`)
+- nfc — /nfc/ — query — format=nfc.* — value=payload — extras: recordType — open: mode?,text? — Chrome/Android HTTPS
+- color — /color/ — query — format=color.hex — value=#rrggbb — extras: rgb — open: mode?,hex?
+- level — /level/ — query — format=level.level|level.incline — value=pitch,roll or incline° — open: mode?,threshold?,requireLevel? — extras: mode,heading?,pitch?,roll?,incline?,withinThreshold?,deviation?,tare? — tool: Hold/Copy/Tare
+- qr — /qr/ — query — format=qr.svg — value=SVG data URL — open: text?
+- compass — /compass/ — query — format=compass.heading — value=heading° — extras: mode,heading? — tool: Hold/Copy
+- orient is an alias of level (`openReturnApp('orient')` → `/level/`; old `orient.*` formats are now `level.*`). `mode=compass` on Level redirects to Compass.
 
 ## Do not
 

@@ -1,8 +1,8 @@
 # Level
 
-Compass / spirit level / incline **measuring tool** (and returnUrl helper). Contract **v1**: `value` + `format=level.*`. Default delivery: **query**.
+Spirit level / incline **measuring tool** (and returnUrl helper). Contract **v1**: `value` + `format=level.*`. Default delivery: **query**.
 
-See **[integration.md](./integration.md)**.
+See **[integration.md](./integration.md)**. Compass heading now lives in the **[Compass](./compass.md)** app.
 
 ## Quick start
 
@@ -12,7 +12,7 @@ bun run start:level   # http://localhost:4207/
 
 Live: https://return.purified.app/level/ · `/level/home` · `/level/demo-caller`
 
-Legacy `/orient/` URLs redirect to `/level/`. The SDK still accepts `openReturnApp('orient', …)` as an alias.
+Legacy `/orient/` URLs redirect to `/level/`. The SDK still accepts `openReturnApp('orient', …)` as an alias. `mode=compass` redirects to `/compass/`.
 
 ## As a tool
 
@@ -26,7 +26,6 @@ Legacy `/orient/` URLs redirect to `/level/`. The SDK still accepts `openReturnA
 
 | `mode` | `format` | `value` | Primary readout |
 |--------|----------|---------|-----------------|
-| `compass` | `level.compass` | heading `0–360` | heading° + cardinal |
 | `level` | `level.level` | `pitch,roll` | max deviation° |
 | `incline` | `level.incline` | degrees from horizontal (after tare) | incline° |
 
@@ -34,7 +33,7 @@ Legacy `/orient/` URLs redirect to `/level/`. The SDK still accepts `openReturnA
 
 | Param | Description |
 |-------|-------------|
-| `mode` | `compass` \| `level` \| `incline` — locks the UI when set |
+| `mode` | `level` \| `incline` — locks the UI when set |
 | `threshold` | Level tolerance in degrees (default `2`) |
 | `requireLevel` | `true` / `1` — confirm only when within level threshold |
 

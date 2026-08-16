@@ -66,9 +66,9 @@ You are an expert in TypeScript, Angular, and scalable web application developme
 
 ### Services & running
 
-- There is no backend. Each app (`sign`, `scan`, `geo`, `map`, `pin`, `nfc`, `color`, `level`) is a self-contained client-side Angular SPA. Serve one with `bun run start:<app>` (ports 4200–4207; see `README.md`). `shared-ui` is consumed from source via tsconfig path mappings, so it does NOT need to be prebuilt for `ng serve`.
+- There is no backend. Each app (`sign`, `scan`, `geo`, `map`, `pin`, `nfc`, `color`, `level`, `qr`, `compass`) is a self-contained client-side Angular SPA. Serve one with `bun run start:<app>` (ports 4200–4209; see `README.md`). `shared-ui` is consumed from source via tsconfig path mappings, so it does NOT need to be prebuilt for `ng serve`.
 - To exercise an app's core `returnUrl` flow in a browser, use its `/demo-caller` route (e.g. `http://localhost:4204/demo-caller` for `pin`), which simulates a calling app and shows the returned value.
-- Some apps need device APIs that a headless/remote browser can't provide: `scan`/`color` need camera, `geo` needs geolocation, `nfc` needs Web NFC (Chrome/Android only), `level` needs device orientation (falls back to manual sliders). `pin` and `sign` are the most deterministic to test in a browser.
+- Some apps need device APIs that a headless/remote browser can't provide: `scan`/`color` need camera (Color also has a palette), `geo` needs geolocation, `nfc` needs Web NFC (Chrome/Android only), `level`/`compass` need device orientation (falls back to manual sliders). `pin`, `sign`, and `qr` are the most deterministic to test in a browser.
 
 ### Integrating / calling these apps (humans & AI agents)
 
@@ -83,5 +83,5 @@ When writing code that **opens** a return-app from another web app, follow **`do
 
 ### Lint / test / build
 
-- Tests: `bun run test` (all projects) or `bun run test:<app>` — Vitest + jsdom, runs headless. Build a single app with `bun run build:<app>`; full static site with `bun run build:site` (`scripts/build-site.sh`).
+- Tests: `bun run test` (all projects) or `bun run test:<app>` — Vitest + jsdom, runs headless. SDK: `bun run test:sdk`. E2E + axe: `bun run test:e2e` (Playwright, Pin). Build a single app with `bun run build:<app>`; full static site with `bun run build:site` (`scripts/build-site.sh`).
 - There is no dedicated lint script or committed lint gate; Prettier is available (`bunx prettier --check .`) but currently reports pre-existing formatting warnings across the repo.

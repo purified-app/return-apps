@@ -8,19 +8,22 @@ import {
   levelDeviation,
   modeTitle,
   normalizeHeading,
-  parseFlag,
+  parseLevelMode,
   parseOrientMode,
   parseThreshold,
   roundOrient,
   sampleFromDeviceOrientation,
   valueForMode,
   withInclineTare,
-} from './level-math';
+} from './orientation-math';
+import { parseFlag } from './parse-flag';
 
-describe('level-math', () => {
+describe('orientation-math', () => {
   it('parses modes, thresholds, and flags', () => {
     expect(parseOrientMode('level')).toBe('level');
     expect(parseOrientMode('nope')).toBeNull();
+    expect(parseLevelMode('compass')).toBeNull();
+    expect(parseLevelMode('incline')).toBe('incline');
     expect(parseThreshold('3.5')).toBe(3.5);
     expect(parseThreshold('-1')).toBe(2);
     expect(parseThreshold(null)).toBe(2);
@@ -51,10 +54,12 @@ describe('level-math', () => {
     expect(isWithinLevelThreshold(3, 0, 2)).toBe(false);
     expect(levelDeviation(-1.5, 0.5)).toBe(1.5);
     expect(applyInclineTare(20, 5)).toBe(15);
-    expect(withInclineTare(
-      { heading: null, pitch: 10, roll: 0, incline: 20, absolute: false },
-      5,
-    ).incline).toBe(15);
+    expect(
+      withInclineTare(
+        { heading: null, pitch: 10, roll: 0, incline: 20, absolute: false },
+        5,
+      ).incline,
+    ).toBe(15);
   });
 
   it('builds sample values per mode', () => {
@@ -64,7 +69,7 @@ describe('level-math', () => {
       gamma: -2,
       absolute: true,
     });
-    expect(formatForMode('compass')).toBe('level.compass');
+    expect(formatForMode('compass')).toBe('compass.heading');
     expect(formatForMode('level')).toBe('level.level');
     expect(formatForMode('incline')).toBe('level.incline');
     expect(valueForMode('compass', sample)).toBe('270');

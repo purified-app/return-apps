@@ -1,4 +1,5 @@
 import { Component, input, signal } from '@angular/core';
+import { TranslatePipe } from '@angular-libs/translate';
 import {
   copyText,
   downloadBlob,
@@ -10,11 +11,12 @@ import {
 /** Shared Copy / Download action row for standalone (no returnUrl) results. */
 @Component({
   selector: 'rb-result-actions',
+  imports: [TranslatePipe],
   template: `
     <div class="actions">
       @if (copyValue(); as text) {
         <button type="button" class="btn" (click)="onCopy(text)">
-          {{ copied() ? 'Copied!' : copyLabel() }}
+          {{ copied() ? ('common.copied' | translate) : copyLabel() }}
         </button>
       }
       @for (file of downloads(); track file.filename + file.label) {

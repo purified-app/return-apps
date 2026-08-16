@@ -30,6 +30,26 @@
   color: var(--rb-muted);
 }
 
+.write-field {
+  display: grid;
+  gap: 0.35rem;
+  width: 100%;
+  text-align: start;
+  color: var(--rb-muted);
+  font-size: 0.9rem;
+}
+
+.write-field textarea {
+  min-height: 6rem;
+  padding: 0.65rem 0.75rem;
+  border-radius: 12px;
+  border: 1px solid rgb(255 255 255 / 16%);
+  background: rgb(255 255 255 / 6%);
+  color: var(--rb-fg);
+  font: inherit;
+  resize: vertical;
+}
+
 .pulse {
   width: min(8rem, 40vw);
   height: min(8rem, 40vw);

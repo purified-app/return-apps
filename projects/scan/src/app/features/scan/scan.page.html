@@ -1,24 +1,26 @@
 <div class="scan">
   @if (status() === 'invalid-return-url') {
-    <rb-panel title="Invalid returnUrl">
+    <rb-panel [title]="'common.invalidReturnUrl' | translate">
       <p>{{ errorDetail() }}</p>
-      <a routerLink="/home" class="btn">Back to home</a>
+      <a routerLink="/home" class="btn">{{ 'common.backHome' | translate }}</a>
     </rb-panel>
   } @else if (status() === 'permission-denied' || status() === 'no-camera' || status() === 'error') {
-    <rb-panel title="Unable to scan">
+    <rb-panel [title]="'scan.unable' | translate">
       <p>{{ errorDetail() }}</p>
       <div class="actions">
-        <button type="button" class="btn" (click)="onScanAgain()">Try again</button>
-        <a routerLink="/home" class="btn btn-ghost">Back to home</a>
+        <button type="button" class="btn" (click)="onScanAgain()">{{ 'common.tryAgain' | translate }}</button>
+        <a routerLink="/home" class="btn btn-ghost">{{ 'common.backHome' | translate }}</a>
       </div>
     </rb-panel>
   } @else if (status() === 'result') {
-    <rb-panel title="Result">
+    <rb-panel [title]="'scan.result' | translate">
       <p class="scan-value">{{ result()?.scanValue }}</p>
-      <p class="result-format">Format: {{ result()?.format }}</p>
+      <p class="result-format">{{ 'common.format' | translate }}: {{ result()?.format }}</p>
       <rb-result-actions [copyValue]="result()?.scanValue ?? null">
-        <button type="button" class="btn btn-ghost" (click)="onScanAgain()">Scan again</button>
-        <a href="/" class="btn btn-ghost">All tools</a>
+        <button type="button" class="btn btn-ghost" (click)="onScanAgain()">
+          {{ 'scan.scanAgain' | translate }}
+        </button>
+        <a href="/" class="btn btn-ghost">{{ 'common.allTools' | translate }}</a>
       </rb-result-actions>
     </rb-panel>
   } @else {
@@ -35,8 +37,16 @@
       </div>
       <p class="status" role="status">{{ statusMessage() }}</p>
 
+      @if (batchMode() && batchItems().length > 0) {
+        <ul class="batch-list">
+          @for (item of batchItems(); track $index) {
+            <li>{{ item.scanValue }}</li>
+          }
+        </ul>
+      }
+
       <div class="zoom" aria-label="Zoom controls">
-        <button type="button" class="zoom-btn" (click)="onZoomOut()" aria-label="Zoom out">
+        <button type="button" class="zoom-btn" (click)="onZoomOut()" [attr.aria-label]="'scan.zoomOut' | translate">
           −
         </button>
         <input
@@ -48,18 +58,32 @@
           [value]="zoom()"
           (input)="onZoomSlider($event)"
           [attr.aria-valuetext]="zoomLabel()"
-          aria-label="Zoom"
+          [attr.aria-label]="'scan.zoom' | translate"
         />
-        <button type="button" class="zoom-btn" (click)="onZoomIn()" aria-label="Zoom in">
+        <button type="button" class="zoom-btn" (click)="onZoomIn()" [attr.aria-label]="'scan.zoomIn' | translate">
           +
         </button>
         <span class="zoom-label">{{ zoomLabel() }}</span>
       </div>
 
       <div class="toolbar">
-        <button type="button" class="btn btn-ghost" (click)="onCancel()">Cancel</button>
+        <button type="button" class="btn btn-ghost" (click)="onCancel()">
+          {{ 'common.cancel' | translate }}
+        </button>
+        @if (batchMode()) {
+          <button
+            type="button"
+            class="btn"
+            (click)="onDoneBatch()"
+            [disabled]="batchItems().length === 0"
+          >
+            {{ 'scan.doneBatch' | translate: { count: batchItems().length } }}
+          </button>
+        }
         @if (deviceCount() > 1) {
-          <button type="button" class="btn" (click)="onSwitchCamera()">Switch camera</button>
+          <button type="button" class="btn" (click)="onSwitchCamera()">
+            {{ 'scan.switchCamera' | translate }}
+          </button>
         }
       </div>
     </div>

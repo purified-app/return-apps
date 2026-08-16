@@ -43,7 +43,10 @@
       "delivery": "query",
       "blurb": "QR / barcode scanner",
       "value": "Scanned text/payload",
-      "openParams": [{ "name": "formats", "description": "Optional comma-separated barcode formats." }],
+      "openParams": [
+        { "name": "formats", "description": "Optional comma-separated barcode formats." },
+        { "name": "batch", "description": "true/1 to accumulate codes and return format=scan.batch." }
+      ],
       "returnExtras": []
     },
     {
@@ -57,7 +60,7 @@
       "blurb": "GPS coordinates",
       "value": "lat,lng",
       "openParams": [{ "name": "highAccuracy", "description": "false/0 to disable high accuracy." }],
-      "returnExtras": ["lat", "lng", "accuracy", "timestamp", "altitude?", "altitudeAccuracy?", "heading?", "speed?"]
+      "returnExtras": ["lat", "lng", "accuracy", "timestamp", "label?", "altitude?", "altitudeAccuracy?", "heading?", "speed?"]
     },
     {
       "id": "map",
@@ -112,9 +115,12 @@
       "demo": "/nfc/demo-caller",
       "format": "nfc.*",
       "delivery": "query",
-      "blurb": "Web NFC tag reader",
+      "blurb": "Web NFC tag reader/writer",
       "value": "Tag payload text/URL",
-      "openParams": [],
+      "openParams": [
+        { "name": "mode", "description": "read | write (optional; locks UI when set)." },
+        { "name": "text", "description": "Payload to write in write mode." }
+      ],
       "returnExtras": ["recordType"],
       "requirements": ["Chrome on Android", "HTTPS"]
     },
@@ -126,9 +132,12 @@
       "demo": "/color/demo-caller",
       "format": "color.hex",
       "delivery": "query",
-      "blurb": "Camera color eyedropper",
+      "blurb": "Camera eyedropper or palette picker",
       "value": "#rrggbb",
-      "openParams": [],
+      "openParams": [
+        { "name": "mode", "description": "camera | palette (optional; locks UI when set)." },
+        { "name": "hex", "description": "Seed color for palette mode." }
+      ],
       "returnExtras": ["rgb"],
       "requirements": ["Camera permission", "HTTPS or localhost"]
     },
@@ -138,16 +147,43 @@
       "path": "/level/",
       "home": "/level/home",
       "demo": "/level/demo-caller",
-      "format": "level.compass | level.level | level.incline",
+      "format": "level.level | level.incline",
       "delivery": "query",
-      "blurb": "Compass / level / incline measuring tool",
-      "value": "Heading°, pitch,roll, or incline°",
+      "blurb": "Spirit level / incline measuring tool",
+      "value": "pitch,roll or incline°",
       "openParams": [
-        { "name": "mode", "description": "compass | level | incline (optional; locks UI when set)." },
+        { "name": "mode", "description": "level | incline (optional; locks UI when set). mode=compass redirects to Compass." },
         { "name": "threshold", "description": "Level mode tolerance in degrees (default 2)." },
         { "name": "requireLevel", "description": "If true/1, confirm only when within level threshold." }
       ],
       "returnExtras": ["mode", "heading?", "pitch?", "roll?", "incline?", "withinThreshold?", "threshold?", "deviation?", "tare?"],
+      "requirements": ["Device orientation sensors (manual fallback on desktop)"]
+    },
+    {
+      "id": "qr",
+      "name": "QR",
+      "path": "/qr/",
+      "home": "/qr/home",
+      "demo": "/qr/demo-caller",
+      "format": "qr.svg",
+      "delivery": "query",
+      "blurb": "Generate a QR code as SVG",
+      "value": "SVG data URL",
+      "openParams": [{ "name": "text", "description": "Optional seed text/URL to encode." }],
+      "returnExtras": []
+    },
+    {
+      "id": "compass",
+      "name": "Compass",
+      "path": "/compass/",
+      "home": "/compass/home",
+      "demo": "/compass/demo-caller",
+      "format": "compass.heading",
+      "delivery": "query",
+      "blurb": "Compass heading",
+      "value": "Heading degrees 0–360",
+      "openParams": [],
+      "returnExtras": ["mode", "heading?"],
       "requirements": ["Device orientation sensors (manual fallback on desktop)"]
     }
   ]

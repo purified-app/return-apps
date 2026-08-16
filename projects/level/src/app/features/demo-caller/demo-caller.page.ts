@@ -8,7 +8,7 @@ import { RbDemoCaller } from 'shared-ui';
     <rb-demo-caller
       #demo
       title="Simulate another app that opens Level"
-      lead="Tap “Open Level” to take a compass, spirit-level, or incline reading. After success, the reading returns here."
+      lead="Tap “Open Level” to take a spirit-level or incline reading. After success, the reading returns here."
       startLabel="Open Level"
     >
       @if (demo.result().value) {

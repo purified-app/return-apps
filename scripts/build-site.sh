@@ -21,6 +21,8 @@ APPS=(
   nfc:nfc
   color:color
   level:level
+  qr:qr
+  compass:compass
 )
 
 echo "Building shared-ui…"
@@ -44,6 +46,9 @@ cp site/icons/icon-512-maskable.png "$SITE_DIR/icons/icon-512-maskable.png"
 cp site/icons/toolbox.svg "$SITE_DIR/icons/toolbox.svg"
 mkdir -p "$SITE_DIR/sdk"
 cp site/sdk/return-apps.mjs "$SITE_DIR/sdk/return-apps.mjs"
+if [[ -f site/sdk/return-apps.d.ts ]]; then
+  cp site/sdk/return-apps.d.ts "$SITE_DIR/sdk/return-apps.d.ts"
+fi
 if [[ -f site/CNAME ]]; then
   cp site/CNAME "$SITE_DIR/CNAME"
 fi

@@ -1,86 +1,93 @@
 <div class="level">
   @if (status() === 'invalid-return-url') {
-    <rb-panel title="Invalid returnUrl">
+    <rb-panel [title]="'common.invalidReturnUrl' | translate">
       <p>{{ errorDetail() }}</p>
-      <a routerLink="/home" class="btn">Back to home</a>
+      <a routerLink="/home" class="btn">{{ 'common.backHome' | translate }}</a>
     </rb-panel>
   } @else if (status() === 'unsupported' || status() === 'denied') {
-    <rb-panel title="Orientation unavailable">
+    <rb-panel [title]="'level.unavailable' | translate">
       <p>{{ errorDetail() }}</p>
       <div class="actions">
-        <button type="button" class="btn btn-ghost" (click)="onCancel()">Cancel</button>
-        <button type="button" class="btn btn-ghost" (click)="useManual()">Use as manual tool</button>
-        <button type="button" class="btn" (click)="retry()">Try again</button>
+        <button type="button" class="btn btn-ghost" (click)="onCancel()">
+          {{ 'common.cancel' | translate }}
+        </button>
+        <button type="button" class="btn btn-ghost" (click)="useManual()">
+          {{ 'level.manualTool' | translate }}
+        </button>
+        <button type="button" class="btn" (click)="retry()">{{ 'common.tryAgain' | translate }}</button>
       </div>
     </rb-panel>
   } @else if (status() === 'done') {
-    <rb-panel title="Reading captured">
+    <rb-panel [title]="'level.captured' | translate">
       @if (captured(); as c) {
         <dl class="meta">
           <div>
-            <dt>Mode</dt>
-            <dd>{{ modeTitle(c.mode) }}</dd>
+            <dt>{{ 'common.mode' | translate }}</dt>
+            <dd>{{ (c.mode === 'level' ? 'level.modeLevel' : 'level.modeIncline') | translate }}</dd>
           </div>
           <div>
-            <dt>Value</dt>
+            <dt>{{ 'common.value' | translate }}</dt>
             <dd>{{ c.value }}</dd>
           </div>
           <div>
-            <dt>Format</dt>
+            <dt>{{ 'common.format' | translate }}</dt>
             <dd>{{ 'level.' + c.mode }}</dd>
           </div>
         </dl>
       }
-      <rb-result-actions [copyValue]="copyValue()" copyLabel="Copy value">
-        <button type="button" class="btn btn-ghost" (click)="retry()">Measure again</button>
-        <a routerLink="/home" class="btn btn-ghost">Back to home</a>
-        <a href="/" class="btn btn-ghost">All tools</a>
+      <rb-result-actions [copyValue]="copyValue()" [copyLabel]="'level.copyValue' | translate">
+        <button type="button" class="btn btn-ghost" (click)="retry()">
+          {{ 'level.measureAgain' | translate }}
+        </button>
+        <a routerLink="/home" class="btn btn-ghost">{{ 'common.backHome' | translate }}</a>
+        <a href="/" class="btn btn-ghost">{{ 'common.allTools' | translate }}</a>
       </rb-result-actions>
     </rb-panel>
   } @else if (status() === 'need-gesture') {
     <section class="shell shell--start">
       <header class="top">
-        <h1>Level</h1>
-        <p>Compass, spirit level, and incline — enable motion sensors to measure.</p>
+        <h1>{{ 'level.title' | translate }}</h1>
+        <p>{{ 'level.leadStart' | translate }}</p>
       </header>
       <div class="start-card">
-        <p>Sensors need a tap on this device (iOS / some browsers).</p>
-        <button type="button" class="btn" (click)="enableSensors()">Enable sensors</button>
-        <button type="button" class="btn btn-ghost" (click)="useManual()">Use without sensors</button>
+        <p>{{ 'level.needTap' | translate }}</p>
+        <button type="button" class="btn" (click)="enableSensors()">{{ 'level.enable' | translate }}</button>
+        <button type="button" class="btn btn-ghost" (click)="useManual()">
+          {{ 'level.without' | translate }}
+        </button>
       </div>
       <div class="toolbar">
-        <button type="button" class="btn btn-ghost" (click)="onCancel()">Cancel</button>
+        <button type="button" class="btn btn-ghost" (click)="onCancel()">
+          {{ 'common.cancel' | translate }}
+        </button>
       </div>
     </section>
   } @else {
     <section class="shell">
       <header class="top">
         <div class="top__row">
-          <h1>Level</h1>
+          <h1>{{ 'level.title' | translate }}</h1>
           @if (held()) {
-            <span class="pill pill--hold" role="status">Held</span>
+            <span class="pill pill--hold" role="status">{{ 'level.held' | translate }}</span>
           }
           @if (status() === 'manual') {
-            <span class="pill" role="status">Manual</span>
+            <span class="pill" role="status">{{ 'level.manual' | translate }}</span>
           }
         </div>
         <p>
           @switch (mode()) {
-            @case ('compass') {
-              Live heading. Hold to freeze, copy anytime.
-            }
             @case ('level') {
-              Lay flat — green when within ±{{ thresholdLabel() }}°.
+              {{ 'level.leadLevel' | translate: { threshold: thresholdLabel() } }}
             }
             @case ('incline') {
-              Angle from horizontal. Tare to zero on the current slope.
+              {{ 'level.leadIncline' | translate }}
             }
           }
         </p>
       </header>
 
       @if (!modeLocked()) {
-        <div class="mode-tabs" role="tablist" aria-label="Measurement mode">
+        <div class="mode-tabs" role="tablist" [attr.aria-label]="'level.modeList' | translate">
           @for (m of modes; track m) {
             <button
               type="button"
@@ -90,12 +97,18 @@
               [attr.aria-selected]="mode() === m"
               (click)="setMode(m)"
             >
-              {{ modeTitle(m) }}
+              {{ (m === 'level' ? 'level.modeLevel' : 'level.modeIncline') | translate }}
             </button>
           }
         </div>
       } @else {
-        <p class="mode-locked" role="status">Mode locked: {{ modeTitle(mode()) }}</p>
+        <p class="mode-locked" role="status">
+          {{
+            'level.modeLocked'
+              | translate
+                : { mode: (mode() === 'level' ? 'level.modeLevel' : 'level.modeIncline') | translate }
+          }}
+        </p>
       }
 
       <div
@@ -109,25 +122,13 @@
         <p class="secondary">{{ secondaryReadout() }}</p>
 
         @switch (mode()) {
-          @case ('compass') {
-            <div class="compass" [style.--heading]="compassRotation() + 'deg'" aria-hidden="true">
-              <div class="compass__ring">
-                <span class="compass__mark compass__mark--n">N</span>
-                <span class="compass__mark compass__mark--e">E</span>
-                <span class="compass__mark compass__mark--s">S</span>
-                <span class="compass__mark compass__mark--w">W</span>
-                <div class="compass__needle"></div>
-                <div class="compass__hub"></div>
-              </div>
-            </div>
-          }
           @case ('level') {
-            <div class="level" [class.level--ok]="levelOk()" aria-hidden="true">
-              <div class="level__plate">
-                <div class="level__target"></div>
-                <div class="level__cross"></div>
+            <div class="spirit" [class.spirit--ok]="levelOk()" aria-hidden="true">
+              <div class="spirit__plate">
+                <div class="spirit__target"></div>
+                <div class="spirit__cross"></div>
                 <div
-                  class="level__bubble"
+                  class="spirit__bubble"
                   [style.transform]="'translate(' + bubbleX() + '%, ' + bubbleY() + '%)'"
                 ></div>
               </div>
@@ -163,7 +164,7 @@
           (click)="toggleHold()"
           [disabled]="liveValue() == null && !held()"
         >
-          {{ held() ? 'Resume' : 'Hold' }}
+          {{ held() ? ('level.resume' | translate) : ('level.hold' | translate) }}
         </button>
         @if (mode() === 'incline') {
           <button
@@ -172,10 +173,12 @@
             (click)="tareIncline()"
             [disabled]="sample()?.incline == null"
           >
-            Tare
+            {{ 'level.tare' | translate }}
           </button>
           @if (tareOffset() !== 0) {
-            <button type="button" class="tool-btn" (click)="clearTare()">Clear tare</button>
+            <button type="button" class="tool-btn" (click)="clearTare()">
+              {{ 'level.clearTare' | translate }}
+            </button>
           }
         }
         <button
@@ -184,72 +187,63 @@
           (click)="copyLive()"
           [disabled]="liveValue() == null"
         >
-          {{ copyFlash() ? 'Copied' : 'Copy' }}
+          {{ copyFlash() ? ('common.copied' | translate) : ('common.copy' | translate) }}
         </button>
       </div>
 
       @if (status() === 'manual') {
         <div class="manual">
-          <p class="manual__hint">No live sensor — simulate with sliders.</p>
+          <p class="manual__hint">{{ 'level.manualHint' | translate }}</p>
           <div class="manual__grid">
-            @if (mode() === 'compass') {
-              <label>
-                Heading {{ sample()?.heading ?? 0 }}°
-                <input
-                  type="range"
-                  min="0"
-                  max="359"
-                  step="1"
-                  [value]="sample()?.heading ?? 0"
-                  (input)="onManualHeading($event)"
-                />
-              </label>
-            }
-            @if (mode() === 'level' || mode() === 'incline') {
-              <label>
-                Pitch {{ sample()?.pitch ?? 0 }}°
-                <input
-                  type="range"
-                  min="-90"
-                  max="90"
-                  step="0.5"
-                  [value]="sample()?.pitch ?? 0"
-                  (input)="onManualPitch($event)"
-                />
-              </label>
-              <label>
-                Roll {{ sample()?.roll ?? 0 }}°
-                <input
-                  type="range"
-                  min="-90"
-                  max="90"
-                  step="0.5"
-                  [value]="sample()?.roll ?? 0"
-                  (input)="onManualRoll($event)"
-                />
-              </label>
-            }
+            <label>
+              Pitch {{ sample()?.pitch ?? 0 }}°
+              <input
+                type="range"
+                min="-90"
+                max="90"
+                step="0.5"
+                [value]="sample()?.pitch ?? 0"
+                (input)="onManualPitch($event)"
+              />
+            </label>
+            <label>
+              Roll {{ sample()?.roll ?? 0 }}°
+              <input
+                type="range"
+                min="-90"
+                max="90"
+                step="0.5"
+                [value]="sample()?.roll ?? 0"
+                (input)="onManualRoll($event)"
+              />
+            </label>
           </div>
         </div>
       }
 
       @if (status() === 'listening' && !sample()) {
-        <p class="status" role="status">Listening for sensors…</p>
+        <p class="status" role="status">{{ 'level.listening' | translate }}</p>
       }
       @if (status() === 'redirecting') {
-        <p class="status" role="status">Returning…</p>
+        <p class="status" role="status">{{ 'common.returning' | translate }}</p>
       }
       @if (errorDetail()) {
         <p class="status status--error" role="alert">{{ errorDetail() }}</p>
       }
 
       <div class="toolbar">
-        <button type="button" class="btn btn-ghost" (click)="onCancel()">Cancel</button>
+        <button type="button" class="btn btn-ghost" (click)="onCancel()">
+          {{ 'common.cancel' | translate }}
+        </button>
         @if (status() === 'listening') {
-          <button type="button" class="btn btn-ghost" (click)="useManual()">Manual</button>
+          <button type="button" class="btn btn-ghost" (click)="useManual()">
+            {{ 'level.manual' | translate }}
+          </button>
         }
         @if (status() === 'manual') {
-          <button type="button" class="btn btn-ghost" (click)="enableSensors()">Sensors</button>
+          <button type="button" class="btn btn-ghost" (click)="enableSensors()">
+            {{ 'level.sensors' | translate }}
+          </button>
         }
         <button
           type="button"

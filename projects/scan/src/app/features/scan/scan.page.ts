@@ -8,13 +8,23 @@ import {
   viewChild,
 } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { ReturnUrlValidator, RbPanel, RbResultActions, type ReturnDelivery } from 'shared-ui';
+import { TranslatePipe } from '@angular-libs/translate';
+import {
+  ReturnUrlValidator,
+  RbPanel,
+  RbResultActions,
+  parseFlag,
+  type ReturnDelivery,
+} from 'shared-ui';
 import { ScanPageStatus, ScanResult } from '../../core/scan-result.model';
+import { scanFormatTag } from './scan-formats';
 import { ScannerService } from './scanner';
 
+type BatchItem = { scanValue: string; format: string };
+
 @Component({
-  selector: 'sb-scan-page',
-  imports: [RouterLink, RbPanel, RbResultActions],
+  selector: 'sc-scan-page',
+  imports: [RouterLink, RbPanel, RbResultActions, TranslatePipe],
   templateUrl: './scan.page.html',
   styleUrl: './scan.page.css',
   host: { class: 'rb-page rb-page--plain' },
@@ -36,6 +46,8 @@ export class ScanPage implements OnDestroy {
   readonly zoomMin = signal(1);
   readonly zoomMax = signal(4);
   readonly zoomLabel = signal('1.0×');
+  readonly batchMode = signal(false);
+  readonly batchItems = signal<BatchItem[]>([]);
 
   private returnUrl: URL | null = null;
   private state: string | null = null;
@@ -88,8 +100,17 @@ export class ScanPage implements OnDestroy {
   async onScanAgain(): Promise<void> {
     this.handled = false;
     this.result.set(null);
+    this.batchItems.set([]);
     this.status.set('starting');
     queueMicrotask(() => void this.startScanner());
+  }
+
+  onDoneBatch(): void {
+    const items = this.batchItems();
+    if (items.length === 0) {
+      return;
+    }
+    void this.finishBatch(items);
   }
 
   async onZoomOut(): Promise<void> {
@@ -136,6 +157,7 @@ export class ScanPage implements OnDestroy {
     const params = this.route.snapshot.queryParamMap;
     this.state = params.get('state');
     this.delivery = this.returnUrlValidator.parseDelivery(params.get('delivery'), 'query');
+    this.batchMode.set(parseFlag(params.get('batch')));
 
     const rawReturnUrl = params.get('returnUrl');
     if (rawReturnUrl) {
@@ -217,8 +239,17 @@ export class ScanPage implements OnDestroy {
     this.handled = true;
     await this.scanner.stop();
 
-    const normalized = scanResult.format.trim().toLowerCase().replace(/[^a-z0-9]+/g, '_');
-    const format = `scan.${normalized || 'unknown'}`;
+    const format = scanFormatTag(scanResult.format);
+    const item: BatchItem = { scanValue: scanResult.scanValue, format };
+
+    if (this.batchMode()) {
+      const next = [...this.batchItems(), item];
+      this.batchItems.set(next);
+      this.handled = false;
+      this.status.set('scanning');
+      queueMicrotask(() => void this.startScanner());
+      return;
+    }
 
     if (this.returnUrl) {
       this.status.set('redirecting');
@@ -232,6 +263,31 @@ export class ScanPage implements OnDestroy {
     }
 
     this.result.set(scanResult);
+    this.status.set('result');
+  }
+
+  private async finishBatch(items: BatchItem[]): Promise<void> {
+    await this.scanner.stop();
+    const payload = JSON.stringify(items.map((item) => item.scanValue));
+    if (this.returnUrl) {
+      this.status.set('redirecting');
+      this.statusMessage.set('Returning…');
+      location.href = this.returnUrlValidator.buildRedirectUrl(
+        this.returnUrl,
+        {
+          value: payload,
+          format: 'scan.batch',
+          state: this.state,
+          count: String(items.length),
+        },
+        this.delivery,
+      );
+      return;
+    }
+    this.result.set({
+      scanValue: items.map((item) => item.scanValue).join('\n'),
+      format: 'batch',
+    });
     this.status.set('result');
   }
 

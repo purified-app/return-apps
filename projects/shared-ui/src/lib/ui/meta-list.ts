@@ -1,32 +1,34 @@
 import { Component, input } from '@angular/core';
+import { TranslatePipe } from '@angular-libs/translate';
 
 /** Displays optional value / format / state / error rows returned from a helper app. */
 @Component({
   selector: 'rb-meta-list',
+  imports: [TranslatePipe],
   template: `
     @if (value() || format() || state() || error()) {
       <dl class="meta">
         @if (value(); as v) {
           <div>
-            <dt>Value</dt>
+            <dt>{{ 'common.value' | translate }}</dt>
             <dd class="meta__value">{{ v }}</dd>
           </div>
         }
         @if (format(); as v) {
           <div>
-            <dt>Format</dt>
+            <dt>{{ 'common.format' | translate }}</dt>
             <dd>{{ v }}</dd>
           </div>
         }
         @if (state(); as v) {
           <div>
-            <dt>State</dt>
+            <dt>{{ 'common.state' | translate }}</dt>
             <dd>{{ v }}</dd>
           </div>
         }
         @if (error(); as v) {
           <div>
-            <dt>Error</dt>
+            <dt>{{ 'common.error' | translate }}</dt>
             <dd>{{ v }}</dd>
           </div>
         }

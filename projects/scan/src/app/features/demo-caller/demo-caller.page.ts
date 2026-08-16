@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { RbDemoCaller } from 'shared-ui';
 
 @Component({
-  selector: 'sb-demo-caller-page',
+  selector: 'sc-demo-caller-page',
   imports: [RbDemoCaller],
   template: `
     <rb-demo-caller

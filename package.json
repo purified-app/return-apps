@@ -24,7 +24,7 @@
     "build:level": "ng build level --configuration production",
     "watch:sign": "ng build sign --watch --configuration development",
     "watch:scan": "ng build scan --watch --configuration development",
-    "test": "bun run test:shared-ui && bun run test:sign && bun run test:scan && bun run test:geo && bun run test:map && bun run test:pin && bun run test:nfc && bun run test:color && bun run test:level",
+    "test": "bun run test:shared-ui && bun run test:sign && bun run test:scan && bun run test:geo && bun run test:map && bun run test:pin && bun run test:nfc && bun run test:color && bun run test:level && bun run test:qr && bun run test:compass && bun run test:sdk",
     "test:shared-ui": "ng test shared-ui",
     "test:sign": "ng test sign",
     "test:scan": "ng test scan",
@@ -34,11 +34,20 @@
     "test:nfc": "ng test nfc",
     "test:color": "ng test color",
     "test:level": "ng test level",
-    "build:site": "bash scripts/build-site.sh"
+    "build:site": "bash scripts/build-site.sh",
+    "start:qr": "ng serve qr --port 4208",
+    "start:compass": "ng serve compass --port 4209",
+    "build:qr": "ng build qr --configuration production",
+    "build:compass": "ng build compass --configuration production",
+    "test:qr": "ng test qr",
+    "test:compass": "ng test compass",
+    "test:sdk": "vitest run --config vitest.sdk.config.ts",
+    "test:e2e": "playwright test"
   },
   "private": true,
   "packageManager": "bun@1.3.14",
   "dependencies": {
+    "@angular-libs/translate": "^0.2.0",
     "@angular/common": "^22.1.0",
     "@angular/compiler": "^22.1.0",
     "@angular/core": "^22.1.0",
@@ -48,12 +57,15 @@
     "barcode-detector": "^3.2.1",
     "leaflet": "^1.9.4",
     "rxjs": "~7.8.0",
-    "tslib": "^2.3.0"
+    "tslib": "^2.3.0",
+    "uqr": "^0.1.3"
   },
   "devDependencies": {
     "@angular/build": "^22.1.2",
     "@angular/cli": "^22.1.2",
     "@angular/compiler-cli": "^22.1.0",
+    "@axe-core/playwright": "^4.13.0",
+    "@playwright/test": "^1.62.1",
     "@types/leaflet": "^1.9.22",
     "jsdom": "^28.0.0",
     "ng-packagr": "^22.1.0",

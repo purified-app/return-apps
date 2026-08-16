@@ -59,6 +59,10 @@ __screenshots__/
 /html
 chrome-profiler-events*.json
 speed-measure-plugin*.json
+/test-results
+/playwright-report
+/blob-report
+/playwright/.cache
 
 # System files
 .DS_Store

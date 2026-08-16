@@ -8,16 +8,48 @@
  *   import { openReturnApp, parseReturnResult } from './return-apps.mjs';
  *
  * Pin/sign default to delivery=hash — always use parseReturnResult (not search alone).
+ *
+ * @typedef {'sign'|'scan'|'geo'|'map'|'pin'|'nfc'|'color'|'level'|'compass'|'qr'} ReturnAppId
+ * @typedef {ReturnAppId|'orient'} ReturnAppName
+ * @typedef {'query'|'hash'} ReturnDelivery
+ *
+ * @typedef {object} OpenReturnAppOptions
+ * @property {string} returnUrl
+ * @property {string} [baseUrl]
+ * @property {string} [state]
+ * @property {string|string[]} [allowedOrigins]
+ * @property {ReturnDelivery} [delivery]
+ * @property {Record<string, string|number|boolean|null|undefined>} [params]
+ *
+ * @typedef {object} ReturnResult
+ * @property {string|null} value
+ * @property {string|null} format
+ * @property {string|null} error
+ * @property {string|null} state
+ * @property {Record<string, string>} extras
  */
 export const CONTRACT_VERSION = 1;
 export const DEFAULT_BASE_URL = 'https://return.purified.app';
 
-const APPS = new Set(['sign', 'scan', 'geo', 'map', 'pin', 'nfc', 'color', 'level']);
+const APPS = new Set([
+  'sign',
+  'scan',
+  'geo',
+  'map',
+  'pin',
+  'nfc',
+  'color',
+  'level',
+  'compass',
+  'qr',
+]);
 /** @type {Record<string, string>} */
 const APP_ALIASES = { orient: 'level' };
 
 /**
- * @param {'sign'|'scan'|'geo'|'map'|'pin'|'nfc'|'color'|'level'|'orient'} app
+ * @param {ReturnAppName} app
+ * @param {OpenReturnAppOptions} options
+ * @returns {string}
  */
 export function openReturnApp(app, options) {
   const id = APP_ALIASES[app] ?? app;
@@ -50,7 +82,11 @@ export function openReturnApp(app, options) {
   return url.toString();
 }
 
-/** Parse result from location / URL (query + hash). */
+/**
+ * Parse result from location / URL (query + hash).
+ * @param {string|URL|Location} [input]
+ * @returns {ReturnResult}
+ */
 export function parseReturnResult(input = location) {
   const url =
     typeof input === 'string'

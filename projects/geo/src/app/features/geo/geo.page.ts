@@ -1,6 +1,8 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { TranslatePipe } from '@angular-libs/translate';
 import { ReturnUrlValidator, RbPanel, RbResultActions, type ReturnDelivery } from 'shared-ui';
+import { reverseGeocode } from './geo-reverse';
 
 type GeoStatus =
   | 'idle'
@@ -21,11 +23,12 @@ export type GeoReading = {
   heading: number | null;
   speed: number | null;
   timestamp: number;
+  label: string | null;
 };
 
 @Component({
   selector: 'gb-geo-page',
-  imports: [RouterLink, RbPanel, RbResultActions],
+  imports: [RouterLink, RbPanel, RbResultActions, TranslatePipe],
   templateUrl: './geo.page.html',
   styleUrl: './geo.page.css',
   host: { class: 'rb-page rb-page--plain' },
@@ -87,7 +90,7 @@ export class GeoPage implements OnInit {
     this.reading.set(null);
 
     navigator.geolocation.getCurrentPosition(
-      (position) => this.onSuccess(position),
+      (position) => void this.onSuccess(position),
       (error) => this.onError(error),
       {
         enableHighAccuracy: this.highAccuracy,
@@ -121,7 +124,7 @@ export class GeoPage implements OnInit {
     this.returnReading(reading);
   }
 
-  private onSuccess(position: GeolocationPosition): void {
+  private async onSuccess(position: GeolocationPosition): Promise<void> {
     const { coords, timestamp } = position;
     const reading: GeoReading = {
       lat: coords.latitude,
@@ -132,11 +135,18 @@ export class GeoPage implements OnInit {
       heading: coords.heading,
       speed: coords.speed,
       timestamp,
+      label: null,
     };
     this.reading.set(reading);
 
+    const label = await reverseGeocode(reading.lat, reading.lng, {
+      lang: typeof navigator !== 'undefined' ? navigator.language : undefined,
+    });
+    const withLabel = label ? { ...reading, label } : reading;
+    this.reading.set(withLabel);
+
     if (this.returnUrl) {
-      this.returnReading(reading);
+      this.returnReading(withLabel);
       return;
     }
 
@@ -161,6 +171,9 @@ export class GeoPage implements OnInit {
     }
     if (reading.speed != null) {
       extras['speed'] = String(reading.speed);
+    }
+    if (reading.label) {
+      extras['label'] = reading.label;
     }
 
     if (this.returnUrl) {

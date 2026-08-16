@@ -77,11 +77,13 @@ const error = params.get('error');
 | `geo` | `/geo/` | query | `geo.point` | `lat,lng` |
 | `map` | `/map/` | query | `map.point` / `map.distance` / `map.area` | `lat,lng` / meters / m² |
 | `pin` | `/pin/` | **hash** | `pin.digits` | digit string |
-| `nfc` | `/nfc/` | query | `nfc.<recordType>` | tag payload |
+| `nfc` | `/nfc/` | query | `nfc.<recordType>` / `nfc.written` | tag payload |
 | `color` | `/color/` | query | `color.hex` | `#rrggbb` |
-| `level` | `/level/` | query | `level.compass` / `level.level` / `level.incline` | heading° / `pitch,roll` / incline° |
+| `level` | `/level/` | query | `level.level` / `level.incline` | `pitch,roll` / incline° |
+| `qr` | `/qr/` | query | `qr.svg` | SVG data URL |
+| `compass` | `/compass/` | query | `compass.heading` | heading° |
 
-`orient` is an SDK alias for `level` (`openReturnApp('orient', …)` opens `/level/`). Legacy `/orient/` URLs redirect to `/level/`. Formats were renamed from `orient.*` to `level.*`.
+`orient` is an SDK alias for `level` (`openReturnApp('orient', …)` opens `/level/`). Legacy `/orient/` URLs redirect to `/level/`. Formats were renamed from `orient.*` to `level.*`. `mode=compass` on Level redirects to Compass (`compass.heading`).
 
 Live docs + demo caller per app: `https://return.purified.app/<id>/home` and `…/demo-caller`.
 
@@ -95,13 +97,13 @@ Live docs + demo caller per app: `https://return.purified.app/<id>/home` and `�
 - Notes: oversized signatures stay in-app (no redirect)
 
 ### scan
-- Open: `formats` (optional comma list)
-- Return extras: none (`format` carries barcode type)
+- Open: `formats` (optional comma list), `batch` (`true`/`1` to accumulate codes)
+- Return extras: none for a single scan (`format` carries barcode type). Batch returns `format=scan.batch`, `value` as a JSON string array, extra `count`.
 
 ### geo
 - Open: `highAccuracy` (`false`/`0` to disable)
-- Return extras: `lat`, `lng`, `accuracy`, `timestamp`, optional `altitude`, `altitudeAccuracy`, `heading`, `speed`
-- Notes: with `returnUrl` set, success auto-returns
+- Return extras: `lat`, `lng`, `accuracy`, `timestamp`, optional `altitude`, `altitudeAccuracy`, `heading`, `speed`, `label` (Nominatim reverse-geocode when available)
+- Notes: with `returnUrl` set, success auto-returns (waits briefly for `label`)
 
 ### map
 - Open: optional `lat`, `lng`, `zoom` (initial view), `mode` (`pick` \| `measure` \| `area` — locks UI when set), `units` (`metric` \| `imperial` — display only)
@@ -116,19 +118,29 @@ Live docs + demo caller per app: `https://return.purified.app/<id>/home` and `�
 - Return extras: none
 
 ### nfc
-- Open: (none)
+- Open: `mode` (`read` \| `write`), `text` (write payload)
 - Return extras: `recordType`
-- Notes: Chrome/Android + HTTPS (Web NFC)
+- Notes: Chrome/Android + HTTPS (Web NFC). Write returns `format=nfc.written`.
 
 ### color
-- Open: (none)
+- Open: `mode` (`camera` \| `palette`), `hex` (seed for palette)
 - Return extras: `rgb` as `r,g,b`
-- Notes: needs camera permission
+- Notes: camera permission for camera mode; palette works on desktop without a camera
 
 ### level
-- Open: `mode` (`compass` \| `level` \| `incline`), `threshold` (level tolerance°, default 2), `requireLevel` (`true`/`1` to require level before confirm)
+- Open: `mode` (`level` \| `incline`), `threshold` (level tolerance°, default 2), `requireLevel` (`true`/`1` to require level before confirm)
 - Return extras: `mode`, optional `heading`, `pitch`, `roll`, `incline`, `tare`; level adds `withinThreshold`, `threshold`, `deviation`
-- Notes: measuring tool with Hold / Copy / Incline Tare; DeviceOrientation with manual fallback; iOS needs a tap to enable sensors
+- Notes: measuring tool with Hold / Copy / Incline Tare; DeviceOrientation with manual fallback; iOS needs a tap to enable sensors. `mode=compass` redirects to the Compass app.
+
+### qr
+- Open: `text` (optional seed)
+- Return extras: none
+- Notes: `value` is an SVG data URL
+
+### compass
+- Open: (none beyond common)
+- Return extras: `mode`, optional `heading`
+- Notes: split out of Level; measuring tool with Hold / Copy; manual slider fallback
 
 ---
 
@@ -142,7 +154,9 @@ https://return.purified.app/map?returnUrl=URL&allowedOrigins=ORIGIN&state=S
 https://return.purified.app/pin?returnUrl=URL&allowedOrigins=ORIGIN&state=S&length=4
 https://return.purified.app/nfc?returnUrl=URL&allowedOrigins=ORIGIN&state=S
 https://return.purified.app/color?returnUrl=URL&allowedOrigins=ORIGIN&state=S
-https://return.purified.app/level?returnUrl=URL&allowedOrigins=ORIGIN&state=S&mode=compass
+https://return.purified.app/level?returnUrl=URL&allowedOrigins=ORIGIN&state=S&mode=level
+https://return.purified.app/qr?returnUrl=URL&allowedOrigins=ORIGIN&state=S
+https://return.purified.app/compass?returnUrl=URL&allowedOrigins=ORIGIN&state=S
 ```
 
 Replace `URL` with `encodeURIComponent(absoluteReturnUrl)` and `ORIGIN` with `encodeURIComponent(location.origin)`.
@@ -167,4 +181,4 @@ Invalid `returnUrl` / `allowedOrigins` mismatch → helper shows an in-app error
 - **Do not** omit `allowedOrigins` when calling from a real origin (open redirect risk).
 - **Do not** assume `postMessage` — not supported; use redirect (`query` or `hash`).
 - Local demos: `http://localhost:<port>` is allowed for `returnUrl`.
-- Device limits: `nfc` needs Android Chrome; `scan`/`color` need camera; `geo` needs geolocation permission; `level` needs device orientation (manual fallback on desktop).
+- Device limits: `nfc` needs Android Chrome; `scan`/`color` need camera (Color also has a palette); `geo` needs geolocation permission; `level`/`compass` need device orientation (manual fallback on desktop).

@@ -1,50 +1,110 @@
 <div class="color">
   @if (status() === 'invalid-return-url') {
-    <rb-panel title="Invalid returnUrl">
+    <rb-panel [title]="'common.invalidReturnUrl' | translate">
       <p>{{ errorDetail() }}</p>
-      <a routerLink="/home" class="btn">Back to home</a>
+      <a routerLink="/home" class="btn">{{ 'common.backHome' | translate }}</a>
     </rb-panel>
   } @else if (status() === 'denied' || status() === 'error') {
-    <rb-panel title="Camera unavailable">
+    <rb-panel [title]="'color.unavailable' | translate">
       <p>{{ errorDetail() }}</p>
       <div class="actions">
-        <button type="button" class="btn btn-ghost" (click)="onCancel()">Cancel</button>
-        <button type="button" class="btn" (click)="retryCamera()">Try again</button>
+        <button type="button" class="btn btn-ghost" (click)="onCancel()">
+          {{ 'common.cancel' | translate }}
+        </button>
+        <button type="button" class="btn" (click)="retryCamera()">{{ 'common.tryAgain' | translate }}</button>
+        <button type="button" class="btn btn-ghost" (click)="setMode('palette')">
+          {{ 'color.palette' | translate }}
+        </button>
       </div>
     </rb-panel>
   } @else if (status() === 'done') {
-    <rb-panel title="Color captured">
+    <rb-panel [title]="'color.captured' | translate">
       @if (captured(); as c) {
         <div class="swatch" [style.background]="c.hex" aria-hidden="true"></div>
         <dl class="meta">
           <div>
-            <dt>Hex</dt>
+            <dt>{{ 'color.hex' | translate }}</dt>
             <dd>{{ c.hex }}</dd>
           </div>
           <div>
-            <dt>RGB</dt>
+            <dt>{{ 'color.rgb' | translate }}</dt>
             <dd>{{ c.r }}, {{ c.g }}, {{ c.b }}</dd>
           </div>
         </dl>
       }
-      <rb-result-actions [copyValue]="copyValue()" copyLabel="Copy hex">
-        <button type="button" class="btn btn-ghost" (click)="retryCamera()">Sample again</button>
-        <a routerLink="/home" class="btn btn-ghost">Back to home</a>
-        <a href="/" class="btn btn-ghost">All tools</a>
+      <rb-result-actions [copyValue]="copyValue()" [copyLabel]="'color.copyHex' | translate">
+        <button type="button" class="btn btn-ghost" (click)="retryCamera()">
+          {{ 'color.sampleAgain' | translate }}
+        </button>
+        <a routerLink="/home" class="btn btn-ghost">{{ 'common.backHome' | translate }}</a>
+        <a href="/" class="btn btn-ghost">{{ 'common.allTools' | translate }}</a>
       </rb-result-actions>
     </rb-panel>
   } @else {
     <section class="shell">
       <header class="top">
-        <h1>Sample a color</h1>
-        <p>Aim the crosshair at the color, then tap Use color.</p>
+        <h1>{{ 'color.title' | translate }}</h1>
+        <p>
+          {{ (mode() === 'palette' ? 'color.paletteLead' : 'color.lead') | translate }}
+        </p>
       </header>
 
-      <div class="viewport">
-        <video #video playsinline muted autoplay aria-label="Camera preview"></video>
-        <div class="reticle" aria-hidden="true"></div>
-        <canvas #sampleCanvas class="sample-canvas" aria-hidden="true"></canvas>
-      </div>
+      @if (!modeLocked()) {
+        <div class="mode-tabs" role="tablist" [attr.aria-label]="'common.mode' | translate">
+          <button
+            type="button"
+            role="tab"
+            class="mode-tab"
+            [class.mode-tab--active]="mode() === 'camera'"
+            [attr.aria-selected]="mode() === 'camera'"
+            (click)="setMode('camera')"
+          >
+            {{ 'color.camera' | translate }}
+          </button>
+          <button
+            type="button"
+            role="tab"
+            class="mode-tab"
+            [class.mode-tab--active]="mode() === 'palette'"
+            [attr.aria-selected]="mode() === 'palette'"
+            (click)="setMode('palette')"
+          >
+            {{ 'color.palette' | translate }}
+          </button>
+        </div>
+      }
+
+      @if (mode() === 'camera') {
+        <div class="viewport">
+          <video #video playsinline muted autoplay aria-label="Camera preview"></video>
+          <div class="reticle" aria-hidden="true"></div>
+          <canvas #sampleCanvas class="sample-canvas" aria-hidden="true"></canvas>
+        </div>
+      } @else {
+        <div class="palette">
+          <label class="picker-wrap">
+            <span class="sr-only">{{ 'color.pickerLabel' | translate }}</span>
+            <input
+              class="picker"
+              type="color"
+              [value]="liveColor()?.hex ?? hexDraft()"
+              (input)="onPickerInput($event)"
+              [attr.aria-label]="'color.pickerLabel' | translate"
+            />
+          </label>
+          <label class="hex-field">
+            <span>{{ 'color.hexLabel' | translate }}</span>
+            <input
+              type="text"
+              inputmode="text"
+              autocomplete="off"
+              spellcheck="false"
+              [value]="hexDraft()"
+              (input)="onHexInput($event)"
+            />
+          </label>
+        </div>
+      }
 
       @if (liveColor(); as c) {
         <div class="live" aria-live="polite">
@@ -53,21 +113,23 @@
         </div>
       }
       @if (status() === 'starting') {
-        <p class="status" role="status">Starting camera…</p>
+        <p class="status" role="status">{{ 'color.starting' | translate }}</p>
       }
       @if (status() === 'redirecting') {
-        <p class="status" role="status">Returning…</p>
+        <p class="status" role="status">{{ 'common.returning' | translate }}</p>
       }
 
       <div class="toolbar">
-        <button type="button" class="btn btn-ghost" (click)="onCancel()">Cancel</button>
+        <button type="button" class="btn btn-ghost" (click)="onCancel()">
+          {{ 'common.cancel' | translate }}
+        </button>
         <button
           type="button"
           class="btn"
           (click)="onUseColor()"
-          [disabled]="!liveColor() || status() !== 'ready'"
+          [disabled]="!liveColor() || status() === 'starting' || status() === 'redirecting'"
         >
-          Use color
+          {{ 'color.useColor' | translate }}
         </button>
       </div>
     </section>

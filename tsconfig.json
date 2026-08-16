@@ -15,7 +15,9 @@
       "shared-ui": ["./projects/shared-ui/src/public-api.ts"]
     },
     "target": "ES2022",
-    "module": "preserve"
+    "module": "preserve",
+    "resolveJsonModule": true,
+    "esModuleInterop": true
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,
@@ -77,6 +79,18 @@
     },
     {
       "path": "./projects/level/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/qr/tsconfig.app.json"
+    },
+    {
+      "path": "./projects/qr/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/compass/tsconfig.app.json"
+    },
+    {
+      "path": "./projects/compass/tsconfig.spec.json"
     }
   ]
 }

@@ -1,6 +1,8 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { TranslatePipe, ALTranslate } from '@angular-libs/translate';
 import { ReturnUrlValidator, RbPanel, RbResultActions, type ReturnDelivery } from 'shared-ui';
+import { parsePinLength, parsePinMask } from './pin-params';
 
 type PinStatus = 'ready' | 'invalid-return-url' | 'incomplete' | 'done' | 'redirecting';
 
@@ -8,7 +10,7 @@ const KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '', '0', 'back'] as c
 
 @Component({
   selector: 'pb-pin-page',
-  imports: [RouterLink, RbPanel, RbResultActions],
+  imports: [RouterLink, RbPanel, RbResultActions, TranslatePipe],
   templateUrl: './pin.page.html',
   styleUrl: './pin.page.css',
   host: { class: 'rb-page rb-page--plain' },
@@ -17,6 +19,7 @@ export class PinPage implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly returnUrlValidator = inject(ReturnUrlValidator);
+  private readonly translate = inject(ALTranslate);
 
   readonly keys = KEYS;
   readonly status = signal<PinStatus>('ready');
@@ -41,16 +44,8 @@ export class PinPage implements OnInit {
     const params = this.route.snapshot.queryParamMap;
     this.state = params.get('state');
     this.delivery = this.returnUrlValidator.parseDelivery(params.get('delivery'), 'hash');
-
-    const lengthParam = Number(params.get('length'));
-    if (Number.isFinite(lengthParam) && lengthParam >= 3 && lengthParam <= 12) {
-      this.length.set(Math.floor(lengthParam));
-    }
-
-    const maskParam = params.get('mask');
-    if (maskParam === '0' || maskParam === 'false') {
-      this.mask.set(false);
-    }
+    this.length.set(parsePinLength(params.get('length')));
+    this.mask.set(parsePinMask(params.get('mask')));
 
     const rawReturnUrl = params.get('returnUrl');
     if (rawReturnUrl) {
@@ -114,7 +109,7 @@ export class PinPage implements OnInit {
     const pin = this.digits();
     if (pin.length !== this.length()) {
       this.status.set('incomplete');
-      this.errorDetail.set(`Enter ${this.length()} digits.`);
+      this.errorDetail.set(this.translate.get('pin.incomplete', { length: this.length() }));
       return;
     }
 

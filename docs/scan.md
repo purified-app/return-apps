@@ -17,6 +17,7 @@ Live: https://return.purified.app/scan/ · `/scan/home` · `/scan/demo-caller`
 | Param | Description |
 |-------|-------------|
 | `formats` | Optional comma-separated barcode formats |
+| `batch` | `true` / `1` — accumulate codes, then Done returns `format=scan.batch` |
 
 ## Open / return
 

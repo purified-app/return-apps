@@ -1,5 +1,6 @@
 import { Component, computed, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { TranslatePipe } from '@angular-libs/translate';
 import { appBaseUrl } from '../core/app-base-url';
 import {
   RETURN_CONTRACT_VERSION,
@@ -10,7 +11,7 @@ import type { ReturnDelivery } from '../core/return-url.validator';
 /** Shared home/docs shell — builds open/return/demo examples from format + delivery. */
 @Component({
   selector: 'rb-home-docs',
-  imports: [RouterLink],
+  imports: [RouterLink, TranslatePipe],
   template: `
     <main class="home">
       <header>
@@ -19,20 +20,20 @@ import type { ReturnDelivery } from '../core/return-url.validator';
         <p class="lead">{{ lead() }}</p>
         <div class="cta">
           <a routerLink="/" class="btn">{{ ctaLabel() }}</a>
-          <a routerLink="/demo-caller" class="btn btn-ghost">Try demo caller</a>
+          <a routerLink="/demo-caller" class="btn btn-ghost">{{ 'docs.tryDemo' | translate }}</a>
         </div>
       </header>
 
       <section class="docs">
-        <h2>Integration (v{{ contractVersion }})</h2>
-        <p>Open:</p>
+        <h2>{{ 'docs.integration' | translate: { version: contractVersion } }}</h2>
+        <p>{{ 'docs.open' | translate }}</p>
         <pre><code>{{ openExample() }}</code></pre>
-        <p>Return:</p>
+        <p>{{ 'docs.return' | translate }}</p>
         <pre><code>{{ returnExample() }}</code></pre>
-        <h3>Demo</h3>
+        <h3>{{ 'docs.demo' | translate }}</h3>
         <pre><code>{{ demoOpenUrl() }}</code></pre>
         <pre><code>{{ demoReturnUrl() }}</code></pre>
-        <p>{{ footnote() }}</p>
+        <p>{{ footnote() || ('docs.footnote' | translate) }}</p>
       </section>
     </main>
   `,
@@ -53,9 +54,7 @@ export class RbHomeDocs {
   readonly demoValue = input('…');
   /** Extra return params for the demo return example (lat, rgb, …). */
   readonly returnExtras = input<Record<string, string>>({});
-  readonly footnote = input(
-    'Pass allowedOrigins to restrict returnUrl. Pin/sign default to delivery=hash — parse the fragment or use the SDK. Full guide: docs/integration.md',
-  );
+  readonly footnote = input('');
 
   readonly contractVersion = RETURN_CONTRACT_VERSION;
 

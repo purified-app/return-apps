@@ -1,56 +1,110 @@
 <div class="nfc">
   @if (status() === 'invalid-return-url') {
-    <rb-panel title="Invalid returnUrl">
+    <rb-panel [title]="'common.invalidReturnUrl' | translate">
       <p>{{ errorDetail() }}</p>
-      <a routerLink="/home" class="btn">Back to home</a>
+      <a routerLink="/home" class="btn">{{ 'common.backHome' | translate }}</a>
     </rb-panel>
   } @else if (status() === 'unsupported' || status() === 'error') {
-    <rb-panel [title]="status() === 'unsupported' ? 'NFC unavailable' : 'Scan failed'">
+    <rb-panel [title]="(status() === 'unsupported' ? 'nfc.unavailable' : (mode() === 'write' ? 'nfc.writeFailed' : 'nfc.scanFailed')) | translate">
       <p>{{ errorDetail() }}</p>
       <div class="actions">
-        <button type="button" class="btn btn-ghost" (click)="onCancel()">Cancel</button>
-        <button type="button" class="btn" (click)="startScan()">Try again</button>
+        <button type="button" class="btn btn-ghost" (click)="onCancel()">
+          {{ 'common.cancel' | translate }}
+        </button>
+        <button type="button" class="btn" (click)="retry()">{{ 'common.tryAgain' | translate }}</button>
       </div>
     </rb-panel>
   } @else if (status() === 'done') {
-    <rb-panel title="NFC tag read">
+    <rb-panel [title]="(mode() === 'write' ? 'nfc.tagWritten' : 'nfc.tagRead') | translate">
       @if (reading(); as r) {
         <dl class="meta">
           <div>
-            <dt>Value</dt>
+            <dt>{{ 'common.value' | translate }}</dt>
             <dd>{{ r.nfcValue }}</dd>
           </div>
           <div>
-            <dt>Record type</dt>
+            <dt>{{ 'nfc.recordType' | translate }}</dt>
             <dd>{{ r.recordType }}</dd>
           </div>
         </dl>
       }
       <rb-result-actions [copyValue]="copyValue()">
-        <button type="button" class="btn btn-ghost" (click)="startScan()">Scan again</button>
-        <a routerLink="/home" class="btn btn-ghost">Back to home</a>
-        <a href="/" class="btn btn-ghost">All tools</a>
+        <button type="button" class="btn btn-ghost" (click)="retry()">
+          {{ (mode() === 'write' ? 'nfc.writeAgain' : 'nfc.scanAgain') | translate }}
+        </button>
+        <a routerLink="/home" class="btn btn-ghost">{{ 'common.backHome' | translate }}</a>
+        <a href="/" class="btn btn-ghost">{{ 'common.allTools' | translate }}</a>
       </rb-result-actions>
     </rb-panel>
   } @else {
     <section class="shell">
       <header class="top">
-        <h1>Hold a tag near the phone</h1>
-        <p>Keep this page open. Scanning starts after you allow NFC.</p>
+        <h1>{{ (mode() === 'write' ? 'nfc.writeTitle' : 'nfc.title') | translate }}</h1>
+        <p>{{ (mode() === 'write' ? 'nfc.writeLead' : 'nfc.lead') | translate }}</p>
       </header>
 
-      <div class="pulse" aria-hidden="true"></div>
+      @if (!modeLocked()) {
+        <div class="mode-tabs" role="tablist" [attr.aria-label]="'common.mode' | translate">
+          <button
+            type="button"
+            role="tab"
+            class="mode-tab"
+            [class.mode-tab--active]="mode() === 'read'"
+            [attr.aria-selected]="mode() === 'read'"
+            (click)="setMode('read')"
+          >
+            {{ 'nfc.read' | translate }}
+          </button>
+          <button
+            type="button"
+            role="tab"
+            class="mode-tab"
+            [class.mode-tab--active]="mode() === 'write'"
+            [attr.aria-selected]="mode() === 'write'"
+            (click)="setMode('write')"
+          >
+            {{ 'nfc.write' | translate }}
+          </button>
+        </div>
+      }
+
+      @if (mode() === 'write') {
+        <label class="write-field">
+          <span>{{ 'nfc.payload' | translate }}</span>
+          <textarea rows="4" [value]="writeText()" (input)="onWriteInput($event)"></textarea>
+        </label>
+      } @else {
+        <div class="pulse" aria-hidden="true"></div>
+      }
 
       @if (status() === 'scanning') {
-        <p class="status" role="status">Listening for NFC…</p>
+        <p class="status" role="status">{{ 'nfc.listening' | translate }}</p>
+      }
+      @if (status() === 'writing') {
+        <p class="status" role="status">{{ 'nfc.writing' | translate }}</p>
       }
       @if (status() === 'redirecting') {
-        <p class="status" role="status">Returning…</p>
+        <p class="status" role="status">{{ 'common.returning' | translate }}</p>
       }
 
       <div class="toolbar">
-        <button type="button" class="btn btn-ghost" (click)="onCancel()">Cancel</button>
-        <button type="button" class="btn" (click)="startScan()">Restart scan</button>
+        <button type="button" class="btn btn-ghost" (click)="onCancel()">
+          {{ 'common.cancel' | translate }}
+        </button>
+        @if (mode() === 'write') {
+          <button
+            type="button"
+            class="btn"
+            (click)="startWrite()"
+            [disabled]="!writeText().trim() || status() === 'writing'"
+          >
+            {{ 'nfc.writeAction' | translate }}
+          </button>
+        } @else {
+          <button type="button" class="btn" (click)="startScan()">
+            {{ 'nfc.restart' | translate }}
+          </button>
+        }
       </div>
     </section>
   }

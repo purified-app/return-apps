@@ -1,0 +1,72 @@
+.qr {
+  min-height: 100dvh;
+}
+
+.shell {
+  width: 100%;
+  max-width: var(--rb-content);
+  margin: 0 auto;
+  min-height: 100dvh;
+  padding:
+    var(--rb-space-page-top)
+    max(1rem, env(safe-area-inset-right))
+    var(--rb-space-page-bottom)
+    max(1rem, env(safe-area-inset-left));
+  display: grid;
+  grid-template-rows: auto auto 1fr auto auto;
+  gap: 1rem;
+  align-content: start;
+}
+
+.top h1 {
+  margin: 0;
+  font-size: clamp(1.2rem, 4.5vw, 1.45rem);
+  font-weight: 700;
+}
+
+.top p {
+  margin: 0.35rem 0 0;
+  color: var(--rb-muted);
+}
+
+.field {
+  display: grid;
+  gap: 0.35rem;
+  color: var(--rb-muted);
+  font-size: 0.9rem;
+}
+
+.field textarea {
+  min-height: 7rem;
+  padding: 0.65rem 0.75rem;
+  border-radius: 12px;
+  border: 1px solid rgb(255 255 255 / 16%);
+  background: rgb(255 255 255 / 6%);
+  color: var(--rb-fg);
+  font: inherit;
+  resize: vertical;
+}
+
+.preview {
+  justify-self: center;
+  width: min(16rem, 100%);
+  padding: 0.75rem;
+  border-radius: var(--rb-radius-lg);
+  background: #fff;
+}
+
+.preview :where(svg) {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.error,
+.status {
+  margin: 0;
+  color: var(--rb-muted);
+}
+
+.error {
+  color: #f0a8a8;
+}

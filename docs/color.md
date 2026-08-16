@@ -1,6 +1,6 @@
 # Color
 
-Camera eyedropper. Contract **v1**: `value=#rrggbb` + `format=color.hex` + `rgb`. Default delivery: **query**.
+Camera eyedropper **or palette picker**. Contract **v1**: `value=#rrggbb` + `format=color.hex` + `rgb`. Default delivery: **query**.
 
 See **[integration.md](./integration.md)**.
 
@@ -14,7 +14,7 @@ Live: https://return.purified.app/color/ · `/color/home` · `/color/demo-caller
 
 ## Requirements
 
-Camera permission; HTTPS or localhost.
+Camera permission for camera mode; HTTPS or localhost. Palette mode works without a camera (`mode=palette`).
 
 ## Open / return
 

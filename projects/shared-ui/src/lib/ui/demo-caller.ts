@@ -1,5 +1,6 @@
 import { Component, OnInit, inject, input, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { TranslatePipe } from '@angular-libs/translate';
 import { appBaseUrl } from '../core/app-base-url';
 import {
   buildDemoOpenUrl,
@@ -16,11 +17,11 @@ import { RbMetaList } from './meta-list';
  */
 @Component({
   selector: 'rb-demo-caller',
-  imports: [RbMetaList],
+  imports: [RbMetaList, TranslatePipe],
   template: `
     <main class="demo">
       <header>
-        <p class="brand">Demo caller</p>
+        <p class="brand">{{ 'demo.brand' | translate }}</p>
         <h1>{{ title() }}</h1>
         <p class="lead">{{ lead() }}</p>
       </header>

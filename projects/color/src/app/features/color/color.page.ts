@@ -9,7 +9,15 @@ import {
   viewChild,
 } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { ReturnUrlValidator, RbPanel, RbResultActions, type ReturnDelivery } from 'shared-ui';
+import { TranslatePipe } from '@angular-libs/translate';
+import {
+  ReturnUrlValidator,
+  RbPanel,
+  RbResultActions,
+  parseFlag,
+  type ReturnDelivery,
+} from 'shared-ui';
+import { parseHexColor, rgbToHex, type SampledColor } from './color-hex';
 
 type ColorStatus =
   | 'starting'
@@ -20,16 +28,11 @@ type ColorStatus =
   | 'done'
   | 'redirecting';
 
-type SampledColor = {
-  hex: string;
-  r: number;
-  g: number;
-  b: number;
-};
+type ColorMode = 'camera' | 'palette';
 
 @Component({
   selector: 'cb-color-page',
-  imports: [RouterLink, RbPanel, RbResultActions],
+  imports: [RouterLink, RbPanel, RbResultActions, TranslatePipe],
   templateUrl: './color.page.html',
   styleUrl: './color.page.css',
   host: { class: 'rb-page rb-page--plain' },
@@ -46,6 +49,9 @@ export class ColorPage implements OnDestroy {
   readonly errorDetail = signal<string | null>(null);
   readonly liveColor = signal<SampledColor | null>(null);
   readonly captured = signal<SampledColor | null>(null);
+  readonly mode = signal<ColorMode>('camera');
+  readonly modeLocked = signal(false);
+  readonly hexDraft = signal('#808080');
 
   readonly copyValue = computed(() => this.captured()?.hex ?? null);
 
@@ -65,6 +71,35 @@ export class ColorPage implements OnDestroy {
 
   ngOnDestroy(): void {
     this.stopCamera();
+  }
+
+  setMode(next: ColorMode): void {
+    if (this.modeLocked() || this.mode() === next) {
+      return;
+    }
+    this.mode.set(next);
+    if (next === 'palette') {
+      this.stopCamera();
+      this.status.set('ready');
+      if (!this.liveColor()) {
+        this.applyHex(this.hexDraft());
+      }
+      return;
+    }
+    this.status.set('starting');
+    void this.startCamera();
+  }
+
+  onHexInput(event: Event): void {
+    const raw = (event.target as HTMLInputElement).value;
+    this.hexDraft.set(raw.startsWith('#') ? raw : `#${raw}`);
+    this.applyHex(raw);
+  }
+
+  onPickerInput(event: Event): void {
+    const raw = (event.target as HTMLInputElement).value;
+    this.hexDraft.set(raw);
+    this.applyHex(raw);
   }
 
   onCancel(): void {
@@ -90,7 +125,30 @@ export class ColorPage implements OnDestroy {
       this.errorDetail.set('No color sampled yet.');
       return;
     }
+    this.commitColor(color);
+  }
 
+  async retryCamera(): Promise<void> {
+    this.captured.set(null);
+    this.errorDetail.set(null);
+    if (this.mode() === 'palette') {
+      this.status.set('ready');
+      this.applyHex(this.hexDraft());
+      return;
+    }
+    this.status.set('starting');
+    await this.startCamera();
+  }
+
+  private applyHex(raw: string): void {
+    const parsed = parseHexColor(raw);
+    if (parsed) {
+      this.liveColor.set(parsed);
+      this.hexDraft.set(parsed.hex);
+    }
+  }
+
+  private commitColor(color: SampledColor): void {
     if (this.returnUrl) {
       this.status.set('redirecting');
       this.stopCamera();
@@ -112,16 +170,31 @@ export class ColorPage implements OnDestroy {
     this.status.set('done');
   }
 
-  async retryCamera(): Promise<void> {
-    this.status.set('starting');
-    this.errorDetail.set(null);
-    await this.startCamera();
-  }
-
   private bootstrap(): void {
     const params = this.route.snapshot.queryParamMap;
     this.state = params.get('state');
     this.delivery = this.returnUrlValidator.parseDelivery(params.get('delivery'), 'query');
+
+    const modeParam = params.get('mode')?.trim().toLowerCase();
+    if (modeParam === 'palette' || modeParam === 'picker') {
+      this.mode.set('palette');
+      this.modeLocked.set(true);
+    } else if (modeParam === 'camera') {
+      this.mode.set('camera');
+      this.modeLocked.set(true);
+    }
+
+    const seed = parseHexColor(params.get('hex') ?? params.get('value'));
+    if (seed) {
+      this.liveColor.set(seed);
+      this.hexDraft.set(seed.hex);
+    } else if (this.mode() === 'palette') {
+      this.applyHex('#808080');
+    }
+
+    if (parseFlag(params.get('palette')) && !modeParam) {
+      this.mode.set('palette');
+    }
 
     const rawReturnUrl = params.get('returnUrl');
     if (rawReturnUrl) {
@@ -136,11 +209,15 @@ export class ColorPage implements OnDestroy {
       this.returnUrl = validation.url;
     }
 
+    if (this.mode() === 'palette') {
+      this.status.set('ready');
+      return;
+    }
     void this.startCamera();
   }
 
   private async startCamera(): Promise<void> {
-    if (!this.ready) {
+    if (!this.ready || this.mode() !== 'camera') {
       return;
     }
     const video = this.videoRef()?.nativeElement;
@@ -175,6 +252,9 @@ export class ColorPage implements OnDestroy {
   }
 
   private sampleLoop(): void {
+    if (this.mode() !== 'camera') {
+      return;
+    }
     const video = this.videoRef()?.nativeElement;
     const canvas = this.sampleCanvasRef()?.nativeElement;
     if (!video || !canvas || video.readyState < 2) {
@@ -215,18 +295,13 @@ export class ColorPage implements OnDestroy {
     b = Math.round(b / pixels);
 
     this.liveColor.set({
-      hex: this.toHex(r, g, b),
+      hex: rgbToHex(r, g, b),
       r,
       g,
       b,
     });
 
     this.raf = requestAnimationFrame(() => this.sampleLoop());
-  }
-
-  private toHex(r: number, g: number, b: number): string {
-    const part = (n: number) => n.toString(16).padStart(2, '0');
-    return `#${part(r)}${part(g)}${part(b)}`;
   }
 
   private stopCamera(): void {
