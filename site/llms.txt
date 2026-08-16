@@ -4,6 +4,8 @@
 
 Canonical human docs: https://github.com/purified-app/return-apps/blob/main/docs/integration.md
 Contract: https://github.com/purified-app/return-apps/blob/main/docs/contract-v1.md
+Hub: https://return.purified.app/
+Developers: https://return.purified.app/developers/
 Catalog JSON: https://return.purified.app/apps.json
 SDK: https://return.purified.app/sdk/return-apps.mjs
 
