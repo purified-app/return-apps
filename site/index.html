@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Return Apps</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta
+      name="description"
+      content="Installable toolbox — sign, scan, map, geo, pin, NFC, color, level. Capture something, then download or copy the result."
+    />
+    <meta name="theme-color" content="#0f1418" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Return Apps" />
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="icon" href="./icons/toolbox.svg" type="image/svg+xml" />
+    <link rel="icon" href="./icons/icon-192.png" type="image/png" sizes="192x192" />
+    <link rel="apple-touch-icon" href="./icons/icon-192.png" />
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #0f1418;
+        --fg: #eef2f5;
+        --muted: #b7c2cc;
+        --card: rgb(255 255 255 / 6%);
+        --line: rgb(255 255 255 / 10%);
+        --btn: #eef2f5;
+        --btn-fg: #0f1418;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-height: 100dvh;
+        font-family: 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        background:
+          radial-gradient(1100px 560px at 8% -10%, #1c3a4f 0%, transparent 55%),
+          radial-gradient(900px 500px at 100% 0%, #243028 0%, transparent 50%),
+          var(--bg);
+        color: var(--fg);
+      }
+      main {
+        max-width: 40rem;
+        margin: 0 auto;
+        padding: 2.5rem 1.25rem 3rem;
+      }
+      .brand-row {
+        display: flex;
+        align-items: center;
+        gap: 0.85rem;
+        margin: 0 0 0.75rem;
+      }
+      .brand-mark {
+        width: clamp(2.75rem, 12vw, 3.5rem);
+        height: clamp(2.75rem, 12vw, 3.5rem);
+        flex: 0 0 auto;
+        border-radius: 22%;
+        box-shadow: 0 0 0 1px rgb(255 255 255 / 10%);
+      }
+      .brand {
+        margin: 0;
+        font-size: clamp(1.75rem, 7vw, 2.75rem);
+        font-weight: 750;
+        letter-spacing: -0.03em;
+      }
+      h1 {
+        margin: 0;
+        font-size: clamp(1.15rem, 4.2vw, 1.55rem);
+        font-weight: 600;
+        line-height: 1.35;
+      }
+      h2 {
+        margin: 2rem 0 0.75rem;
+        font-size: 1.05rem;
+        font-weight: 650;
+      }
+      .lead {
+        margin: 0.85rem 0 0;
+        color: var(--muted);
+        line-height: 1.55;
+      }
+      .cta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        margin-top: 1.25rem;
+      }
+      .btn {
+        appearance: none;
+        border: 0;
+        border-radius: 999px;
+        min-height: 2.75rem;
+        padding: 0.75rem 1.25rem;
+        background: var(--btn);
+        color: var(--btn-fg);
+        font: inherit;
+        font-weight: 650;
+        text-decoration: none;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .btn-ghost {
+        background: rgb(255 255 255 / 12%);
+        color: var(--fg);
+      }
+      .btn:focus-visible {
+        outline: 2px solid var(--fg);
+        outline-offset: 2px;
+      }
+      .meta {
+        margin: 1rem 0 0;
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+      .meta a, .footer a, .docs a, .back a {
+        color: inherit;
+      }
+      .install-hint {
+        margin: 0.85rem 0 0;
+        color: var(--muted);
+        font-size: 0.9rem;
+        line-height: 1.45;
+      }
+      ul.tools, ul.docs-list {
+        list-style: none;
+        margin: 2rem 0 0;
+        padding: 0;
+        display: grid;
+        gap: 0.75rem;
+      }
+      a.app, a.doc {
+        display: block;
+        padding: 1rem 1.1rem;
+        border-radius: 14px;
+        background: var(--card);
+        border: 1px solid var(--line);
+        color: inherit;
+        text-decoration: none;
+      }
+      a.app strong, a.doc strong {
+        display: block;
+        font-size: 1.05rem;
+      }
+      a.app span, a.doc span {
+        display: block;
+        margin-top: 0.25rem;
+        color: var(--muted);
+        font-size: 0.92rem;
+      }
+      .footer {
+        margin-top: 2.75rem;
+        padding-top: 1.35rem;
+        border-top: 1px solid var(--line);
+        color: var(--muted);
+        font-size: 0.92rem;
+        line-height: 1.5;
+      }
+      .footer .dev-link {
+        color: var(--fg);
+        font-weight: 650;
+        text-decoration: none;
+      }
+      .footer .dev-link:hover {
+        text-decoration: underline;
+      }
+      .back {
+        margin: 0 0 1.25rem;
+        font-size: 0.92rem;
+      }
+      .back a {
+        color: var(--muted);
+        text-decoration: none;
+      }
+      .back a:hover {
+        color: var(--fg);
+        text-decoration: underline;
+      }
+      .docs p {
+        margin: 0 0 0.75rem;
+        color: var(--muted);
+        line-height: 1.55;
+        font-size: 0.95rem;
+      }
+      .docs code {
+        color: var(--fg);
+      }
+      .docs pre {
+        margin: 0.75rem 0 0;
+        padding: 0.85rem 1rem;
+        overflow-x: auto;
+        border-radius: 12px;
+        background: var(--card);
+        border: 1px solid var(--line);
+        color: var(--fg);
+        font-size: 0.8rem;
+        line-height: 1.45;
+      }
+      .links {
+        margin: 1rem 0 0;
+        color: var(--muted);
+        font-size: 0.9rem;
+        line-height: 1.6;
+      }
+      .links a { color: inherit; }
+      [hidden] { display: none !important; }
+
+    </style>
+  </head>
+  <body>
+    <main>
+      <div class="brand-row">
+        <img
+          class="brand-mark"
+          src="./icons/icon-192.png"
+          width="56"
+          height="56"
+          alt=""
+          decoding="async"
+        />
+        <p class="brand">Return Apps</p>
+      </div>
+      <h1>Toolbox you can install</h1>
+      <p class="lead">
+        Open a tool to capture something, then download or copy the result.
+      </p>
+      <div class="cta">
+        <button type="button" class="btn" id="install-btn" hidden>Install app</button>
+      </div>
+      <p class="install-hint" id="install-hint" hidden>
+        Use your browser’s <strong>Install</strong> / <strong>Add to Home Screen</strong> to keep
+        this toolbox one tap away.
+      </p>
+      <ul class="tools">
+        <li>
+          <a class="app" href="./sign/">
+            <strong>Sign</strong>
+            <span>Draw a signature → download SVG/PNG</span>
+          </a>
+        </li>
+        <li>
+          <a class="app" href="./scan/">
+            <strong>Scan</strong>
+            <span>QR / barcode → copy value</span>
+          </a>
+        </li>
+        <li>
+          <a class="app" href="./geo/">
+            <strong>Geo</strong>
+            <span>GPS → copy coordinates</span>
+          </a>
+        </li>
+        <li>
+          <a class="app" href="./map/">
+            <strong>Map</strong>
+            <span>Pick a point, measure a path, or draw an area</span>
+          </a>
+        </li>
+        <li>
+          <a class="app" href="./pin/">
+            <strong>Pin</strong>
+            <span>Numeric PIN → copy digits</span>
+          </a>
+        </li>
+        <li>
+          <a class="app" href="./nfc/">
+            <strong>NFC</strong>
+            <span>Web NFC → copy payload</span>
+          </a>
+        </li>
+        <li>
+          <a class="app" href="./color/">
+            <strong>Color</strong>
+            <span>Eyedropper → copy hex</span>
+          </a>
+        </li>
+        <li>
+          <a class="app" href="./level/">
+            <strong>Level</strong>
+            <span>Compass / spirit level / incline measuring tool</span>
+          </a>
+        </li>
+      </ul>
+      <footer class="footer">
+        <a class="dev-link" href="./developers/">For developers →</a>
+        <span> · integrate via <code>returnUrl</code></span>
+      </footer>
+    </main>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('./sw.js').catch(() => {});
+        });
+      }
+
+      let deferredPrompt = null;
+      const installBtn = document.getElementById('install-btn');
+      const installHint = document.getElementById('install-hint');
+
+      window.addEventListener('beforeinstallprompt', (event) => {
+        event.preventDefault();
+        deferredPrompt = event;
+        installBtn.hidden = false;
+        installHint.hidden = true;
+      });
+
+      installBtn.addEventListener('click', async () => {
+        if (!deferredPrompt) {
+          return;
+        }
+        deferredPrompt.prompt();
+        await deferredPrompt.userChoice;
+        deferredPrompt = null;
+        installBtn.hidden = true;
+      });
+
+      window.addEventListener('appinstalled', () => {
+        deferredPrompt = null;
+        installBtn.hidden = true;
+        installHint.hidden = true;
+      });
+
+      const isStandalone =
+        window.matchMedia('(display-mode: standalone)').matches ||
+        window.navigator.standalone === true;
+      if (!isStandalone && !deferredPrompt) {
+        setTimeout(() => {
+          if (!deferredPrompt && installBtn.hidden) {
+            installHint.hidden = false;
+          }
+        }, 1500);
+      }
+    </script>
+  </body>
+</html>

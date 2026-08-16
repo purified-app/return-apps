@@ -1,0 +1,145 @@
+.scan {
+  min-height: 100dvh;
+}
+
+.viewport {
+  position: relative;
+  min-height: 100dvh;
+  overflow: hidden;
+  background: #000;
+  touch-action: none;
+}
+
+video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform-origin: center center;
+  transition: transform 40ms linear;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: radial-gradient(ellipse at center, transparent 35%, rgb(0 0 0 / 45%) 75%);
+  pointer-events: none;
+}
+
+.reticle {
+  width: min(72vw, 280px);
+  aspect-ratio: 1;
+  border: 2px solid rgb(255 255 255 / 85%);
+  border-radius: 18px;
+  box-shadow: 0 0 0 9999px rgb(0 0 0 / 28%);
+}
+
+.status {
+  position: absolute;
+  top: max(1rem, env(safe-area-inset-top));
+  left: 50%;
+  transform: translateX(-50%);
+  margin: 0;
+  padding: 0.55rem 0.9rem;
+  border-radius: var(--rb-radius-pill);
+  background: rgb(0 0 0 / 55%);
+  font-size: 0.95rem;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+.zoom {
+  position: absolute;
+  left: max(1rem, env(safe-area-inset-left));
+  right: max(1rem, env(safe-area-inset-right));
+  bottom: calc(4.75rem + env(safe-area-inset-bottom));
+  display: grid;
+  grid-template-columns: auto 1fr auto auto;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.45rem 0.65rem;
+  border-radius: var(--rb-radius-pill);
+  background: rgb(0 0 0 / 45%);
+}
+
+.zoom-btn {
+  appearance: none;
+  width: var(--rb-tap);
+  height: var(--rb-tap);
+  border: 0;
+  border-radius: var(--rb-radius-pill);
+  background: rgb(255 255 255 / 16%);
+  color: var(--rb-fg);
+  font: inherit;
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.zoom-btn:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
+.zoom-slider {
+  width: 100%;
+  accent-color: var(--rb-btn);
+}
+
+.zoom-label {
+  min-width: 2.6rem;
+  text-align: right;
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+  color: #d7dde4;
+}
+
+.toolbar {
+  position: absolute;
+  bottom: max(1.25rem, env(safe-area-inset-bottom));
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  padding: 0 max(1rem, env(safe-area-inset-left), env(safe-area-inset-right));
+}
+
+/* Keep scan's floating bar centered — don't inherit shell toolbar grid. */
+@media (max-width: 30rem) {
+  .toolbar {
+    display: flex;
+    justify-content: center;
+  }
+
+  .toolbar > .btn {
+    flex: 0 1 auto;
+    width: auto;
+    min-width: var(--rb-tap);
+  }
+
+  .toolbar > .btn:not(.btn-ghost) {
+    flex: 0 1 auto;
+    order: initial;
+  }
+}
+
+.scan-value {
+  font-family: var(--rb-mono);
+  font-size: 1.15rem;
+  word-break: break-all;
+  color: var(--rb-fg) !important;
+}
+
+.result-format {
+  font-size: 0.9rem;
+}
+
+.actions {
+  margin-top: 0.5rem;
+}

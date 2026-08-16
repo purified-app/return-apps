@@ -1,0 +1,55 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  font-family: var(--rb-font);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  background: var(--rb-bg);
+  color: var(--rb-fg);
+}
+
+button,
+a,
+input {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Page shells — apply via host: { class: 'rb-page rb-page--home' } */
+.rb-page {
+  display: block;
+  min-height: 100dvh;
+  color: var(--rb-fg);
+}
+
+.rb-page--home {
+  overflow-x: clip;
+  background:
+    radial-gradient(1100px 560px at 8% -10%, var(--rb-glow-a) 0%, transparent 55%),
+    radial-gradient(900px 500px at 100% 0%, var(--rb-glow-b) 0%, transparent 50%),
+    var(--rb-bg);
+}
+
+.rb-page--demo {
+  background:
+    radial-gradient(1000px 500px at 0% 0%, #2a2438 0%, transparent 55%),
+    var(--rb-bg-elevated);
+}
+
+.rb-page--plain {
+  background: var(--rb-bg);
+}

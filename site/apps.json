@@ -1,0 +1,154 @@
+{
+  "contractVersion": 1,
+  "baseUrl": "https://return.purified.app",
+  "docs": {
+    "integration": "https://github.com/purified-app/return-apps/blob/main/docs/integration.md",
+    "contract": "https://github.com/purified-app/return-apps/blob/main/docs/contract-v1.md",
+    "llms": "./llms.txt"
+  },
+  "sdk": "./sdk/return-apps.mjs",
+  "commonOpenParams": [
+    { "name": "returnUrl", "required": true, "description": "Absolute https callback (http localhost / 127.0.0.1 / ::1 allowed)." },
+    { "name": "allowedOrigins", "required": false, "recommended": true, "description": "Comma-separated origins; returnUrl must match when set." },
+    { "name": "state", "required": false, "description": "Opaque string echoed on return." },
+    { "name": "delivery", "required": false, "description": "query | hash. pin/sign default hash; others query." }
+  ],
+  "commonReturnParams": [
+    { "name": "value", "description": "Primary result payload." },
+    { "name": "format", "description": "Canonical format tag." },
+    { "name": "error", "description": "cancelled when user cancels." },
+    { "name": "state", "description": "Echo of open state." }
+  ],
+  "apps": [
+    {
+      "id": "sign",
+      "name": "Sign",
+      "path": "/sign/",
+      "home": "/sign/home",
+      "demo": "/sign/demo-caller",
+      "format": "sign.svg",
+      "delivery": "hash",
+      "blurb": "Handwritten signature → SVG data URL",
+      "value": "SVG data URL (data:image/svg+xml,…)",
+      "openParams": [],
+      "returnExtras": []
+    },
+    {
+      "id": "scan",
+      "name": "Scan",
+      "path": "/scan/",
+      "home": "/scan/home",
+      "demo": "/scan/demo-caller",
+      "format": "scan.*",
+      "delivery": "query",
+      "blurb": "QR / barcode scanner",
+      "value": "Scanned text/payload",
+      "openParams": [{ "name": "formats", "description": "Optional comma-separated barcode formats." }],
+      "returnExtras": []
+    },
+    {
+      "id": "geo",
+      "name": "Geo",
+      "path": "/geo/",
+      "home": "/geo/home",
+      "demo": "/geo/demo-caller",
+      "format": "geo.point",
+      "delivery": "query",
+      "blurb": "GPS coordinates",
+      "value": "lat,lng",
+      "openParams": [{ "name": "highAccuracy", "description": "false/0 to disable high accuracy." }],
+      "returnExtras": ["lat", "lng", "accuracy", "timestamp", "altitude?", "altitudeAccuracy?", "heading?", "speed?"]
+    },
+    {
+      "id": "map",
+      "name": "Map",
+      "path": "/map/",
+      "home": "/map/home",
+      "demo": "/map/demo-caller",
+      "format": "map.point | map.distance | map.area",
+      "delivery": "query",
+      "blurb": "Map pin picker, path distance, or polygon area",
+      "value": "lat,lng · meters · square meters",
+      "openParams": [
+        { "name": "lat", "description": "Initial center latitude." },
+        { "name": "lng", "description": "Initial center longitude." },
+        { "name": "zoom", "description": "Initial zoom." },
+        { "name": "mode", "description": "pick | measure | area (optional; locks UI when set)." },
+        { "name": "units", "description": "metric | imperial (optional display units; return values stay SI)." }
+      ],
+      "returnExtras": [
+        "lat?",
+        "lng?",
+        "zoom?",
+        "mode?",
+        "meters?",
+        "squareMeters?",
+        "perimeterMeters?",
+        "points?",
+        "pointCount?"
+      ]
+    },
+    {
+      "id": "pin",
+      "name": "Pin",
+      "path": "/pin/",
+      "home": "/pin/home",
+      "demo": "/pin/demo-caller",
+      "format": "pin.digits",
+      "delivery": "hash",
+      "blurb": "Numeric PIN pad",
+      "value": "Digit string",
+      "openParams": [
+        { "name": "length", "description": "PIN length 3–12 (default 4)." },
+        { "name": "mask", "description": "false/0 to show digits." }
+      ],
+      "returnExtras": []
+    },
+    {
+      "id": "nfc",
+      "name": "NFC",
+      "path": "/nfc/",
+      "home": "/nfc/home",
+      "demo": "/nfc/demo-caller",
+      "format": "nfc.*",
+      "delivery": "query",
+      "blurb": "Web NFC tag reader",
+      "value": "Tag payload text/URL",
+      "openParams": [],
+      "returnExtras": ["recordType"],
+      "requirements": ["Chrome on Android", "HTTPS"]
+    },
+    {
+      "id": "color",
+      "name": "Color",
+      "path": "/color/",
+      "home": "/color/home",
+      "demo": "/color/demo-caller",
+      "format": "color.hex",
+      "delivery": "query",
+      "blurb": "Camera color eyedropper",
+      "value": "#rrggbb",
+      "openParams": [],
+      "returnExtras": ["rgb"],
+      "requirements": ["Camera permission", "HTTPS or localhost"]
+    },
+    {
+      "id": "level",
+      "name": "Level",
+      "path": "/level/",
+      "home": "/level/home",
+      "demo": "/level/demo-caller",
+      "format": "level.compass | level.level | level.incline",
+      "delivery": "query",
+      "blurb": "Compass / level / incline measuring tool",
+      "value": "Heading°, pitch,roll, or incline°",
+      "openParams": [
+        { "name": "mode", "description": "compass | level | incline (optional; locks UI when set)." },
+        { "name": "threshold", "description": "Level mode tolerance in degrees (default 2)." },
+        { "name": "requireLevel", "description": "If true/1, confirm only when within level threshold." }
+      ],
+      "returnExtras": ["mode", "heading?", "pitch?", "roll?", "incline?", "withinThreshold?", "threshold?", "deviation?", "tare?"],
+      "requirements": ["Device orientation sensors (manual fallback on desktop)"]
+    }
+  ]
+}

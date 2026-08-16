@@ -1,0 +1,104 @@
+/* Marker images are copied to /assets/leaflet via angular.json assets. */
+
+/* Enlarge Leaflet zoom controls for finger taps (default is 30×30). */
+.leaflet-control-zoom a {
+  width: var(--rb-tap) !important;
+  height: var(--rb-tap) !important;
+  line-height: var(--rb-tap) !important;
+  font-size: 1.25rem !important;
+}
+
+.leaflet-bar a,
+.leaflet-bar a:hover {
+  width: var(--rb-tap);
+  height: var(--rb-tap);
+  line-height: var(--rb-tap);
+}
+
+.leaflet-touch .leaflet-bar a {
+  width: var(--rb-tap);
+  height: var(--rb-tap);
+  line-height: var(--rb-tap);
+}
+
+.leaflet-control-attribution {
+  font-size: 0.7rem;
+  max-width: min(70vw, 18rem);
+}
+
+/* Vertex numbers / segment lengths / area center label */
+.leaflet-tooltip.mp-segment-label,
+.leaflet-tooltip.mp-area-label {
+  background: rgb(16 21 26 / 88%);
+  border: 1px solid rgb(255 255 255 / 14%);
+  border-radius: 999px;
+  color: var(--rb-fg, #eef2f5);
+  box-shadow: none;
+  font-weight: 650;
+  font-size: 0.75rem;
+  padding: 0.15rem 0.45rem;
+}
+
+.leaflet-tooltip.mp-area-label {
+  font-size: 0.9rem;
+  padding: 0.35rem 0.7rem;
+  border-radius: 0.75rem;
+}
+
+.leaflet-tooltip.mp-segment-label::before,
+.leaflet-tooltip.mp-area-label::before {
+  display: none;
+}
+
+/* Draggable measure/area vertices — 44×44 hit target for touch */
+.mp-vertex {
+  background: transparent;
+  border: 0;
+}
+
+.mp-vertex__hit {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: transparent;
+}
+
+.mp-vertex__dot {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 16px;
+  height: 16px;
+  margin: -8px 0 0 -8px;
+  border-radius: 50%;
+  background: #e8edf2;
+  border: 2px solid #10151a;
+  box-shadow: 0 0 0 2px rgb(255 255 255 / 18%);
+  pointer-events: none;
+}
+
+.mp-vertex__n {
+  position: absolute;
+  left: 50%;
+  top: 2px;
+  transform: translateX(-50%);
+  min-width: 1.1rem;
+  padding: 0 0.25rem;
+  border-radius: 999px;
+  background: rgb(16 21 26 / 88%);
+  border: 1px solid rgb(255 255 255 / 14%);
+  color: #eef2f5;
+  font-size: 0.7rem;
+  font-weight: 700;
+  line-height: 1.15rem;
+  text-align: center;
+  pointer-events: none;
+}
+
+.mp-vertex.leaflet-marker-dragging .mp-vertex__dot,
+.mp-vertex:active .mp-vertex__dot {
+  background: #4aa3c7;
+  border-color: #e8edf2;
+  transform: scale(1.15);
+  transform-origin: center;
+}
