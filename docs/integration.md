@@ -79,6 +79,7 @@ const error = params.get('error');
 | `pin` | `/pin/` | **hash** | `pin.digits` | digit string |
 | `nfc` | `/nfc/` | query | `nfc.<recordType>` | tag payload |
 | `color` | `/color/` | query | `color.hex` | `#rrggbb` |
+| `orient` | `/orient/` | query | `orient.compass` / `orient.level` / `orient.incline` | heading° / `pitch,roll` / incline° |
 
 Live docs + demo caller per app: `https://return.purified.app/<id>/home` and `…/demo-caller`.
 
@@ -118,6 +119,11 @@ Live docs + demo caller per app: `https://return.purified.app/<id>/home` and `�
 - Return extras: `rgb` as `r,g,b`
 - Notes: needs camera permission
 
+### orient
+- Open: `mode` (`compass` \| `level` \| `incline`), `threshold` (level tolerance°, default 2)
+- Return extras: `mode`, optional `heading`, `pitch`, `roll`, `incline`; level adds `withinThreshold`, `threshold`
+- Notes: uses DeviceOrientation; manual sliders when sensors are unavailable
+
 ---
 
 ## Copy-paste open URLs
@@ -130,6 +136,7 @@ https://return.purified.app/map?returnUrl=URL&allowedOrigins=ORIGIN&state=S
 https://return.purified.app/pin?returnUrl=URL&allowedOrigins=ORIGIN&state=S&length=4
 https://return.purified.app/nfc?returnUrl=URL&allowedOrigins=ORIGIN&state=S
 https://return.purified.app/color?returnUrl=URL&allowedOrigins=ORIGIN&state=S
+https://return.purified.app/orient?returnUrl=URL&allowedOrigins=ORIGIN&state=S&mode=compass
 ```
 
 Replace `URL` with `encodeURIComponent(absoluteReturnUrl)` and `ORIGIN` with `encodeURIComponent(location.origin)`.
@@ -154,4 +161,4 @@ Invalid `returnUrl` / `allowedOrigins` mismatch → helper shows an in-app error
 - **Do not** omit `allowedOrigins` when calling from a real origin (open redirect risk).
 - **Do not** assume `postMessage` — not supported; use redirect (`query` or `hash`).
 - Local demos: `http://localhost:<port>` is allowed for `returnUrl`.
-- Device limits: `nfc` needs Android Chrome; `scan`/`color` need camera; `geo` needs geolocation permission.
+- Device limits: `nfc` needs Android Chrome; `scan`/`color` need camera; `geo` needs geolocation permission; `orient` needs device orientation (manual fallback on desktop).

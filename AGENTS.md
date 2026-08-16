@@ -66,9 +66,9 @@ You are an expert in TypeScript, Angular, and scalable web application developme
 
 ### Services & running
 
-- There is no backend. Each app (`sign-back`, `scan-back`, `geo-back`, `map-pick-back`, `pin-back`, `nfc-back`, `color-back`) is a self-contained client-side Angular SPA. Serve one with `bun run start:<app>` (ports 4200–4206; see `README.md`). `shared-ui` is consumed from source via tsconfig path mappings, so it does NOT need to be prebuilt for `ng serve`.
+- There is no backend. Each app (`sign-back`, `scan-back`, `geo-back`, `map-pick-back`, `pin-back`, `nfc-back`, `color-back`, `orient-back`) is a self-contained client-side Angular SPA. Serve one with `bun run start:<app>` (ports 4200–4207; see `README.md`). `shared-ui` is consumed from source via tsconfig path mappings, so it does NOT need to be prebuilt for `ng serve`.
 - To exercise an app's core `returnUrl` flow in a browser, use its `/demo-caller` route (e.g. `http://localhost:4204/demo-caller` for `pin-back`), which simulates a calling app and shows the returned value.
-- Some apps need device APIs that a headless/remote browser can't provide: `scan-back`/`color-back` need camera, `geo-back` needs geolocation, `nfc-back` needs Web NFC (Chrome/Android only). `pin-back` and `sign-back` are the most deterministic to test in a browser.
+- Some apps need device APIs that a headless/remote browser can't provide: `scan-back`/`color-back` need camera, `geo-back` needs geolocation, `nfc-back` needs Web NFC (Chrome/Android only), `orient-back` needs device orientation (falls back to manual sliders). `pin-back` and `sign-back` are the most deterministic to test in a browser.
 
 ### Integrating / calling these apps (humans & AI agents)
 

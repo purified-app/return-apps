@@ -58,6 +58,9 @@
       "path": "./projects/color-back/tsconfig.app.json"
     },
     {
+      "path": "./projects/orient-back/tsconfig.app.json"
+    },
+    {
       "path": "./projects/geo-back/tsconfig.spec.json"
     },
     {
@@ -71,6 +74,9 @@
     },
     {
       "path": "./projects/color-back/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/orient-back/tsconfig.spec.json"
     }
   ]
 }

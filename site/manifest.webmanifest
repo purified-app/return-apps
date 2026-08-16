@@ -1,7 +1,7 @@
 {
   "name": "Return Apps",
   "short_name": "Return Apps",
-  "description": "Toolbox of returnUrl helper apps — sign, scan, map, geo, pin, NFC, color.",
+  "description": "Toolbox of returnUrl helper apps — sign, scan, map, geo, pin, NFC, color, orient.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

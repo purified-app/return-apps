@@ -32,6 +32,7 @@ const { value, format, error } = parseReturnResult(location);
 - pin — /pin/ — hash — format=pin.digits — value=digits — open: length?,mask?
 - nfc — /nfc/ — query — format=nfc.* — value=payload — extras: recordType — Chrome/Android HTTPS
 - color — /color/ — query — format=color.hex — value=#rrggbb — extras: rgb
+- orient — /orient/ — query — format=orient.compass|orient.level|orient.incline — value=heading° or pitch,roll or incline° — open: mode?,threshold? — extras: mode,heading?,pitch?,roll?,incline?,withinThreshold?
 
 ## Do not
 

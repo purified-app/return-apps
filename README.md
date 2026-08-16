@@ -20,6 +20,7 @@ Angular workspace for **returnUrl** helper apps — small client-side tools that
 | PinBack | https://return.purified.app/pin/ | hash |
 | NfcBack | https://return.purified.app/nfc/ | query |
 | ColorBack | https://return.purified.app/color/ | query |
+| OrientBack | https://return.purified.app/orient/ | query |
 
 Caller entry is the app root, e.g. `https://return.purified.app/sign?returnUrl=…&allowedOrigins=…`. Docs UI lives at `/home` inside each app.
 
@@ -34,6 +35,7 @@ Caller entry is the app root, e.g. `https://return.purified.app/sign?returnUrl=�
 | **PinBack** | `projects/pin-back` | `bun run start:pin-back` → :4204 |
 | **NfcBack** | `projects/nfc-back` | `bun run start:nfc-back` → :4205 |
 | **ColorBack** | `projects/color-back` | `bun run start:color-back` → :4206 |
+| **OrientBack** | `projects/orient-back` | `bun run start:orient-back` → :4207 |
 
 Shared library: **`shared-ui`** — styles, `ReturnUrlValidator`, `RbHomeDocs`, `RbDemoCaller`, `RbPanel`.  
 SDK: **`site/sdk/return-apps.mjs`**. Catalog: **`site/apps.json`**.
@@ -56,7 +58,7 @@ bun run start:geo-back   # or any start:* script above
 
 | Script | Description |
 |--------|-------------|
-| `bun run start:<app>` | Serve one app (ports 4200–4206) |
+| `bun run start:<app>` | Serve one app (ports 4200–4207) |
 | `bun run build` / `build:site` | Build all apps into `dist/site/` for Pages |
 | `bun run build:shared-ui` | Build the shared library |
 | `bun run build:<app>` | Single-app production build (CI) |
@@ -69,7 +71,7 @@ return-apps/
   projects/
     shared-ui/
     sign-back/ scan-back/ geo-back/ map-pick-back/
-    pin-back/ nfc-back/ color-back/
+    pin-back/ nfc-back/ color-back/ orient-back/
   site/                 # hub + apps.json + sdk + CNAME
   scripts/build-site.sh
   docs/
@@ -91,5 +93,5 @@ One workflow: [`.github/workflows/deploy-pages.yml`](.github/workflows/deploy-pa
 - SignBack: canvas → SVG data URL
 - ScanBack: Barcode Detection API + `barcode-detector` ponyfill
 - MapPickBack: Leaflet + OpenStreetMap
-- GeoBack / PinBack / NfcBack / ColorBack: Geolocation, keypad, Web NFC, `getUserMedia`
+- GeoBack / PinBack / NfcBack / ColorBack / OrientBack: Geolocation, keypad, Web NFC, `getUserMedia`, DeviceOrientation
 - GitHub Pages (single site, short path per app)

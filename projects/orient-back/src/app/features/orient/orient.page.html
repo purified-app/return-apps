@@ -1,0 +1,195 @@
+<div class="orient">
+  @if (status() === 'invalid-return-url') {
+    <rb-panel title="Invalid returnUrl">
+      <p>{{ errorDetail() }}</p>
+      <a routerLink="/home" class="btn">Back to home</a>
+    </rb-panel>
+  } @else if (status() === 'unsupported' || status() === 'denied') {
+    <rb-panel title="Orientation unavailable">
+      <p>{{ errorDetail() }}</p>
+      <div class="actions">
+        <button type="button" class="btn btn-ghost" (click)="onCancel()">Cancel</button>
+        <button type="button" class="btn btn-ghost" (click)="useManual()">Adjust manually</button>
+        <button type="button" class="btn" (click)="retry()">Try again</button>
+      </div>
+    </rb-panel>
+  } @else if (status() === 'done') {
+    <rb-panel title="Reading captured">
+      @if (captured(); as c) {
+        <dl class="meta">
+          <div>
+            <dt>Mode</dt>
+            <dd>{{ modeTitle(c.mode) }}</dd>
+          </div>
+          <div>
+            <dt>Value</dt>
+            <dd>{{ c.value }}</dd>
+          </div>
+          <div>
+            <dt>Format</dt>
+            <dd>{{ 'orient.' + c.mode }}</dd>
+          </div>
+        </dl>
+      }
+      <rb-result-actions [copyValue]="copyValue()" copyLabel="Copy value">
+        <button type="button" class="btn btn-ghost" (click)="retry()">Measure again</button>
+        <a routerLink="/home" class="btn btn-ghost">Back to home</a>
+        <a href="/" class="btn btn-ghost">All tools</a>
+      </rb-result-actions>
+    </rb-panel>
+  } @else {
+    <section class="shell">
+      <header class="top">
+        <h1>OrientBack</h1>
+        <p>
+          @switch (mode()) {
+            @case ('compass') {
+              Point the device and confirm heading (0–360°).
+            }
+            @case ('level') {
+              Lay the device flat and center the bubble, then confirm pitch,roll.
+            }
+            @case ('incline') {
+              Tilt the device and confirm the angle from horizontal.
+            }
+          }
+        </p>
+      </header>
+
+      @if (!modeLocked()) {
+        <div class="mode-tabs" role="tablist" aria-label="Measurement mode">
+          @for (m of modes; track m) {
+            <button
+              type="button"
+              role="tab"
+              class="mode-tab"
+              [class.mode-tab--active]="mode() === m"
+              [attr.aria-selected]="mode() === m"
+              (click)="setMode(m)"
+            >
+              {{ modeTitle(m) }}
+            </button>
+          }
+        </div>
+      } @else {
+        <p class="mode-locked" role="status">Mode locked: {{ modeTitle(mode()) }}</p>
+      }
+
+      <div class="stage" aria-live="polite">
+        @switch (mode()) {
+          @case ('compass') {
+            <div class="compass" [style.--heading]="compassRotation() + 'deg'">
+              <div class="compass__ring" aria-hidden="true">
+                <span class="compass__mark compass__mark--n">N</span>
+                <span class="compass__mark compass__mark--e">E</span>
+                <span class="compass__mark compass__mark--s">S</span>
+                <span class="compass__mark compass__mark--w">W</span>
+                <div class="compass__needle"></div>
+              </div>
+              <p class="readout">{{ headingLabel() }}</p>
+            </div>
+          }
+          @case ('level') {
+            <div class="level" [class.level--ok]="levelOk()">
+              <div class="level__plate" aria-hidden="true">
+                <div class="level__cross"></div>
+                <div
+                  class="level__bubble"
+                  [style.transform]="'translate(' + bubbleX() + '%, ' + bubbleY() + '%)'"
+                ></div>
+              </div>
+              <p class="readout">
+                Pitch {{ pitchLabel() }} · Roll {{ rollLabel() }}
+                @if (levelOk()) {
+                  <span class="ok"> · Level</span>
+                }
+              </p>
+            </div>
+          }
+          @case ('incline') {
+            <div class="incline">
+              <div class="incline__gauge" aria-hidden="true">
+                <div class="incline__arc"></div>
+                <div
+                  class="incline__needle"
+                  [style.transform]="'rotate(' + inclineNeedle() + 'deg)'"
+                ></div>
+                <div class="incline__hub"></div>
+              </div>
+              <p class="readout">{{ inclineLabel() }} from horizontal</p>
+            </div>
+          }
+        }
+      </div>
+
+      @if (status() === 'manual') {
+        <div class="manual">
+          <p class="manual__hint">No live sensor — adjust values manually.</p>
+          <div class="manual__grid">
+            <label>
+              Heading
+              <input
+                type="range"
+                min="0"
+                max="359"
+                step="1"
+                [value]="sample()?.heading ?? 0"
+                (input)="onManualHeading($event)"
+              />
+            </label>
+            <label>
+              Pitch
+              <input
+                type="range"
+                min="-90"
+                max="90"
+                step="0.5"
+                [value]="sample()?.pitch ?? 0"
+                (input)="onManualPitch($event)"
+              />
+            </label>
+            <label>
+              Roll
+              <input
+                type="range"
+                min="-90"
+                max="90"
+                step="0.5"
+                [value]="sample()?.roll ?? 0"
+                (input)="onManualRoll($event)"
+              />
+            </label>
+          </div>
+        </div>
+      }
+
+      @if (status() === 'need-permission') {
+        <p class="status" role="status">Waiting for orientation permission…</p>
+      }
+      @if (status() === 'listening' && !sample()) {
+        <p class="status" role="status">Listening for sensors…</p>
+      }
+      @if (status() === 'redirecting') {
+        <p class="status" role="status">Returning…</p>
+      }
+      @if (errorDetail()) {
+        <p class="status status--error" role="alert">{{ errorDetail() }}</p>
+      }
+
+      <div class="toolbar">
+        <button type="button" class="btn btn-ghost" (click)="onCancel()">Cancel</button>
+        @if (status() === 'need-permission' || status() === 'listening') {
+          <button type="button" class="btn btn-ghost" (click)="useManual()">Manual</button>
+        }
+        <button
+          type="button"
+          class="btn"
+          (click)="onConfirm()"
+          [disabled]="!canConfirm() || status() === 'redirecting'"
+        >
+          Use reading
+        </button>
+      </div>
+    </section>
+  }
+</div>

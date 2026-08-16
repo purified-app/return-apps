@@ -20,6 +20,7 @@ APPS=(
   pin-back:pin
   nfc-back:nfc
   color-back:color
+  orient-back:orient
 )
 
 echo "Building shared-ui…"
