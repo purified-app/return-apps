@@ -5,25 +5,31 @@
       <a routerLink="/home" class="btn">Back to home</a>
     </rb-panel>
   } @else if (status() === 'done') {
-    <rb-panel title="Pin selected">
-      @if (pick(); as p) {
+    <rb-panel [title]="modeTitle(captured()?.mode ?? 'pick') + ' result'">
+      @if (captured(); as c) {
         <dl class="meta">
           <div>
-            <dt>Latitude</dt>
-            <dd>{{ p.lat }}</dd>
+            <dt>Mode</dt>
+            <dd>{{ modeTitle(c.mode) }}</dd>
           </div>
           <div>
-            <dt>Longitude</dt>
-            <dd>{{ p.lng }}</dd>
+            <dt>Value</dt>
+            <dd>{{ c.summary }}</dd>
           </div>
           <div>
-            <dt>Zoom</dt>
-            <dd>{{ p.zoom }}</dd>
+            <dt>Format</dt>
+            <dd>{{ c.format }}</dd>
           </div>
+          @if (c.extras['points']; as pts) {
+            <div>
+              <dt>Points</dt>
+              <dd class="mono">{{ pts }}</dd>
+            </div>
+          }
         </dl>
       }
-      <rb-result-actions [copyValue]="copyValue()" copyLabel="Copy coordinates">
-        <button type="button" class="btn btn-ghost" (click)="pickAgain()">Pick again</button>
+      <rb-result-actions [copyValue]="copyValue()" copyLabel="Copy value">
+        <button type="button" class="btn btn-ghost" (click)="pickAgain()">Try again</button>
         <a routerLink="/home" class="btn btn-ghost">Back to home</a>
         <a href="/" class="btn btn-ghost">All tools</a>
       </rb-result-actions>
@@ -31,17 +37,74 @@
   } @else {
     <section class="shell">
       <header class="top">
-        <h1>Pick a location</h1>
-        <p>Opens with a pin on your location (or lat/lng if provided). Drag the pin or tap the map to adjust.</p>
+        <h1>MapPickBack</h1>
+        <p>
+          @switch (mode()) {
+            @case ('pick') {
+              Place or drag a pin, then confirm the coordinates.
+            }
+            @case ('measure') {
+              Tap points for a path. Distances show on each segment and as a total.
+            }
+            @case ('area') {
+              Tap vertices to draw a polygon. Area and perimeter update live.
+            }
+          }
+        </p>
       </header>
 
-      <div #map class="map" role="application" aria-label="Map picker"></div>
-
-      @if (pick(); as p) {
-        <p class="coords" aria-live="polite">
-          {{ p.lat.toFixed(5) }}, {{ p.lng.toFixed(5) }} · zoom {{ p.zoom }}
-        </p>
+      @if (!modeLocked()) {
+        <div class="mode-tabs" role="tablist" aria-label="Map mode">
+          @for (m of modes; track m) {
+            <button
+              type="button"
+              role="tab"
+              class="mode-tab"
+              [class.mode-tab--active]="mode() === m"
+              [attr.aria-selected]="mode() === m"
+              (click)="setMode(m)"
+            >
+              {{ modeTitle(m) }}
+            </button>
+          }
+        </div>
+      } @else {
+        <p class="mode-locked" role="status">Mode locked: {{ modeTitle(mode()) }}</p>
       }
+
+      <div
+        #map
+        class="map"
+        role="application"
+        [attr.aria-label]="
+          mode() === 'pick'
+            ? 'Map picker'
+            : mode() === 'measure'
+              ? 'Distance measurement map'
+              : 'Area measurement map'
+        "
+      ></div>
+
+      <div class="readout" aria-live="polite">
+        @switch (mode()) {
+          @case ('pick') {
+            @if (pick(); as p) {
+              <p class="coords">
+                {{ p.lat.toFixed(5) }}, {{ p.lng.toFixed(5) }} · zoom {{ p.zoom }}
+              </p>
+            } @else {
+              <p class="coords">Tap the map to place a pin.</p>
+            }
+          }
+          @case ('measure') {
+            <p class="coords">{{ measureLabel() }}</p>
+          }
+          @case ('area') {
+            <p class="coords">{{ areaLabel() }}</p>
+          }
+        }
+      </div>
+
       @if (status() === 'empty') {
         <p class="error" role="alert">{{ errorDetail() }}</p>
       }
@@ -51,9 +114,36 @@
 
       <div class="toolbar">
         <button type="button" class="btn btn-ghost" (click)="onCancel()">Cancel</button>
-        <button type="button" class="btn btn-ghost" (click)="useMyLocation()">My location</button>
+        <button type="button" class="btn btn-ghost" (click)="useMyLocation()">
+          {{ mode() === 'pick' ? 'My location' : 'Add my location' }}
+        </button>
+        @if (mode() !== 'pick') {
+          <button
+            type="button"
+            class="btn btn-ghost"
+            (click)="onUndo()"
+            [disabled]="points().length === 0"
+          >
+            Undo
+          </button>
+          <button
+            type="button"
+            class="btn btn-ghost"
+            (click)="onSaveImage()"
+            [disabled]="!canSaveImage()"
+          >
+            Save image
+          </button>
+        }
         <button type="button" class="btn btn-ghost" (click)="onClear()">Clear</button>
-        <button type="button" class="btn" (click)="onDone()">Done</button>
+        <button
+          type="button"
+          class="btn"
+          (click)="onDone()"
+          [disabled]="!canDone() || status() === 'redirecting'"
+        >
+          Done
+        </button>
       </div>
     </section>
   }

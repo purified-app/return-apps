@@ -25,3 +25,21 @@
   font-size: 0.7rem;
   max-width: min(70vw, 18rem);
 }
+
+/* Vertex numbers / segment lengths drawn by measure & area modes */
+.leaflet-tooltip.mp-vertex-label,
+.leaflet-tooltip.mp-segment-label {
+  background: rgb(16 21 26 / 88%);
+  border: 1px solid rgb(255 255 255 / 14%);
+  border-radius: 999px;
+  color: var(--rb-fg, #eef2f5);
+  box-shadow: none;
+  font-weight: 650;
+  font-size: 0.75rem;
+  padding: 0.15rem 0.45rem;
+}
+
+.leaflet-tooltip.mp-vertex-label::before,
+.leaflet-tooltip.mp-segment-label::before {
+  display: none;
+}

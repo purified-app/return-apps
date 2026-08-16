@@ -75,7 +75,7 @@ const error = params.get('error');
 | `sign` | `/sign/` | **hash** | `sign.svg` | SVG data URL |
 | `scan` | `/scan/` | query | `scan.<type>` e.g. `scan.qr_code` | scanned text |
 | `geo` | `/geo/` | query | `geo.point` | `lat,lng` |
-| `map` | `/map/` | query | `map.point` | `lat,lng` |
+| `map` | `/map/` | query | `map.point` / `map.distance` / `map.area` | `lat,lng` / meters / m² |
 | `pin` | `/pin/` | **hash** | `pin.digits` | digit string |
 | `nfc` | `/nfc/` | query | `nfc.<recordType>` | tag payload |
 | `color` | `/color/` | query | `color.hex` | `#rrggbb` |
@@ -102,8 +102,12 @@ Live docs + demo caller per app: `https://return.purified.app/<id>/home` and `�
 - Notes: with `returnUrl` set, success auto-returns
 
 ### map
-- Open: optional `lat`, `lng`, `zoom` (initial view)
-- Return extras: `lat`, `lng`, `zoom`
+- Open: optional `lat`, `lng`, `zoom` (initial view), `mode` (`pick` \| `measure` \| `area` — locks UI when set)
+- Return extras:
+  - pick (`map.point`): `lat`, `lng`, `zoom`
+  - measure (`map.distance`): `mode`, `meters`, `points` (`lat,lng;…`), `pointCount`
+  - area (`map.area`): `mode`, `squareMeters`, `perimeterMeters`, `points`, `pointCount`
+- Notes: Measure/Area draw paths/polygons with live stats; **Save image** downloads an SVG snapshot
 
 ### pin
 - Open: `length` (3–12, default 4), `mask` (`false`/`0` = show digits)
